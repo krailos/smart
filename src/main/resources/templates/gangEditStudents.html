@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8" />
+<title>gangEditStudents</title>
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+	rel="stylesheet"
+	integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+	crossorigin="anonymous" />
+<script
+	src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+	integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+	crossorigin="anonymous"></script>
+</head>
+<body>
+	<nav class="navbar navbar-expand-lg" style="background-color: #edeff1"
+		data-bs-theme="light">
+		<div class="container">
+			<a class="navbar-brand" href="/">Smartum</a>
+			<button class="navbar-toggler" type="button"
+				data-bs-toggle="collapse" data-bs-target="#navbarNav"
+				aria-controls="navbarNav" aria-expanded="false"
+				aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+			<div class="collapse navbar-collapse" id="navbarNav">
+				<ul class="navbar-nav">
+					<li class="nav-item"><a th:href="@{/gangs/gang/new}">
+							<button class="btn btn-success">Додати студента</button>
+					</a></li>
+					<li class="nav-item"><a class="nav-link active"
+                        aria-current="page" href="/gangs">Групи</a></li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+	<div class="container my-4">
+	 <div th:text="${gang.name}" class="text-center fs-6 text-uppercase fw-semibold"> gang name</div>   
+		<div class="row">
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th scope="col">#</th>
+						<th scope="col">Прізвище</th>
+						<th scope="col">Імя</th>
+						<th scope="col">Контактна особа</th>
+						<th scope="col">Номер</th>
+						<th scope="col">Змінити групу</th>
+						<th scope="col">Видалити</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="student, index : ${students}">
+						<td th:text="${index.count}"></td>
+						<td th:text="${student.lastName}"></td>
+						<td th:text="${student.firstName}"></td>			
+						<td th:text="${student.contactName}"></td>
+						<td th:text="${student.phone}"></td>
+						<td><a th:href="@{gangs/{id}(id=${gang.id})}">
+								<button class="btn btn-primary">група</button>
+						</a></td>
+
+						<td>
+							<form th:action="@{/gangs/{id}/delete( id=${gang.id})}"
+								method="post">
+								<button class="btn btn-danger">Видалити</button>
+							</form> 
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</body>
+</html>

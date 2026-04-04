@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8" />
+<title>studensDiscounts</title>
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+	rel="stylesheet"
+	integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+	crossorigin="anonymous" />
+<script
+	src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+	integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+	crossorigin="anonymous"></script>
+</head>
+<body>
+	<nav class="navbar navbar-expand-lg" style="background-color: #edeff1"
+		data-bs-theme="light">
+		<div class="container">
+			<a class="navbar-brand" href="/">Smartum</a>
+			<button class="navbar-toggler" type="button"
+				data-bs-toggle="collapse" data-bs-target="#navbarNav"
+				aria-controls="navbarNav" aria-expanded="false"
+				aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+			<div class="collapse navbar-collapse" id="navbarNav">
+				<ul class="navbar-nav">
+					<li class="nav-item"><a class="nav-link active"
+						aria-current="page" href="/studentsDiscounts">Знижки та Студенти</a></li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+	<div class="container">
+		<div>
+			<div class="text-center fs-6 text-uppercase fw-semibold">Нова знижка студента</div>
+			
+			<form th:action="@{/studentsDiscounts/{id}/update(id = ${studentDiscount.id})}" method="post">
+				<div class="text-bg-light mb-3">
+				
+				    <label for="date" class="form-label"> Дата
+				        <input class="form-control" id="date" type="date" name="date"
+                        th:value="${#dates.format(#dates.createToday(), 'yyyy-MM-dd')}"/>
+                    </label>  
+                                
+				    <select name="studentId" class="form-select" aria-label="Default select example">
+	                        <option selected>Виберіть студента</option>
+	                        <option th:each="student : ${students}"
+	                         th:text="|${student.LastName} ${student.firstName}  (${student.contactName} - ${student.phone} )|"
+	                         th:value="${student.id}" 
+	                         th:selected="${studentDiscount.student.id == student.id}"> name</option>	                                           
+                    </select>
+                    
+                    <select name="discountId" class="form-select" aria-label="Default select example">
+                            <option selected>Виберіть знижку</option>
+                            <option th:each="discount : ${discounts}"
+                             th:text="|${discount.name} - ${discount.value}|"
+                             th:value="${discount.id}" 
+                             th:selected="${studentDiscount.discount.id == discount.id}"> name</option>                                              
+                    </select>
+                    
+                    <select name="subjectId" class="form-select" aria-label="Default select example">
+                            <option selected>Виберіть курс</option>
+                            <option th:each="subject : ${subjects}"
+                             th:text="${subject.name}"
+                             th:value="${subject.id}" 
+                             th:selected="${studentDiscount.subject.id == subject.id}"> name</option>                                              
+                    </select>
+					
+
+				</div>
+				<button type="submit" class="btn btn-primary">Виконати</button>
+			</form>
+		</div>
+	</div>
+</body>
+</html>

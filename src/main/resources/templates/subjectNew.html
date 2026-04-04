@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8" />
+<title>subject-new</title>
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+	rel="stylesheet"
+	integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+	crossorigin="anonymous" />
+<script
+	src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+	integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+	crossorigin="anonymous"></script>
+</head>
+<body>
+	<nav class="navbar navbar-expand-lg" style="background-color: #edeff1"
+		data-bs-theme="light">
+		<div class="container">
+			<a class="navbar-brand" href="/">Smartum</a>
+			<button class="navbar-toggler" type="button"
+				data-bs-toggle="collapse" data-bs-target="#navbarNav"
+				aria-controls="navbarNav" aria-expanded="false"
+				aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+			<div class="collapse navbar-collapse" id="navbarNav">
+				<ul class="navbar-nav">
+					<li class="nav-item"><a class="nav-link active"
+						aria-current="page" href="/subjects">Курси</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+	<div class="container">
+		<div>
+			<div class="text-center fs-6 text-uppercase fw-semibold">новий курс</div>
+			<form th:action="@{/subjects/create}" method="post">
+				<div class="mb-3">
+					<label for="subject-name" class="form-label"> Назва
+						курсу <input class="form-control" id="subject-name" type="text"
+						name="name" th:value="${subject.name}" />
+					</label> <label for="subject-discription" class="form-label"> Опис
+						курсу <input class="form-control" id="subject-discription" type="text"
+						name="description" th:value="${subject.description}" />
+					</label>
+				</div>
+				<button type="submit" class="btn btn-primary">Виконати</button>
+			</form>
+		</div>
+	</div>
+</body>
+</html>
