@@ -19,7 +19,7 @@ public class PaymentController {
     @GetMapping
     public String findAll(Model model) {
         model.addAttribute("payments", paymentService.findAll());      
-        return "/payments";
+        return "payments";
     }
     
     
@@ -28,14 +28,14 @@ public class PaymentController {
     public String findById (@PathVariable("id") Integer id, Model model) {
           model.addAttribute("payment", paymentService.findById(id)); 
           model.addAttribute("students", studentService.findAll());
-        return "/payment";        
+        return "payment";
     }
     
     
     @GetMapping("/payment/new")
     public String createForm (Model model) {
     model.addAttribute("students", studentService.findAll());    
-    return "/paymentNew";
+    return "paymentNew";
     }
     
     

@@ -30,7 +30,7 @@ public class ReportController {
     @GetMapping()
     public String findAll () {
 
-        return "/reports";        
+        return "reports";
     }
 
     @GetMapping("/account")
@@ -43,14 +43,14 @@ public class ReportController {
         model.addAttribute("bill", bill);
         model.addAttribute("items", itemBills);
         model.addAttribute("payments", payments);
-        return "/reportAccount";
+        return "reportAccount";
 
     }
 
     @GetMapping("/account/form")
     public String showAccountForm (Model model) {
         model.addAttribute("students", studentService.findAll());
-        return "/reportAccountForm";
+        return "reportAccountForm";
     }
     
 

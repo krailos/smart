@@ -19,7 +19,7 @@ public class AudienceController {
     @GetMapping
     public String findAll(Model model) {
         model.addAttribute("audiences", audienceService.findAll());
-        return "/audiences";
+        return "audiences";
     }
 
 
@@ -27,14 +27,14 @@ public class AudienceController {
     @GetMapping("/{id}")
     public String findById (@PathVariable("id") Integer id, Model model) {
         model.addAttribute("audience", audienceService.findById(id));
-        return "/audience";
+        return "audience";
     }
 
 
     @GetMapping("/audience/new")
     public String createForm (Model model) {
         model.addAttribute("audience", new Audience());
-        return "/audienceNew";
+        return "audienceNew";
     }
 
 

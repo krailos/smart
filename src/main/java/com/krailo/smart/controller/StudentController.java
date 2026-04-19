@@ -18,7 +18,7 @@ public class StudentController {
     @GetMapping
     public String findAll(Model model) {
         model.addAttribute("students", studentService.findAll());
-        return "/students";
+        return "students";
     }
     
     
@@ -26,7 +26,7 @@ public class StudentController {
     @GetMapping("/{id}")
     public String findById (@PathVariable("id") Integer id, Model model) {
           model.addAttribute("student", studentService.findById(id));
-        return "/student";        
+        return "student";
     }
     
     
@@ -34,7 +34,7 @@ public class StudentController {
     @GetMapping("/student/new")
     public String createForm (Model model) {
     model.addAttribute("gang", new Student());
-    return "/studentNew";
+    return "studentNew";
     }
     
     

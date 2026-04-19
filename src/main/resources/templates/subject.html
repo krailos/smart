@@ -40,10 +40,12 @@
 			<form th:action="@{/subjects/{id}/update( id=${subject.id})}"
 				method="post">
 				<div class="mb-3">
-					<label for="name" class="form-label"> Назва курсу <input
+					<label for="name" class="form-label"> Назва курсу
+						<input
 						class="form-control" id="name" type="text" name="name"
 						th:value="${subject.name}" />
-					</label> <label for="discription" class="form-label"> Опис курсу  
+					</label>
+					<label for="discription" class="form-label"> Опис курсу
 						<input class="form-control" id="discription" type="text"
 						name="description" th:value="${subject.description}" />
 					</label>

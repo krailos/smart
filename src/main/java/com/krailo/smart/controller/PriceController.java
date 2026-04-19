@@ -20,7 +20,7 @@ public class PriceController {
     @GetMapping
     public String findAll(Model model) {
         model.addAttribute("prices", priceService.findAll());
-        return "/prices";
+        return "prices";
     }
     
     @GetMapping("/{id}/bysubject")
@@ -28,7 +28,7 @@ public class PriceController {
         Subject subject = subjectService.findByIdEntity(id);
         model.addAttribute("prices", priceService.findBySubject(subject));
         model.addAttribute("subject", subjectService.findById(id));
-        return "/prices";
+        return "prices";
     }
     
     
@@ -38,21 +38,21 @@ public class PriceController {
           PriceDto priceDto =  priceService.findById(id);
           model.addAttribute("price", priceDto);
           model.addAttribute("subject", subjectService.findById(priceDto.getSubjectId()));
-        return "/price";        
+        return "price";
     }
     
     
     @GetMapping("/price/new")
     public String createForm (Model model) {
     model.addAttribute("subjects", subjectService.findAll());
-    return "/priceNew";
+    return "priceNew";
     }
     
     @GetMapping("/price/new/{id}")
     public String createFormWhithChackedSubject (@PathVariable("id") Integer priceId, Model model) {
     model.addAttribute("subjects", subjectService.findAll());
     model.addAttribute("subjectChoosen", subjectService.findById(priceId));
-    return "/priceNew";
+    return "priceNew";
     }
     
     

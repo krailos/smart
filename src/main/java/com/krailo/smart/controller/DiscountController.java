@@ -18,7 +18,7 @@ public class DiscountController {
     @GetMapping
     public String findAll(Model model) {
         model.addAttribute("discounts", discountService.findAll());
-        return "/discounts";
+        return "discounts";
     }
     
     
@@ -26,14 +26,14 @@ public class DiscountController {
     @GetMapping("/{id}")
     public String findById (@PathVariable("id") Integer id, Model model) {
           model.addAttribute("discount", discountService.findById(id));
-        return "/discount";        
+        return "discount";
     }
     
     
     @GetMapping("/discount/new")
     public String createForm (Model model) {
     model.addAttribute("audience", new Audience());
-    return "/discountNew";
+    return "discountNew";
     }
     
     

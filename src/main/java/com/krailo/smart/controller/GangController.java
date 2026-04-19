@@ -25,7 +25,7 @@ public class GangController {
     @GetMapping
     public String findAll(Model model) {
         model.addAttribute("gangs", gangService.findAll());
-        return "/gangs";
+        return "gangs";
     }
     
     
@@ -33,7 +33,7 @@ public class GangController {
     @GetMapping("/{id}")
     public String findById (@PathVariable("id") Integer id, Model model) {
           model.addAttribute("gang", gangService.findById(id));
-        return "/gang";        
+        return "gang";
     }
     
     
@@ -46,13 +46,13 @@ public class GangController {
         }
           model.addAttribute("gang", gangDto);
           model.addAttribute("students", students);
-        return "/gangEditStudents";        
+        return "gangEditStudents";
     }
     
     @GetMapping("/gang/new")
     public String createForm (Model model) {
     model.addAttribute("gang", new Subject());
-    return "/gangNew";
+    return "gangNew";
     }
     
     

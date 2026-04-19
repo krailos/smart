@@ -32,19 +32,19 @@ public class ScheduleController {
     @GetMapping
     public String findAll(Model model) {
         model.addAttribute("schedules", scheduleService.findAll());
-        return "/schedules";
+        return "schedules";
     }
 
     @GetMapping("/{id}")
     public String findById(@PathVariable("id") Integer id, Model model) {
         model.addAttribute("schedule", scheduleService.findById(id));
-        return "/schedule";
+        return "schedule";
     }
 
     @GetMapping("/schedule/new")
     public String createForm(Model model) {
         model.addAttribute("gang", new Subject());
-        return "/scheduleNew";
+        return "scheduleNew";
     }
 
     @PostMapping("/create")
@@ -89,7 +89,7 @@ public class ScheduleController {
         }
         lesson.setLessonsStudents(ls);
         model.addAttribute("lesson", lesson);
-        return "/lessonNew";
+        return "lessonNew";
     }
 
     @PostMapping("/lessons/create")

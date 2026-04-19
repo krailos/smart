@@ -18,7 +18,7 @@ public class SubjectController {
     @GetMapping
     public String findAll(Model model) {
         model.addAttribute("subjects", subjectService.findAll());
-        return "/subjects";
+        return "subjects";
     }
     
     
@@ -26,14 +26,14 @@ public class SubjectController {
     @GetMapping("/{id}")
     public String findById (@PathVariable("id") Integer id, Model model) {
           model.addAttribute("subject", subjectService.findById(id));
-        return "/subject";        
+        return "subject";
     }
     
     
     @GetMapping("/subject/new")
     public String createForm (Model model) {
     model.addAttribute("subject", new Subject());
-    return "/subjectNew";
+    return "subjectNew";
     }
     
     

@@ -23,7 +23,7 @@ public class StudentsDiscountsController {
     @GetMapping
     public String findAll(Model model) {
         model.addAttribute("studentsDiscounts", studentsDiscountsService.findAll());
-        return "/studentsDiscounts";
+        return "studentsDiscounts";
     }
     
     
@@ -34,7 +34,7 @@ public class StudentsDiscountsController {
           model.addAttribute("students", studentService.findAll());
           model.addAttribute("discounts", discountService.findAll());
           model.addAttribute("subjects", subjectService.findAll());
-        return "/studentDiscount";        
+        return "studentDiscount";
     }
     
     
@@ -43,7 +43,7 @@ public class StudentsDiscountsController {
         model.addAttribute("students", studentService.findAll());
         model.addAttribute("discounts", discountService.findAll());
         model.addAttribute("subjects", subjectService.findAll());
-    return "/studentsDiscountsNew";
+    return "studentsDiscountsNew";
     }
     
     
