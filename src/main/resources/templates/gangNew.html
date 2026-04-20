@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8"/>
-    <title>price-new</title>
+    <title>gang-new</title>
     <link
             href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
             rel="stylesheet"
@@ -27,40 +27,43 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
                 <li class="nav-item"><a class="nav-link active"
-                                        aria-current="page" href="/subjects">Курси</a></li>
+                                        aria-current="page" href="/gangs">Групи</a>
+                </li>
             </ul>
         </div>
     </div>
 </nav>
 <div class="container">
     <div>
-        <div class="text-center fs-6 text-uppercase fw-semibold">Нова вартість курсу</div>
-        <form th:action="@{/prices/create}" method="post">
+        <div class="text-center fs-6 text-uppercase fw-semibold">нова група</div>
+        <form  th:action="@{/gangs/create}" method="post">
             <div class="mb-3">
-                <select name="subjectId" class="form-select" aria-label="Default select example">
-                    <option selected>Виберіть курс</option>
-                    <option th:if="${subjectChoosen==null}"
-                            th:each="subject : ${subjects}"
-                            th:text="${subject.name}"
-                            th:value="${subject.id}">subject name
-                    </option>
-                    <option th:unless="${subjectChoosen==null}"
-                            th:each="subject : ${subjects}"
-                            th:text="${subject.name}"
+                <label for="gang name" class="form-label"> Назва групи
+                    <input class="form-control" id="gang name" type="text"
+                           name="name" value=""/>
+                </label>
+
+                <select class="form-select form-label" aria-label="Default select example" name="subjectId">
+                    <option value="">-- Оберіть курс --</option>
+                    <option th:each="subject : ${subjects}"
                             th:value="${subject.id}"
-                            th:selected="${subjectChoosen.id == subject.id}">subject name
+                            th:text="${subject.name}">
                     </option>
                 </select>
-                <label for="price-name" class="form-label"> Вид ціни <input
-                        class="form-control" id="price-name" type="text" name="name"
-                        value="Базова"/>
-                </label> <label for="value" class="form-label"> Вартість за урок <input
-                    class="form-control" id="value" type="text" name="value" value=""/>
-            </label> <label for="date" class="form-label"> Дата <input
-                    class="form-control" id="date" type="date" name="date" value=""/>
-            </label>
+
+                <select class="form-select form-label" aria-label="Default select example" name="teacherId">
+                    <option value="">-- Оберіть викладача --</option>
+                    <option th:each="teacher : ${teachers}"
+                            th:value="${teacher.id}"
+                            th:text="${teacher.getLastName()}">
+                    </option>
+                </select>
 
 
+                <label for="gang discription" class="form-label"> Опис групи
+                    <input class="form-control" id="gang discription" type="text"
+                           name="description" value=""/>
+                </label>
             </div>
             <button type="submit" class="btn btn-primary">Виконати</button>
         </form>

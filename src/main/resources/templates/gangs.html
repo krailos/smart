@@ -35,12 +35,15 @@
 		</div>
 	</nav>
 	<div class="container my-4">
+		<div class="text-center text-uppercase fs-5 fw-bolder">ГРУПИ</div>
 		<div class="row">
 			<table class="table table-striped">
 				<thead>
 					<tr>
 						<th scope="col">#</th>
-						<th scope="col">Група</th>
+						<th scope="col">Назва</th>
+						<th scope="col">Курс</th>
+						<th scope="col">Викладач</th>
 						<th scope="col">К-сть студентів</th>
 						<th scope="col">Опис</th>
 						<th scope="col">Cтуденти</th>
@@ -52,6 +55,8 @@
 					<tr th:each="gang, index : ${gangs}">
 						<td th:text="${index.count}"></td>
 						<td th:text="${gang.name}"></td>
+						<td th:text="${gang.getSubject().getName()}"></td>
+						<td th:text="${gang.getTeacher().getLastName()}"></td>
 						<td th:text="${gang.gangStudents.size}"></td>
 						<td th:text="${gang.description}"></td>
 						<td><a th:href="@{/gangs/{id}/bystudents(id=${gang.id})}">

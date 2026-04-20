@@ -7,6 +7,8 @@ import com.krailo.smart.repository.TeacherRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 @AllArgsConstructor
 public class GangMapper implements Mapper<Gang, GangDto> {
@@ -16,8 +18,12 @@ public class GangMapper implements Mapper<Gang, GangDto> {
 
     @Override
     public GangDto mapEntityToDto(Gang o) {
-        return new GangDto(o.getId(), o.getName(), o.getDescription(), o.getSubject(), o.getSubject().getId(),
-                o.getTeacher(), o.getTeacher().getId(), o.getGangStudents());
+        return new GangDto(o.getId(), o.getName(), o.getDescription(),
+                Optional.of(o.getSubject()).orElse(null),
+                o.getSubject().getId(),
+                Optional.of( o.getTeacher()).orElse(null),
+                o.getTeacher().getId(),
+                o.getGangStudents() );
     }
 
     @Override
@@ -27,7 +33,7 @@ public class GangMapper implements Mapper<Gang, GangDto> {
        e.setDescription(d.getDescription());
        e.setSubject(subjectRepository.findById(d.getSubjectId()).get());
        e.setTeacher(teacherRepository.findById(d.getTeacherId()).get());       
-        return null;
+        return e;
     }
 
     @Override
@@ -37,7 +43,7 @@ public class GangMapper implements Mapper<Gang, GangDto> {
         e.setDescription(d.getDescription());
         e.setSubject(subjectRepository.findById(d.getSubjectId()).get());
         e.setTeacher(teacherRepository.findById(d.getTeacherId()).get());   
-        return null;
+        return e;
     }
 
 }

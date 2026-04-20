@@ -2,10 +2,12 @@ package com.krailo.smart.controller;
 
 import com.krailo.smart.dto.GangDto;
 import com.krailo.smart.dto.StudentDto;
+import com.krailo.smart.entity.Gang;
 import com.krailo.smart.entity.GangsStudents;
-import com.krailo.smart.entity.Subject;
 import com.krailo.smart.service.GangService;
 import com.krailo.smart.service.StudentService;
+import com.krailo.smart.service.SubjectService;
+import com.krailo.smart.service.TeacherService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,6 +23,8 @@ public class GangController {
 
     private GangService gangService;
     private StudentService studentService;
+    private SubjectService subjectService;
+    private TeacherService teacherService;
 
     @GetMapping
     public String findAll(Model model) {
@@ -33,6 +37,8 @@ public class GangController {
     @GetMapping("/{id}")
     public String findById (@PathVariable("id") Integer id, Model model) {
           model.addAttribute("gang", gangService.findById(id));
+        model.addAttribute("subjects", subjectService.findAll());
+        model.addAttribute("teachers", teacherService.findAll());
         return "gang";
     }
     
@@ -51,7 +57,9 @@ public class GangController {
     
     @GetMapping("/gang/new")
     public String createForm (Model model) {
-    model.addAttribute("gang", new Subject());
+    model.addAttribute("gang", new Gang());
+    model.addAttribute("subjects", subjectService.findAll());
+    model.addAttribute("teachers", teacherService.findAll());
     return "gangNew";
     }
     
