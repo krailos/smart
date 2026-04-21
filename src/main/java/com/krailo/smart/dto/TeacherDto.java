@@ -1,8 +1,10 @@
 package com.krailo.smart.dto;
 
+import com.krailo.smart.entity.Gang;
 import lombok.Value;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Value
 public class TeacherDto {
@@ -15,5 +17,6 @@ public class TeacherDto {
     private String address;
     private LocalDate birthDate;
     private String description;
+    private List<Gang> gangs;
 
 }

@@ -31,7 +31,8 @@ public class TeacherMapper implements Mapper<Teacher, TeacherDto> {
                 e.getEmail(),
                 e.getAddress(),
                 e.getBirthDate(),
-                e.getDescription()
+                e.getDescription(),
+                e.getGangs()
         );
     }
 

@@ -41,9 +41,6 @@ public class GangService {
                 .map(gangMapper::mapEntityToDto).orElseThrow();
     }
 
-//    public void create(GangDto gangDto) {
-//        Optional.of(gangDto).map(gangMapper::mapDtoToEntityForCreate).map(gangRepository::save).orElseThrow();
-//    }
 
     public GangDto update(Integer id, GangDto gangDto) {
         return gangRepository.findById(id)
