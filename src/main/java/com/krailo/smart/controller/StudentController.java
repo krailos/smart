@@ -24,6 +24,7 @@ public class StudentController {
     }
 
 
+
     @GetMapping("/{id}")
     public String findById(@PathVariable("id") Integer id, Model model) {
         model.addAttribute("student", studentService.findById(id));

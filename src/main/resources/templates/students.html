@@ -60,15 +60,15 @@
                 <td th:text="${student.phone}"></td>
                 <td th:text="${student.studentStatus}"></td>
 
-                <td><a th:href="@{/}">
-                    <button class="btn btn-primary">Групи</button>
+                <td><a th:href="@{/gangs/{id}/byStudent (id=${student.id})}">
+                    <button class="btn btn-primary" th:text="${student.getGangsStudents().size()}">Групи</button>
                 </a></td>
-                <td><a th:href="@{/}">
-                    <button class="btn btn-primary">Знижки</button>
+                <td><a th:href="@{/studentsDiscounts/{id}/byStudent (id=${student.id}) }">
+                    <button class="btn btn-primary" th:text="${student.getStudentsDiscounts().size()}">Знижки</button>
                 </a>
                 </td>
                 <td>
-                    <a th:href="@{/students/{id} (id=${student.id})}">
+                    <a th:href="@{/students/{id} (id=${student.id}) }">
                         <button class="btn btn-success">Редагувати</button>
                     </a>
 

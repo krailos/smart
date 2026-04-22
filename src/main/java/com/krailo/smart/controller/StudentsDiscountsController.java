@@ -1,6 +1,8 @@
 package com.krailo.smart.controller;
 
 import com.krailo.smart.dto.StudentsDiscountsDto;
+import com.krailo.smart.entity.Student;
+import com.krailo.smart.entity.StudentsDiscounts;
 import com.krailo.smart.service.DiscountService;
 import com.krailo.smart.service.StudentService;
 import com.krailo.smart.service.StudentsDiscountsService;
@@ -9,6 +11,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Controller
 @RequestMapping("/studentsDiscounts")
@@ -25,9 +29,17 @@ public class StudentsDiscountsController {
         model.addAttribute("studentsDiscounts", studentsDiscountsService.findAll());
         return "studentsDiscounts";
     }
-    
-    
-    
+
+
+
+    @GetMapping("/{id}/byStudent")
+    public String findAllByStudent(@PathVariable("id") Integer studentId, Model model) {
+        Student student = studentService.findByIdEntity(studentId);
+        List<StudentsDiscounts> studentsDiscounts = student.getStudentsDiscounts();
+        model.addAttribute("studentsDiscounts", studentsDiscounts);
+        return "studentsDiscounts";
+    }
+
     @GetMapping("/{id}")
     public String findById (@PathVariable("id") Integer id, Model model) {
           model.addAttribute("studentDiscount", studentsDiscountsService.findById(id));
