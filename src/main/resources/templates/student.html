@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>student</title>
+    <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+            crossorigin="anonymous"/>
+    <script
+            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+            crossorigin="anonymous"></script>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg" style="background-color: #edeff1"
+     data-bs-theme="light">
+    <div class="container">
+        <a class="navbar-brand" href="/">Smartum</a>
+        <button class="navbar-toggler" type="button"
+                data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false"
+                aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item"><a class="nav-link active"
+                                        aria-current="page" href="/students">Студенти</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="container">
+    <div>
+        <div class="text-center fs-6 text-uppercase fw-semibold">Учень</div>
+        <form th:object="${student}" th:action="@{/students/{id}/update (id=${student.id})}" method="post">
+            <div class="mb-3">
+
+                <label for="teacher lastName" class="form-label"> Прізвище
+                    <input class="form-control" id="teacher lastName" type="text"
+                           name="lastName" th:value="*{lastName}"/>
+                </label>
+
+
+                <label for="teacher firstName" class="form-label"> Ім'я
+                    <input class="form-control" id="teacher firstName" type="text"
+                           name="firstName" th:value="*{firstName}"/>
+                </label>
+
+
+                <label for="teacher secondName" class="form-label"> По батькові
+                    <input class="form-control" id="teacher secondName" type="text"
+                           name="secondName" th:value="*{secondName}"/>
+                </label>
+
+                <div class="row col-3">
+                    <select class="form-select form-label" aria-label="Default select example" name="gender">
+                        <option value="">-- Оберіть стать --</option>
+                        <option th:each="gender : ${gender}"
+                                th:value="${gender}"
+                                th:text="${gender}"
+                                th:selected="${gender == student.getGender()}">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="row col-3">
+                    <select class="form-select form-label" aria-label="Default select example" name="studentStatus">
+                        <option value="">-- Оберіть статус --</option>
+                        <option th:each="status : ${status}"
+                                th:value="${status}"
+                                th:text="${status}"
+                                th:selected="${status == student.getStudentStatus()}">
+                        </option>
+                    </select>
+                </div>
+
+
+
+
+                <div class="row col-3">
+                    <label for="teacher secondName" class="form-label"> Контактна особа
+                        <input class="form-control" id="teacher secondName" type="text"
+                               name="contactName" th:value="*{contactName}"/>
+                    </label>
+                </div>
+
+                <div class="row col-3">
+                    <label for="teacher phone" class="form-label"> телефон
+                        <input class="form-control" id="teacher phone" type="text"
+                               name="phone" th:value="*{phone}"/>
+                    </label>
+                </div>
+                <div class="row col-3">
+                    <label for="teacher email" class="form-label"> email
+                        <input class="form-control" id="teacher email" type="email"
+                               name="email" th:value="*{email}"/>
+                    </label>
+                </div>
+                <div class="row col-3">
+                    <label for="teacher birthDate" class="form-label"> Дата народження
+                        <input class="form-control" id="teacher birthDate" type="date"
+                               name="birthDate" th:value="*{birthDate}"/>
+                    </label>
+                </div>
+                <div class="row col-6">
+                    <label for="teacher address" class="form-label"> Адреса
+                        <input class="form-control" id="teacher address" type="text"
+                               name="address" th:value="*{address}"/>
+                    </label>
+                </div>
+                <div class="row col-6">
+                    <label for="gang discription" class="form-label"> Опис
+                        <input class="form-control" id="gang discription" type="text"
+                               name="description" th:value="*{description}"/>
+                    </label>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Виконати</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>

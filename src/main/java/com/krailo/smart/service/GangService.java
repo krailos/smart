@@ -2,6 +2,7 @@ package com.krailo.smart.service;
 
 import com.krailo.smart.dto.GangDto;
 import com.krailo.smart.entity.Gang;
+import com.krailo.smart.entity.Teacher;
 import com.krailo.smart.mapper.GangMapper;
 import com.krailo.smart.repository.GangRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -24,6 +25,10 @@ public class GangService {
     public List<GangDto> findAll() {
       return gangRepository.findAll().stream().map(gangMapper::mapEntityToDto).toList();
   }
+
+    public List<GangDto> findAllByTeacher(Teacher teacher) {
+        return gangRepository.findAllByTeacher(teacher).stream().map(gangMapper::mapEntityToDto).toList();
+    }
 
 
     public GangDto findById(Integer id) {

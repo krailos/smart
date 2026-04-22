@@ -1,6 +1,7 @@
 package com.krailo.smart.service;
 
 import com.krailo.smart.dto.TeacherDto;
+import com.krailo.smart.entity.Teacher;
 import com.krailo.smart.mapper.TeacherMapper;
 import com.krailo.smart.repository.TeacherRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -25,6 +26,11 @@ public class TeacherService {
 
     public TeacherDto findById(Integer id) {
         return teacherRepository.findById(id).map(teacherMapper::mapEntityToDto)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Teacher whith id= %d not exist", id)));
+    }
+
+    public Teacher findByIdEntity(Integer id) {
+        return teacherRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Teacher whith id= %d not exist", id)));
     }
 
