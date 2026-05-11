@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+            crossorigin="anonymous"/>
+    <script
+            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+            crossorigin="anonymous"></script>
+</head>
+<body>
+
+<div  class="d-flex justify-content-center">
+
+    <form class="mt-5"  action="/login" method="post">
+        <p class="text-center">SMARTUM PEREHINSKE</p>
+        <p class="text-center">вхід в систему</p>
+        <div class="mb-3" style="color: red" th:if="${param.error}">
+            не правильне ім'я або пароль
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="username">Ім'я:
+                <input class="form-control" id="username" type="text" name="username">
+
+            </label>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="password">Пароль:
+                <input class="form-control" id="password" type="text" name="password">
+
+            </label>
+        </div>
+        <button class="btn btn-primary" type="submit">login</button>
+
+    </form>
+</div>
+
+</body>
+</html>
+
+

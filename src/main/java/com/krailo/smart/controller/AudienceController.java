@@ -4,14 +4,14 @@ package com.krailo.smart.controller;
 import com.krailo.smart.dto.AudienceDto;
 import com.krailo.smart.entity.Audience;
 import com.krailo.smart.service.AudienceService;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequestMapping("/audiences")
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class AudienceController {
 
     private final AudienceService audienceService;
