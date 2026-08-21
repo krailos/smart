@@ -108,3 +108,7 @@ VALUES ('1', '1', '1', '09.01.2025'),
 
 INSERT INTO users (name, password, role)
 VALUES ('admin', '{noop}123', 'ADMIN');
+
+INSERT INTO account (code, name, account_type)
+VALUES ('361', 'клієнти', 'ACTIVE'),
+       ('702', 'дохід від наданих послуг', 'ACTIVE_PASSIVE');

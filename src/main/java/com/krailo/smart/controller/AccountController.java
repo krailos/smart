@@ -1,60 +1,60 @@
 package com.krailo.smart.controller;
 
 
-import com.krailo.smart.dto.AudienceDto;
-import com.krailo.smart.entity.Audience;
-import com.krailo.smart.service.AudienceService;
+import com.krailo.smart.dto.AccountDto;
+import com.krailo.smart.entity.Account;
+import com.krailo.smart.service.AccountService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
-@RequestMapping("/audiences")
+@RequestMapping("/accounts")
 @AllArgsConstructor
-public class AudienceController {
+public class AccountController {
 
-    private final AudienceService audienceService;
+    private final AccountService accountService;
 
     @GetMapping
     public String findAll(Model model) {
-        model.addAttribute("audiences", audienceService.findAll());
-        return "audiences";
+        model.addAttribute("accounts", accountService.findAll());
+        return "accounts";
     }
 
 
 
     @GetMapping("/{id}")
     public String findById (@PathVariable("id") Integer id, Model model) {
-        model.addAttribute("audience", audienceService.findById(id));
-        return "audience";
+        model.addAttribute("account", accountService.findById(id));
+        return "account";
     }
 
 
-    @GetMapping("/audience/new")
+    @GetMapping("/account/new")
     public String createForm (Model model) {
-        model.addAttribute("audience", new Audience());
+        model.addAttribute("account", new Account());
         return "audienceNew";
     }
 
 
     @PostMapping("/create")
     // @ResponseStatus(HttpStatus.CREATED)
-    public String create ( @ModelAttribute AudienceDto audience) {
-        audienceService.create(audience);
-        return "redirect:/audiences";
+    public String create ( @ModelAttribute AccountDto accountDto) {
+        accountService.create(accountDto);
+        return "redirect:/accounts";
     }
 
     @PostMapping("/{id}/update")
-    public String update (@PathVariable("id") Integer id, @ModelAttribute AudienceDto audience) {
-        audienceService.update(id, audience);
-        return "redirect:/audiences";
+    public String update (@PathVariable("id") Integer id, @ModelAttribute AccountDto accountDto) {
+        accountService.update(id, accountDto);
+        return "redirect:/accounts";
     }
 
     @PostMapping("/{id}/delete")
     public String delete (@PathVariable("id") Integer id) {
-        audienceService.delete(id);
-        return "redirect:/audiences";
+        accountService.delete(id);
+        return "redirect:/accounts";
     }
 
 }

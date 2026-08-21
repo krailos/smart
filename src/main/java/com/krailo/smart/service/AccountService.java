@@ -1,9 +1,9 @@
 package com.krailo.smart.service;
 
 
-import com.krailo.smart.dto.AudienceDto;
-import com.krailo.smart.mapper.AudienceMapper;
-import com.krailo.smart.repository.AudienceRepository;
+import com.krailo.smart.dto.AccountDto;
+import com.krailo.smart.mapper.AccountMapper;
+import com.krailo.smart.repository.AccountRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,35 +15,35 @@ import java.util.Optional;
 @Transactional
 @Service
 @AllArgsConstructor
-public class AudienceService {
+public class AccountService {
 
-    private AudienceRepository audienceRepository;
-    private AudienceMapper audienceMapper;
+    private AccountRepository accountRepository;
+    private AccountMapper accountMapper;
 
-    public List<AudienceDto> findAll() {
-        return audienceRepository.findAll().stream().map(audienceMapper::mapEntityToDto).toList();
+    public List<AccountDto> findAll() {
+        return accountRepository.findAll().stream().map(accountMapper::mapEntityToDto).toList();
     }
 
-    public AudienceDto findById(Integer id) {
-        return audienceRepository.findById(id).map(audienceMapper::mapEntityToDto)
+    public AccountDto findById(Integer id) {
+        return accountRepository.findById(id).map(accountMapper::mapEntityToDto)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Audience whith id= %d not exist", id)));
     }
 
-    public AudienceDto create(AudienceDto audienceDto) {
-        return Optional.of(audienceDto).map(audienceMapper::mapDtoToEntityForCreate).map(audienceRepository::save)
-                .map(audienceMapper::mapEntityToDto).orElseThrow();
+    public AccountDto create(AccountDto accountDto) {
+        return Optional.of(accountDto).map(accountMapper::mapDtoToEntityForCreate).map(accountRepository::save)
+                .map(accountMapper::mapEntityToDto).orElseThrow();
     }
 
-    public AudienceDto update(Integer id, AudienceDto audienceDto) {
-        return audienceRepository.findById(id)
-                .map(entity -> audienceMapper.mapDtoToEntityForUpdate(audienceDto, entity))
-                .map(audienceRepository::saveAndFlush).map(audienceMapper::mapEntityToDto)
+    public AccountDto update(Integer id, AccountDto accountDto) {
+        return accountRepository.findById(id)
+                .map(entity -> accountMapper.mapDtoToEntityForUpdate(accountDto, entity))
+                .map(accountRepository::saveAndFlush).map(accountMapper::mapEntityToDto)
                 .orElseThrow(() -> new RuntimeException("smth wrong when update"));
     }
 
     public boolean delete(Integer id) {
-        return audienceRepository.findById(id).map(entity -> {
-            audienceRepository.delete(entity);
+        return accountRepository.findById(id).map(entity -> {
+            accountRepository.delete(entity);
             return true;
         }).orElse(false);
     }

@@ -1,8 +1,9 @@
 package com.krailo.smart.enumeration;
 
-public enum Gender {
+public enum AccountType {
     
-    ХЛОПЕЦЬ,
-    ДІВЧИНА;
+    ACTIVE,
+    PASSIVE,
+    ACTIVE_PASSIVE;
 
 }

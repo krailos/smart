@@ -1,32 +1,34 @@
 package com.krailo.smart.mapper;
 
 
-import com.krailo.smart.dto.AudienceDto;
-import com.krailo.smart.entity.Audience;
+import com.krailo.smart.dto.AccountDto;
+import com.krailo.smart.entity.Account;
 import org.springframework.stereotype.Component;
 
 
 @Component
-public class AudienceMapper implements Mapper<Audience, AudienceDto> {
+public class AccountMapper implements Mapper<Account, AccountDto> {
 
     @Override
-    public AudienceDto mapEntityToDto(Audience entity) {
-
-        return new AudienceDto(entity.getId(), entity.getName(), entity.getDescription());
+    public AccountDto mapEntityToDto(Account entity) {
+        return new AccountDto(entity.getId(), entity.getCode(), entity.getName(),
+                entity.getType());
     }
 
     @Override
-    public Audience mapDtoToEntityForCreate(AudienceDto dto) {
-        Audience audience = new Audience();
-        audience.setName(dto.getName());
-        audience.setDescription(dto.getDescription());
-        return audience;
+    public Account mapDtoToEntityForCreate(AccountDto dto) {
+        Account account = new Account();
+        account.setCode(dto.getCode());
+        account.setName(dto.getName());
+        account.setType(dto.getType());
+        return account;
     }
 
     @Override
-    public Audience mapDtoToEntityForUpdate(AudienceDto dto, Audience entity) {
+    public Account mapDtoToEntityForUpdate(AccountDto dto, Account entity) {
+        entity.setCode(dto.getCode());
         entity.setName(dto.getName());
-        entity.setDescription(dto.getDescription());
+        entity.setType(dto.getType());
         return entity;
     }
 

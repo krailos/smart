@@ -15,6 +15,7 @@ DROP TABLE IF EXISTS discount CASCADE;
 DROP TABLE IF EXISTS price CASCADE;
 DROP TABLE IF EXISTS students_discounts CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS account CASCADE;
 
 
 
@@ -23,12 +24,15 @@ DROP TYPE IF EXISTS week_day CASCADE;
 DROP TYPE IF EXISTS student_status CASCADE;
 DROP TYPE IF EXISTS discount_type CASCADE;
 DROP TYPE IF EXISTS role CASCADE;
+DROP TYPE IF EXISTS account_type CASCADE;
+DROP TYPE IF EXISTS balance_student CASCADE;
 
 CREATE TYPE gender AS ENUM ('ХЛОПЕЦЬ', 'ДІВЧИНА');
 CREATE TYPE week_day AS ENUM ('ПОНЕДІЛОК', 'ВІВТОРОК', 'СЕРЕДА','ЧЕТВЕР', 'ПЯТНИЦЯ','СУБОТА','НЕДІЛЯ');
 CREATE TYPE student_status AS ENUM ('УЧЕНЬ', 'ЛІД', 'ВІДМОВА', 'ТЕСТ' );
 CREATE TYPE discount_type AS ENUM ('УБД', 'ДРУГИЙ_КУРС', 'ПРИВЕДИ_ДРУГА');
 CREATE TYPE role AS ENUM ('ADMIN', 'TEACHER');
+CREATE TYPE account_type AS ENUM ('ACTIVE', 'PASSIVE', 'ACTIVE_PASSIVE');
 
 CREATE TABLE company
 (
@@ -189,9 +193,33 @@ CREATE TABLE students_discounts
 
 CREATE TABLE users
 (
-    id serial NOT NULL,
-    name character varying(50) NOT NULL,
-    password varchar (128) DEFAULT '{noop}123',
-    role role NOT NULL,
+    id       serial                NOT NULL,
+    name     character varying(50) NOT NULL,
+    password varchar(128) DEFAULT '{noop}123',
+    role     role                  NOT NULL,
     CONSTRAINT users__pk PRIMARY KEY (id)
 );
+
+CREATE TABLE account
+(
+    id           serial                NOT NULL,
+    code         character varying(50) NOT NULL UNIQUE,
+    name         character varying(50) NOT NULL,
+    account_type account_type          NOT NULL,
+    CONSTRAINT accounts__pk PRIMARY KEY (id)
+);
+
+CREATE TABLE balance_student
+(
+    id               serial                NOT NULL,
+    transaction_date date                  NOT NULL,
+    document_type    character varying(50) NOT NULL,
+    lesson_id        int REFERENCES student (id) ON UPDATE CASCADE ON DELETE CASCADE,
+    payment_id       int REFERENCES payment (id) ON UPDATE CASCADE ON DELETE CASCADE,
+    student_id       int REFERENCES student (id) ON UPDATE CASCADE ON DELETE CASCADE,
+    debit            int,
+    credit           int,
+    balance          int,
+    CONSTRAINT balance_student__pk PRIMARY KEY (id)
+);
+
