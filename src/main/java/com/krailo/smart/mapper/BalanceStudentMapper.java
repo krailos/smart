@@ -2,6 +2,9 @@ package com.krailo.smart.mapper;
 
 import com.krailo.smart.dto.BalanceStudentDto;
 import com.krailo.smart.entity.BalanceStudent;
+import com.krailo.smart.entity.Lesson;
+import com.krailo.smart.entity.Payment;
+import com.krailo.smart.entity.Student;
 import com.krailo.smart.repository.LessonRepository;
 import com.krailo.smart.repository.PaymentRepository;
 import com.krailo.smart.repository.StudentRepository;
@@ -35,12 +38,12 @@ public class BalanceStudentMapper implements Mapper<BalanceStudent, BalanceStude
         return new BalanceStudentDto(
                 entity.getId(),
                 entity.getDate(),
-                Optional.of(entity.getLesson()).orElse(null),
-                Optional.of(entity.getLesson().getId()).orElse(null),
-                Optional.of(entity.getPayment()).orElse(null),
-                Optional.of(entity.getPayment().getId()).orElse(null),
-                Optional.of(entity.getStudent()).orElse(null),
-                Optional.of(entity.getStudent().getId()).orElse(null),
+                Optional.ofNullable(entity.getLesson()).orElse(null),
+                Optional.ofNullable(entity).map(BalanceStudent::getLesson).map(Lesson::getId).orElse(null),
+                Optional.ofNullable(entity.getPayment()).orElse(null),
+                Optional.ofNullable(entity).map(BalanceStudent::getPayment).map(Payment::getId).orElse(null),
+                Optional.ofNullable(entity.getStudent()).orElse(null),
+                Optional.ofNullable(entity).map(BalanceStudent::getStudent).map(Student::getId).orElse(null),
                 entity.getDebit(),
                 entity.getCredit(),
                 entity.getBalance()
