@@ -1,7 +1,7 @@
-2026-08-21T03:47:32.246+03:00  WARN 11608 --- [smart] [HikariPool-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=3h7s993ms96µs99ns).
-2026-08-21T15:02:44.127+03:00  WARN 11608 --- [smart] [HikariPool-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=11h15m19s275ms856µs401ns).
-2026-08-21T15:25:30.486+03:00  INFO 11608 --- [smart] [SpringApplicationShutdownHook] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
-2026-08-21T15:25:30.976+03:00  INFO 11608 --- [smart] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
-2026-08-21T15:25:31.085+03:00  INFO 11608 --- [smart] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
-2026-08-21T15:25:31.242+03:00  INFO 11608 --- [smart] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
-2026-08-21T15:25:31.371+03:00  INFO 11608 --- [smart] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-08-23T03:14:29.344+03:00  WARN 13996 --- [smart] [HikariPool-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=3h28s843ms107µs800ns).
+2026-08-23T17:30:10.303+03:00  WARN 13996 --- [smart] [HikariPool-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=14h15m48s370ms250µs300ns).
+2026-08-23T17:59:11.155+03:00  INFO 13996 --- [smart] [SpringApplicationShutdownHook] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-08-23T17:59:11.625+03:00  INFO 13996 --- [smart] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+2026-08-23T17:59:11.704+03:00  INFO 13996 --- [smart] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-08-23T17:59:11.757+03:00  INFO 13996 --- [smart] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-08-23T17:59:11.795+03:00  INFO 13996 --- [smart] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.

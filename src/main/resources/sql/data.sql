@@ -112,3 +112,9 @@ VALUES ('admin', '{noop}123', 'ADMIN');
 INSERT INTO account (code, name, account_type)
 VALUES ('361', 'клієнти', 'ACTIVE'),
        ('702', 'дохід від наданих послуг', 'ACTIVE_PASSIVE');
+
+INSERT INTO balance_student (transaction_date, lesson_id, payment_id, student_id, debit, credit, balance)
+VALUES ('09.01.2025', 1, null, 2, 100, 0, -100),
+       ('09.01.2025', 1, null, 3, 100, 0, -100),
+       ('09.01.2025', null, 2, 2, 0, 1000, 900),
+       ('09.01.2025', null, 3, 3, 0, 1000, 900);

@@ -24,10 +24,10 @@ public class BalanceStudent {
     private LocalDate date;
     @ManyToOne
     @JoinColumn(name = "lesson_id")
-    private Lesson lessonId;
+    private Lesson lesson;
     @ManyToOne
     @JoinColumn(name = "payment_id")
-    private Lesson paymentId;
+    private Payment payment;
     @ManyToOne
     @JoinColumn(name = "student_id")
     private Student student;

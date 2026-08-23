@@ -16,6 +16,8 @@ DROP TABLE IF EXISTS price CASCADE;
 DROP TABLE IF EXISTS students_discounts CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS account CASCADE;
+DROP TABLE IF EXISTS balance_student CASCADE;
+
 
 
 
@@ -213,7 +215,6 @@ CREATE TABLE balance_student
 (
     id               serial                NOT NULL,
     transaction_date date                  NOT NULL,
-    document_type    character varying(50) NOT NULL,
     lesson_id        int REFERENCES student (id) ON UPDATE CASCADE ON DELETE CASCADE,
     payment_id       int REFERENCES payment (id) ON UPDATE CASCADE ON DELETE CASCADE,
     student_id       int REFERENCES student (id) ON UPDATE CASCADE ON DELETE CASCADE,
