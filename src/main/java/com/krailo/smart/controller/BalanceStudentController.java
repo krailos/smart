@@ -14,9 +14,9 @@ public class BalanceStudentController {
 
     BalanceStudentService balanceStudentService;
 
-    @GetMapping("/balances")
+    @GetMapping("/recordsStudents")
     public String findAll(Model model) {
         model.addAttribute("balances", balanceStudentService.findAll());
-        return "balances";
+        return "recordsStudents";
     }
 }
