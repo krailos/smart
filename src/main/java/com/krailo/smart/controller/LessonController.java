@@ -66,7 +66,7 @@ public class LessonController {
         return "lessonNew";
     }
 
-    @PostMapping("/schedules/lessons/create")
+    @PostMapping("/lessons/create")
     public String testCreate(@ModelAttribute LessonDto lessonDto) {
         System.out.println(lessonDto.getLessonsStudents());
         LessonDto lessonDtoWhithId = lessonService.create(lessonDto);
@@ -80,48 +80,5 @@ public class LessonController {
         return "redirect:/lessons";
     }
 
-
-
-
-
-
-
-
-    
-    
-//    
-//    @GetMapping("/{id}")
-//    public String findById (@PathVariable("id") Integer id, Model model) {
-//          model.addAttribute("student", lessonService.findById(id));
-//        return "/student";        
-//    }
-//    
-//    
-//    
-//    @GetMapping("/student/new")
-//    public String createForm (Model model) {
-//    model.addAttribute("gang", new Student());
-//    return "/studentNew";
-//    }
-//    
-//    
-//    @PostMapping("/create")
-//   // @ResponseStatus(HttpStatus.CREATED)
-//    public String create ( @ModelAttribute StudentDto student) {
-//        lessonService.create(student);  
-//        return "redirect:/students";     
-//    }
-//    
-//    @PostMapping("/{id}/update")
-//    public String update (@PathVariable("id") Integer id, @ModelAttribute StudentDto studentDto) {
-//           lessonService.update(id, studentDto); 
-//        return "redirect:/students";        
-//    }
-//    
-//    @PostMapping("/{id}/delete")
-//    public String delete (@PathVariable("id") Integer id) {
-//         lessonService.delete(id); 
-//        return "redirect:/students";        
-//    }
 
 }
