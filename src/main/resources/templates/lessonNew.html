@@ -88,8 +88,8 @@
 				      <td>
 				        <input class="form-control" type="hidden" 
 				            th:text="${ls.student.lastName}" 
-				            th:value="${ls.student}" 
-				            th:field="*{lessonsStudents[__${index.index}__].student}">
+				            th:value="${ls.student.id}"
+				            th:field="*{lessonsStudents[__${index.index}__].student.id}">
 				      </td>
 				      <td th:text="${ls.student.firstName}"></td>
 				      			

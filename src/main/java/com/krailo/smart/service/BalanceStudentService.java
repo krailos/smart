@@ -1,6 +1,8 @@
 package com.krailo.smart.service;
 
 import com.krailo.smart.dto.BalanceStudentDto;
+import com.krailo.smart.entity.BalanceStudent;
+import com.krailo.smart.entity.LessonsStudents;
 import com.krailo.smart.mapper.BalanceStudentMapper;
 import com.krailo.smart.repository.BalanceStudentRepository;
 import lombok.AllArgsConstructor;
@@ -20,4 +22,13 @@ public class BalanceStudentService {
     public List<BalanceStudentDto>  findAll (){
         return  balanceStudentRepository.findAll().stream().map(balanceStudentMapper::mapEntityToDto).toList();
     }
+
+    public BalanceStudent create (LessonsStudents ls){
+
+        // логіка розрахукну балансу всі необхідні дані беремо з ls та цін та знижок
+        // створення balanceStudent та його збереження
+
+        return null;
+    }
+
 }

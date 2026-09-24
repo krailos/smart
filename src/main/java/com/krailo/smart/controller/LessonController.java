@@ -7,11 +7,7 @@ import com.krailo.smart.entity.Lesson;
 import com.krailo.smart.entity.LessonsStudents;
 import com.krailo.smart.entity.Student;
 import com.krailo.smart.mapper.LessonMapper;
-import com.krailo.smart.repository.LessonsStudentsRepository;
-import com.krailo.smart.service.GangService;
-import com.krailo.smart.service.LessonService;
-import com.krailo.smart.service.ScheduleService;
-import com.krailo.smart.service.StudentService;
+import com.krailo.smart.service.*;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -32,7 +28,7 @@ public class LessonController {
     private StudentService studentService;
     private GangService gangService;
     private LessonMapper lessonMapper;
-    private LessonsStudentsRepository lessonsStudentsRepository;
+    private LessonsStudentsService lessonsStudentsService;
 
     @GetMapping ("/lessons")
     public String findAll(Model model) {
@@ -41,7 +37,7 @@ public class LessonController {
     }
 
     @PostMapping("/schedules/{id}/lesson")
-    public String makeLesson(@PathVariable("id") Integer id, Model model) {
+    public String openLesson(@PathVariable("id") Integer id, Model model) {
         Lesson lesson = new Lesson();
 
         ScheduleDto scheduleDto = scheduleService.findById(id);
@@ -67,18 +63,20 @@ public class LessonController {
     }
 
     @PostMapping("/lessons/create")
-    public String testCreate(@ModelAttribute LessonDto lessonDto) {
-        System.out.println(lessonDto.getLessonsStudents());
-        LessonDto lessonDtoWhithId = lessonService.create(lessonDto);
-        System.out.println(lessonDto);
-        Lesson lesson = lessonService.findByIdEntity(lessonDtoWhithId.getId());
+    public String closeLesson(@ModelAttribute LessonDto lessonDto) {
+        //System.out.println(lessonDto.getLessonsStudents());
+        LessonDto lessonDtoWithId = lessonService.create(lessonDto);
+        //System.out.println(lessonDto);
+        Lesson lesson = lessonService.findByIdEntity(lessonDtoWithId.getId());
         List<LessonsStudents> ls = lessonDto.getLessonsStudents();
         for (LessonsStudents lessonsStudents : ls) {
             lessonsStudents.setLesson(lesson);
-            lessonsStudentsRepository.save(lessonsStudents);
+            lessonsStudentsService.create(lessonsStudents);
         }
         return "redirect:/lessons";
     }
+
+
 
 
 }
