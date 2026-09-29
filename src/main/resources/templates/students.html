@@ -47,6 +47,7 @@
                 <th scope="col">Статус</th>
                 <th scope="col">Групи</th>
                 <th scope="col">Знижки</th>
+                <th scope="col">Баланс</th>
                 <th scope="col">Редагувати</th>
                 <th scope="col">Видалити</th>
             </tr>
@@ -67,6 +68,7 @@
                     <button class="btn btn-primary" th:text="${student.getStudentsDiscounts().size()}">Знижки</button>
                 </a>
                 </td>
+                <td th:text="${student.balance}"></td>
                 <td>
                     <a th:href="@{/students/{id} (id=${student.id}) }">
                         <button class="btn btn-success">Редагувати</button>

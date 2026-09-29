@@ -39,12 +39,15 @@ public class Student {
     private StudentStatus studentStatus;
     private LocalDate birthDate;
     private String description;
+    private double balance;
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
     private List<StudentsDiscounts> studentsDiscounts;
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
     private List<Payment> payments;
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
     private List<LessonsStudents> lessonsStudents;
+    @OneToMany(mappedBy = "student")
+    private List<BalanceStudent> balanceStudents;
     
     
 //    @ManyToMany(mappedBy = "students", fetch = FetchType.LAZY)

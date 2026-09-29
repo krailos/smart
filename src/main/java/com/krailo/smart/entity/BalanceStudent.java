@@ -31,8 +31,8 @@ public class BalanceStudent {
     @ManyToOne
     @JoinColumn(name = "student_id")
     private Student student;
-    private int debit;
-    private int credit;
-    private int balance;
+    private double debit;
+    private double credit;
+    private double balance;
 
 }

@@ -19,8 +19,8 @@ public class BalanceStudentDto {
     private Integer paymentId;
     private Student student;
     private Integer studentId;
-    private int debit;
-    private int credit;
-    private int balance;
+    private double debit;
+    private double credit;
+    private double balance;
     
 }

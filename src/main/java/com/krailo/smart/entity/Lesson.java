@@ -36,8 +36,6 @@ public class Lesson {
     private LocalTime endTime;
     @OneToMany(mappedBy = "lesson")
     private List<LessonsStudents> lessonsStudents;
-    @OneToMany(mappedBy = "lesson")
-    private List<BalanceStudent> balanceStudents;
 //    @ManyToMany (fetch = FetchType.LAZY)
 //    @JoinTable(name = "lesson_and_student", 
 //    joinColumns =  @JoinColumn(name = "lesson_id"),

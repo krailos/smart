@@ -100,6 +100,7 @@ CREATE TABLE student
     student_status student_status        NOT NULL,
     birth_date     date,
     description    character varying(150),
+    balance double precision,
     CONSTRAINT student__pkey PRIMARY KEY (id)
 );
 
