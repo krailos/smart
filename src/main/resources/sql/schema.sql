@@ -216,7 +216,7 @@ CREATE TABLE balance_student
 (
     id               serial                NOT NULL,
     transaction_date date                  NOT NULL,
-    lesson_id        int REFERENCES student (id) ON UPDATE CASCADE ON DELETE CASCADE,
+    lesson_id        int REFERENCES lesson (id) ON UPDATE CASCADE ON DELETE CASCADE,
     payment_id       int REFERENCES payment (id) ON UPDATE CASCADE ON DELETE CASCADE,
     student_id       int REFERENCES student (id) ON UPDATE CASCADE ON DELETE CASCADE,
     debit            int,

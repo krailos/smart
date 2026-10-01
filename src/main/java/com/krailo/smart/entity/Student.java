@@ -11,8 +11,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Data
-@EqualsAndHashCode(exclude = {"studentGangs", "studentsDiscounts", "payments", "lessonsStudents"})
-@ToString(exclude =  {"studentGangs", "studentsDiscounts", "payments", "lessonsStudents"})
+@EqualsAndHashCode(exclude = {"gangsStudents", "studentsDiscounts", "payments", "lessonsStudents", "balanceStudents"})
+@ToString(exclude =  {"gangsStudents", "studentsDiscounts", "payments", "lessonsStudents", "balanceStudents"})
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

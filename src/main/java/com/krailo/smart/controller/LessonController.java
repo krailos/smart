@@ -2,11 +2,9 @@ package com.krailo.smart.controller;
 
 import com.krailo.smart.dto.LessonDto;
 import com.krailo.smart.dto.ScheduleDto;
-import com.krailo.smart.entity.GangsStudents;
-import com.krailo.smart.entity.Lesson;
-import com.krailo.smart.entity.LessonsStudents;
-import com.krailo.smart.entity.Student;
+import com.krailo.smart.entity.*;
 import com.krailo.smart.mapper.LessonMapper;
+import com.krailo.smart.repository.StudentRepository;
 import com.krailo.smart.service.*;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -29,6 +27,8 @@ public class LessonController {
     private GangService gangService;
     private LessonMapper lessonMapper;
     private LessonsStudentsService lessonsStudentsService;
+    private BalanceStudentService balanceStudentService;
+    private StudentRepository studentRepository;
 
     @GetMapping ("/lessons")
     public String findAll(Model model) {
@@ -73,6 +73,7 @@ public class LessonController {
             lessonsStudents.setLesson(lesson);
             lessonsStudentsService.create(lessonsStudents);
         }
+        balanceStudentService.create(lesson);
         return "redirect:/lessons";
     }
 
