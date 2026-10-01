@@ -31,7 +31,7 @@ public class BalanceStudentService {
     }
 
     public void create(Lesson lesson) {
-        // беру список студентів на уроці, дату та предмет
+        // беру список студентів на уроці, дату та предмет'
         List<LessonsStudents> lessonsStudents = lesson.getLessonsStudents();
         LocalDate lessonDate = lesson.getDate();
         Subject lessonSubject = lesson.getSubject();
@@ -43,6 +43,7 @@ public class BalanceStudentService {
                 .orElse(null);
         // для кожного студента на уроці розраховую дані для транзакції та записую в бд
         for (LessonsStudents ls : lessonsStudents) {
+
             // беру з бд студента, щоб все було в одній транзакції та підтягувало потрібні поля з бд
             Student student = studentRepository.findById(ls.getStudent().getId()).orElse(null);
             // шукаю наявність знижок у студента
@@ -56,21 +57,34 @@ public class BalanceStudentService {
             int priceSubject = price.getValue();
             double credit = priceSubject - priceSubject * discount / 100.0;
             // розраховую новий баланс
-            List <BalanceStudent> bsByDate = balanceStudentRepository.findByDate(student, lessonDate);
-            BalanceStudent bsByDateWhitBalance = bsByDate.isEmpty() ? null : bsByDate.get(0);
-            double balancePrev = bsByDateWhitBalance == null ? 0 : bsByDateWhitBalance.getBalance();
+            List<BalanceStudent> bsByDate = balanceStudentRepository.findByDate(student.getId(), lessonDate);
+            BalanceStudent bsByDateWithBalance = bsByDate.isEmpty() ? null : bsByDate.get(0);
+            double balancePrev = bsByDateWithBalance == null ? 0 : bsByDateWithBalance.getBalance();
             double balance = balancePrev - credit;
             // зберігаю в бд з новими даними дані по транзакції
             BalanceStudent bs = new BalanceStudent();
-            bs.setStudent(student);
-            bs.setDate(lessonDate);
-            bs.setLesson(lesson);
-            bs.setCredit(credit);
-            bs.setBalance(balance);
-            balanceStudentRepository.save(bs);
-            // зберігаю в бд з новим балансом студента
-            student.setBalance(balance);
-            studentRepository.save(student);
+
+
+            if (!ls.isPresent()) {
+                // студента не було на уроці запис в бд по балансу не роблю
+            } else if (!ls.isPayed()) {
+                // студент був на уроці, але урок безкоштовний
+                bs.setStudent(student);
+                bs.setDate(lessonDate);
+                bs.setLesson(lesson);
+                bs.setBalance(balancePrev);
+                balanceStudentRepository.save(bs);
+            } else {
+                bs.setStudent(student);
+                bs.setDate(lessonDate);
+                bs.setLesson(lesson);
+                bs.setCredit(credit);
+                bs.setBalance(balance);
+                balanceStudentRepository.save(bs);
+                // зберігаю студента в бд з новим балансом
+                student.setBalance(balance);
+                studentRepository.save(student);
+            }
         }
     }
 
