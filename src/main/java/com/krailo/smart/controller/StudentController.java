@@ -6,6 +6,7 @@ import com.krailo.smart.enumeration.Gender;
 import com.krailo.smart.enumeration.StudentStatus;
 import com.krailo.smart.service.StudentService;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -18,8 +19,12 @@ public class StudentController {
     private StudentService studentService;
 
     @GetMapping
-    public String findAll(Model model) {
-        model.addAttribute("students", studentService.findAll());
+    public String findAll(@RequestParam(defaultValue = "0") int page,
+                          @RequestParam(defaultValue = "5") int size, Model model) {
+
+        Page<StudentDto> studentPage  = studentService.findAllByPage(page, size);
+        model.addAttribute("studentPage", studentPage);
+        model.addAttribute("currentPage", page);
         return "students";
     }
 

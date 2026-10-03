@@ -53,7 +53,7 @@
             </tr>
             </thead>
             <tbody>
-            <tr th:each="student, index : ${students}">
+            <tr th:each="student, index : ${studentPage.content}">
                 <td th:text="${index.count}"></td>
                 <td th:text="${student.lastName}"></td>
                 <td th:text="${student.firstName}"></td>
@@ -89,6 +89,33 @@
             </tr>
             </tbody>
         </table>
+
+        <!-- Пагінація -->
+        <nav aria-label="Page navigation" th:if="${studentPage.totalPages > 1}">
+            <ul class="pagination justify-content-center">
+
+                <!-- Кнопка НАЗАД (відключається, якщо сторінка перша) -->
+                <li class="page-item" th:classappend="${studentPage.first} ? 'disabled'">
+                    <a class="page-link" th:href="@{/students(page=${currentPage - 1}, size=${studentPage.size})}">Назад</a>
+                </li>
+
+                <!-- Цикл по всіх номерах сторінок -->
+                <!-- th:sequence(0, N) створює масив номерів від 0 до N -->
+                <li class="page-item"
+                    th:each="i : ${#numbers.sequence(0, studentPage.totalPages - 1)}"
+                    th:classappend="${i == currentPage} ? 'active'">
+                    <a class="page-link" th:href="@{/students(page=${i}, size=${studentPage.size})}" th:text="${i + 1}">1</a>
+                </li>
+
+                <!-- Кнопка ВПЕРЕД (відключається, якщо сторінка остання) -->
+                <li class="page-item" th:classappend="${studentPage.last} ? 'disabled'">
+                    <a class="page-link" th:href="@{/students(page=${currentPage + 1}, size=${studentPage.size})}">Вперед</a>
+                </li>
+
+            </ul>
+        </nav>
+
+
     </div>
 </div>
 </body>

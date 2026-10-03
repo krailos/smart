@@ -6,6 +6,9 @@ import com.krailo.smart.mapper.StudentMapper;
 import com.krailo.smart.repository.StudentRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +24,11 @@ public class StudentService {
     private StudentRepository studentRepository;
     private StudentMapper studentMapper;
 
+
+    public Page<StudentDto> findAllByPage(int page, int size){
+        Pageable pageable = PageRequest.of(page, size);
+        return studentRepository.findAll(pageable).map(student -> studentMapper.mapEntityToDto(student));
+    }
     
     public List<StudentDto> findAll() {
       return studentRepository.findAll().stream().sorted(Comparator.comparing(Student::getLastName)).map(studentMapper::mapEntityToDto).toList();
