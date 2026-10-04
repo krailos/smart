@@ -26,12 +26,20 @@ public class StudentService {
     private StudentMapper studentMapper;
 
 
-    public Page<StudentDto> findAllByPage(int page, int size, String sortBy, String sortDir){
+    public Page<StudentDto> findAllByPage(int page, int size, String sortBy, String sortDir, String keyword){
         Sort sort = sortDir.equalsIgnoreCase("desc") ?
                 Sort.by(sortBy).descending() :
                 Sort.by(sortBy).ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
-        return studentRepository.findAll(pageable).map(student -> studentMapper.mapEntityToDto(student));
+        // Перевіряємо наявність ключового слова
+        Page<Student> studentPage;
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            studentPage = studentRepository.searchStudents(keyword.trim(), pageable);
+        } else {
+            studentPage = studentRepository.findAll(pageable);
+        }
+        // Мапимо сутності в DTO
+        return studentPage.map(student -> studentMapper.mapEntityToDto(student));
     }
     
     public List<StudentDto> findAll() {

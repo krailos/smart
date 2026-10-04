@@ -30,6 +30,22 @@
                     <button class="btn btn-success">Додати cтудента</button>
                 </a></li>
 
+                <li class="nav-item">
+                    <!-- Форма пошуку за ключовим словом -->
+                    <form th:action="@{/students}" method="get" class="row g-3 mb-4">
+                        <input type="hidden" name="sortBy" th:value="${sortBy}"/>
+                        <input type="hidden" name="sortDir" th:value="${sortDir}"/>
+
+                        <div class="col-auto">
+                            <input type="text" name="keyword" th:value="${keyword}" class="form-control" placeholder="Пошук за прізвищем...">
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-primary">Знайти</button>
+                            <a th:href="@{/students}" class="btn btn-secondary">Скинути</a>
+                        </div>
+                    </form>
+                </li>
+
             </ul>
         </div>
     </div>

@@ -23,15 +23,17 @@ public class StudentController {
                           @RequestParam(defaultValue = "10") int size,
                           @RequestParam(defaultValue = "lastName") String sortBy,
                           @RequestParam(defaultValue = "asc") String sortDir,
+                          @RequestParam(required = false) String keyword,
                           Model model) {
 
-        Page<StudentDto> studentPage  = studentService.findAllByPage(page, size, sortBy, sortDir);
+        Page<StudentDto> studentPage  = studentService.findAllByPage(page, size, sortBy, sortDir, keyword);
         model.addAttribute("studentPage", studentPage);
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", studentPage.getTotalPages());
         model.addAttribute("sortBy", sortBy);
         model.addAttribute("sortDir", sortDir);
         model.addAttribute("reverseSortDir", sortDir.equals("asc") ? "desc" : "asc");
+        model.addAttribute("keyword", keyword);
         return "students";
     }
 
