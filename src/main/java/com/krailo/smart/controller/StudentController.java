@@ -20,11 +20,18 @@ public class StudentController {
 
     @GetMapping
     public String findAll(@RequestParam(defaultValue = "0") int page,
-                          @RequestParam(defaultValue = "5") int size, Model model) {
+                          @RequestParam(defaultValue = "10") int size,
+                          @RequestParam(defaultValue = "lastName") String sortBy,
+                          @RequestParam(defaultValue = "asc") String sortDir,
+                          Model model) {
 
-        Page<StudentDto> studentPage  = studentService.findAllByPage(page, size);
+        Page<StudentDto> studentPage  = studentService.findAllByPage(page, size, sortBy, sortDir);
         model.addAttribute("studentPage", studentPage);
         model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", studentPage.getTotalPages());
+        model.addAttribute("sortBy", sortBy);
+        model.addAttribute("sortDir", sortDir);
+        model.addAttribute("reverseSortDir", sortDir.equals("asc") ? "desc" : "asc");
         return "students";
     }
 

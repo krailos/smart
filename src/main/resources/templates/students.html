@@ -40,7 +40,19 @@
             <thead>
             <tr>
                 <th scope="col">#</th>
-                <th scope="col">Прізвище</th>
+                <th scope="col">
+                    <a th:href="@{/students(page=${currentPage}, sortBy='id', sortDir=${reverseSortDir})}">
+                        ID <span th:if="${sortBy == 'id'}" th:text="${sortDir == 'asc' ? '▲' : '▼'}"></span>
+                    </a>
+                </th>
+
+                <th scope="col">
+                    <a th:href="@{/students(page=${currentPage}, sortBy='lastName', sortDir=${reverseSortDir})}">
+                        Прізвище <span th:if="${sortBy == 'lastName'}"
+                                       th:text="${sortDir == 'asc' ? '▲' : '▼'}"></span>
+                    </a>
+                </th>
+
                 <th scope="col">Імя</th>
                 <th scope="col">Батьки</th>
                 <th scope="col">Телефон</th>
@@ -55,6 +67,7 @@
             <tbody>
             <tr th:each="student, index : ${studentPage.content}">
                 <td th:text="${index.count}"></td>
+                <td th:text="${student.id}"></td>
                 <td th:text="${student.lastName}"></td>
                 <td th:text="${student.firstName}"></td>
                 <td th:text="${student.contactName}"></td>
@@ -96,7 +109,8 @@
 
                 <!-- Кнопка НАЗАД (відключається, якщо сторінка перша) -->
                 <li class="page-item" th:classappend="${studentPage.first} ? 'disabled'">
-                    <a class="page-link" th:href="@{/students(page=${currentPage - 1}, size=${studentPage.size})}">Назад</a>
+                    <a class="page-link"
+                       th:href="@{/students(page=${currentPage - 1}, size=${studentPage.size})}">Назад</a>
                 </li>
 
                 <!-- Цикл по всіх номерах сторінок -->
