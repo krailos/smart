@@ -75,7 +75,12 @@
                 <th scope="col">Статус</th>
                 <th scope="col">Групи</th>
                 <th scope="col">Знижки</th>
-                <th scope="col">Баланс</th>
+                <th scope="col">
+                    <a th:href="@{/students(page=${currentPage}, sortBy='balance', sortDir=${reverseSortDir})}">
+                        Баланс <span th:if="${sortBy == 'balance'}"
+                                       th:text="${sortDir == 'asc' ? '▲' : '▼'}"></span>
+                    </a>
+                </th>
                 <th scope="col">Редагувати</th>
                 <th scope="col">Видалити</th>
             </tr>
