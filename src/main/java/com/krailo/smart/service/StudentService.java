@@ -2,9 +2,9 @@ package com.krailo.smart.service;
 
 import com.krailo.smart.dto.StudentDto;
 import com.krailo.smart.entity.Student;
+import com.krailo.smart.exception.ResourceNotFoundException;
 import com.krailo.smart.mapper.StudentMapper;
 import com.krailo.smart.repository.StudentRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -49,12 +49,12 @@ public class StudentService {
 
     public StudentDto findById(Integer id) {
         return studentRepository.findById(id).map(studentMapper::mapEntityToDto)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("student whith id= %d not exist", id)));
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("student whith id= %d not exist", id)));
     }
     
     public Student findByIdEntity(Integer id) {
         return studentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("student whith id= %d not exist", id)));
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("student whith id= %d not exist", id)));
     }
 
 

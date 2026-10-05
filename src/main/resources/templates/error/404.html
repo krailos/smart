@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org" lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 — Сторінку не знайдено</title>
+
+    <!-- Підключення Bootstrap 5.3 CSS через CDN -->
+    <link href="https://jsdelivr.net" rel="stylesheet">
+    <!-- Підключення іконок Bootstrap Icons -->
+    <link href="https://jsdelivr.net" rel="stylesheet">
+
+    <style>
+        /* Кастомні стилі для покращення візуалу поверх Bootstrap */
+        .bg-gradient-custom {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+        }
+        .error-title {
+            font-size: calc(6rem + 4vw);
+            font-weight: 900;
+            letter-spacing: -2px;
+            background: linear-gradient(45deg, #6366f1, #a855f7, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .floating-icon {
+            animation: floatAnimation 4s ease-in-out infinite;
+        }
+        @keyframes floatAnimation {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(5deg); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-custom min-vh-100 d-flex align-items-center text-white py-5">
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-10 col-sm-8 col-md-7 col-lg-6 text-center">
+
+            <!-- Анімована іконка-ілюстрація -->
+            <div class="mb-4 floating-icon display-1 text-indigo">
+                <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+            </div>
+
+            <!-- Великий код помилки -->
+            <h1 class="error-title m-0 lh-1">404</h1>
+
+            <!-- Заголовок помилки (з ControllerAdvice або дефолтний) -->
+            <h2 class="h3 fw-bold mb-3" th:text="${error != null} ? ${error} : 'Упс! Сторінку не знайдено'">
+                Кадастрова помилка в навігації
+            </h2>
+
+            <!-- Контейнер для тексту у вигліді матового скла (Glassmorphism) -->
+            <div class="glass-card rounded-4 p-4 mb-4 shadow-lg text-start text-sm-center">
+                <!-- Повідомлення про помилку -->
+                <p class="text-white-50 fs-5 mb-0" th:text="${message != null} ? ${message} : 'Адреса застаріла, була змінена, або ви ввели її з помилкою. Спробуйте повернутися назад.'">
+                    Запитуваний ресурс не існує на сервері.
+                </p>
+            </div>
+
+            <!-- Навігаційні кнопки -->
+            <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
+                <a href="/" class="btn btn-primary btn-lg rounded-pill px-4 py-3 fw-semibold shadow d-flex align-items-center justify-content-center gap-2">
+                    <i class="bi bi-house-door-fill"></i> На головну сторінку
+                </a>
+                <button onclick="history.back()" class="btn btn-outline-light btn-lg rounded-pill px-4 py-3 fw-semibold d-flex align-items-center justify-content-center gap-2">
+                    <i class="bi bi-arrow-left-circle"></i> Повернутися назад
+                </button>
+            </div>
+
+            <!-- Футер сторінки -->
+            <p class="text-white-25 small mt-5">
+                &copy; <span th:text="${#calendars.year(#calendars.createNow())}">2026</span> Ваша Компанія. Всі права захищені.
+            </p>
+
+        </div>
+    </div>
+</div>
+
+<!-- Підключення Bootstrap JS (необхідно для роботи динамічних елементів, якщо додаватимете) -->
+<script src="https://jsdelivr.net"></script>
+</body>
+</html>

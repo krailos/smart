@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org" lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сталася помилка</title>
+    <!-- Підключення тільки CSS Bootstrap 5.3 (без JS) -->
+    <link href="https://jsdelivr.net" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            color: #212529;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        .error-code {
+            font-size: 6.5rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+        /* Динамічні кольори для різних типів помилок */
+        .text-error-danger { color: #dc3545; } /* Для 500+ помилок */
+        .text-error-warning { color: #fd7e14; } /* Для 404 помилок */
+        .text-error-info { color: #0d6efd; } /* Для 403 чи інших */
+
+        .card-custom {
+            background-color: #ffffff;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            max-width: 500px;
+        }
+    </style>
+</head>
+<body class="min-vh-100 d-flex align-items-center justify-content-center p-3">
+
+<div class="card-custom w-100 p-4 p-sm-5 text-center shadow-sm">
+
+    <!-- Цифровий код помилки. Змінює колір автоматично залежно від коду -->
+    <div class="error-code mb-3"
+         th:classappend="${status == 404} ? 'text-error-warning' : (${status == 403} ? 'text-error-info' : 'text-error-danger')"
+         th:text="${status != null} ? ${status} : 'Упс!'">500</div>
+
+    <!-- Короткий заголовок помилки (передається з @ControllerAdvice) -->
+    <h1 class="h4 fw-bold text-dark mb-3" th:text="${error != null} ? ${error} : 'Сталася помилка'">
+        Внутрішня помилка сервера
+    </h1>
+
+    <!-- Опис проблеми для користувача (передається з @ControllerAdvice) -->
+    <p class="text-muted mb-4" th:text="${message != null} ? ${message} : 'Щось пішло не так. Будь ласка, спробуйте пізніше або поверніться на головну сторінку.'">
+        На сервері сталася непередбачувана помилка.
+    </p>
+
+    <!-- Основна кнопка (Чистий HTML-перехід) -->
+    <div class="d-grid mb-3">
+        <a href="/" class="btn btn-dark btn-lg fw-semibold">
+            На головну сторінку
+        </a>
+    </div>
+
+    <!-- Повернення назад засобами браузера (без стороннього JS) -->
+    <a href="javascript:history.go(-1)" class="text-decoration-none text-secondary small">
+        Повернутися назад
+    </a>
+
+</div>
+
+</body>
+</html>
