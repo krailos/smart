@@ -33,5 +33,6 @@ public class Schedule {
     private WeekDay weekDay;
     private LocalTime startTime;
     private LocalTime endTime;
+
     
 }

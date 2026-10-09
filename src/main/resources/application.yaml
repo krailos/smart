@@ -7,15 +7,30 @@ spring:
     password: 123
     driver-class-name: org.postgresql.Driver
   jpa:
-    properties.hibernate:
-      show_sql: false
-      format_sql: true
+    ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    baseline-on-migrate: true
 logging:
   level:
-    root: info
-    com.krailo.smart.database.pool: info
+    root: INFO                        # Загальний рівень для всього проєкту
+    com.example.yourproject: DEBUG    # Детальне логування для вашого коду
+    org.springframework.web: INFO     # Логування веб-запитів Spring
+    org.hibernate.SQL: DEBUG          # Показувати SQL-запити у консолі (якщо є JPA)
   file:
     name: smart.log
     path: /
-
-
+      # 3. Ротація файлів (архівація старих логів)
+    logback:
+      rollingpolicy:
+        file-name-pattern: "${LOG_FILE}.%d{yyyy-MM-dd}.%i.gz" # Формат архівних файлів
+        max-file-size: 10MB             # Максимальний розмір одного файлу
+        max-history: 30                 # Зберігати логи за останні 30 днів
+        total-size-cap: 2GB             # Максимальний сумарний об'єм усіх логів
+  # 4. Формат виведення повідомлень (Pattern)
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

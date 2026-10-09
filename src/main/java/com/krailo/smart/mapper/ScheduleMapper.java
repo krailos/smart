@@ -2,9 +2,9 @@ package com.krailo.smart.mapper;
 
 import com.krailo.smart.dto.ScheduleDto;
 import com.krailo.smart.entity.Schedule;
-import com.krailo.smart.repository.AudienceRepository;
-import com.krailo.smart.repository.GangRepository;
-import com.krailo.smart.repository.SubjectRepository;
+import com.krailo.smart.service.AudienceService;
+import com.krailo.smart.service.GangService;
+import com.krailo.smart.service.SubjectService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -12,17 +12,20 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class ScheduleMapper implements Mapper<Schedule, ScheduleDto> {
 
-    private AudienceRepository audienceRepository;
-    private GangRepository gangRepository;
-    private SubjectRepository subjectRepository;
- 
+    //   private AudienceRepository audienceRepository;
+    private AudienceService audienceService;
+    //   private GangRepository gangRepository;
+    private GangService gangService;
+    //    private SubjectRepository subjectRepository;
+    private SubjectService subjectService;
+
 
     @Override
     public Schedule mapDtoToEntityForCreate(ScheduleDto d) {
         Schedule e = new Schedule();
-        e.setAudience(audienceRepository.findById(d.getAudienceId()).get());
-        e.setGang(gangRepository.findById(d.getGangId()).get());
-        e.setSubject(subjectRepository.findById(d.getSubjectId()).get());
+        e.setAudience(audienceService.findByIdEntity(d.getAudienceId()));
+        e.setGang(gangService.findByIdEntity(d.getGangId()));
+        e.setSubject(subjectService.findByIdEntity(d.getSubjectId()));
         e.setWeekDay(d.getWeekDay());
         e.setStartTime(d.getStartTime());
         e.setEndTime(d.getEndTime());
@@ -31,15 +34,15 @@ public class ScheduleMapper implements Mapper<Schedule, ScheduleDto> {
 
     @Override
     public ScheduleDto mapEntityToDto(Schedule e) {
-        return new ScheduleDto(e.getId(), e.getAudience(), e.getAudience().getId(), e.getGang(), e.getGang().getId(),
-                e.getSubject(), e.getSubject().getId(), e.getWeekDay(), e.getStartTime(), e.getEndTime());
+        return new ScheduleDto(e.getId(), e.getAudience().getId(), e.getGang().getId(),
+                e.getSubject().getId(), e.getWeekDay(), e.getStartTime(), e.getEndTime());
     }
 
     @Override
     public Schedule mapDtoToEntityForUpdate(ScheduleDto d, Schedule e) {
-        e.setAudience(audienceRepository.findById(d.getAudienceId()).get());
-        e.setGang(gangRepository.findById(d.getGangId()).get());
-        e.setSubject(subjectRepository.findById(d.getSubjectId()).get());
+        e.setAudience(audienceService.findByIdEntity(d.getAudienceId()));
+        e.setGang(gangService.findByIdEntity(d.getGangId()));
+        e.setSubject(subjectService.findByIdEntity(d.getSubjectId()));
         e.setWeekDay(d.getWeekDay());
         e.setStartTime(d.getStartTime());
         e.setEndTime(d.getEndTime());

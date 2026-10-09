@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8" />
+<title>schedules</title>
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+	rel="stylesheet"
+	integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+	crossorigin="anonymous" />
+<script
+	src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+	integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+	crossorigin="anonymous"></script>
+</head>
+<body>
+	<!--nav class="navbar navbar-expand-lg" style="background-color: #edeff1"
+		data-bs-theme="light">
+		<div class="container">
+			<a class="navbar-brand" href="/">Smartum</a>
+			<button class="navbar-toggler" type="button"
+				data-bs-toggle="collapse" data-bs-target="#navbarNav"
+				aria-controls="navbarNav" aria-expanded="false"
+				aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+			<div class="collapse navbar-collapse" id="navbarNav">
+				<ul class="navbar-nav">
+					<li class="nav-item"><a th:href="@{/schedules/schedule/new}">
+							<button class="btn btn-success">Додати розклад</button>
+					</a></li>					
+					<li class="nav-item">
+                       <a class="nav-link active"
+                        aria-current="page" href="/lessons">Уроки</a>
+                    </li>   
+					
+				</ul>
+			</div>
+		</div>
+	</nav-->
+
+	<div class="container py-5">
+		<div class="row justify-content-center">
+			<div class="col-md-8 col-lg-6">
+
+				<!-- Головна картка форми -->
+				<div class="card shadow border-0 rounded-4">
+					<div class="card-body p-5">
+
+						<!-- Заголовок форми з іконкою -->
+						<div class="text-center mb-4">
+							<div class="d-inline-flex align-items-center justify-content-center bg-primary text-white rounded-circle mb-3" style="width: 60px; height: 60px;">
+								<i class="bi bi-journal-plus fs-3"></i>
+							</div>
+							<h2 class="fw-bold text-dark">Новий розклад</h2>
+							<p class="text-muted small">Заповніть форму, щоб опублікувати новий навчальний розклад</p>
+						</div>
+
+						<!-- Форма Thymeleaf -->
+						<form th:action="@{/schedule/create}" th:object="${schedule}" method="post" novalidate>
+
+							<!-- 1. Назва уроку (Плаваюче поле) -->
+							<div class="form-floating mb-3">
+								<input type="text" id="title" th:field="*{title}"
+									   th:classappend="${#fields.hasErrors('title')} ? 'is-invalid' : ''"
+									   class="form-control rounded-3" placeholder="Назва уроку">
+								<label for="title">Назва уроку</label>
+								<div class="invalid-feedback" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
+							</div>
+
+							<!-- 2. Дата та час (Звичайна група з іконкою) -->
+							<div class="mb-3">
+								<label for="scheduledAt" class="form-label fw-semibold small text-secondary">Дата та час проведення</label>
+								<div class="input-group">
+                                <span class="input-group-text bg-white border-end-0 rounded-start-3 text-muted">
+                                    <i class="bi bi-calendar-event"></i>
+                                </span>
+									<input type="datetime-local" id="scheduledAt" th:field="*{scheduledAt}"
+										   th:classappend="${#fields.hasErrors('scheduledAt')} ? 'is-invalid' : ''"
+										   class="form-control border-start-0 rounded-end-3">
+									<div class="invalid-feedback" th:if="${#fields.hasErrors('scheduledAt')}" th:errors="*{scheduledAt}"></div>
+								</div>
+							</div>
+
+							<!-- 3. Посилання на відео (Звичайна група) -->
+							<div class="mb-3">
+								<label for="videoUrl" class="form-label fw-semibold small text-secondary">Посилання на відео (YouTube / Vimeo)</label>
+								<div class="input-group">
+                                <span class="input-group-text bg-white border-end-0 rounded-start-3 text-muted">
+                                    <i class="bi bi-link-45deg"></i>
+                                </span>
+									<input type="url" id="videoUrl" th:field="*{videoUrl}"
+										   class="form-control border-start-0 rounded-end-3" placeholder="https://...">
+								</div>
+							</div>
+
+							<!-- 4. Опис уроку -->
+							<div class="mb-4">
+								<label for="description" class="form-label fw-semibold small text-secondary">Детальний опис уроку</label>
+								<textarea id="description" th:field="*{description}"
+										  th:classappend="${#fields.hasErrors('description')} ? 'is-invalid' : ''"
+										  class="form-control rounded-3" rows="4" placeholder="Про що цей урок..."></textarea>
+								<div class="invalid-feedback" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
+							</div>
+
+							<!-- Кнопки управління -->
+							<div class="d-grid gap-2">
+								<button type="submit" class="btn btn-primary btn-lg rounded-pill fw-semibold shadow-sm">
+									<i class="bi bi-check-circle me-2"></i>Створити урок
+								</button>
+								<a th:href="@{/lessons}" class="btn btn-link btn-sm text-decoration-none text-muted mt-2">
+									Скасувати та повернутися
+								</a>
+							</div>
+
+						</form>
+
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+
+	<script src="https://jsdelivr.net"></script>
+
+
+</body>
+</html>

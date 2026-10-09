@@ -89,7 +89,7 @@
 
 <div class="error-container">
     <!-- Код помилки (якщо передано з контролера, інакше за замовчуванням 404) -->
-    <div class="error-code" th:text="${status != null} ? ${status} : '404'">404</div>
+    <div class="error-code" th:text="${status != null} ? ${status} : '404'">500</div>
 
     <!-- Головний текст заголовку -->
     <h1 class="error-title" th:text="${error != null} ? ${error} : 'Сторінку не знайдено'">

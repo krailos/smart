@@ -36,11 +36,5 @@ public class Lesson {
     private LocalTime endTime;
     @OneToMany(mappedBy = "lesson")
     private List<LessonsStudents> lessonsStudents;
-//    @ManyToMany (fetch = FetchType.LAZY)
-//    @JoinTable(name = "lesson_and_student", 
-//    joinColumns =  @JoinColumn(name = "lesson_id"),
-//    inverseJoinColumns = @JoinColumn(name = "student_id"))
-//    @Transient
-//    private List<Student> students;
 
 }

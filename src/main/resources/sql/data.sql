@@ -118,3 +118,6 @@ VALUES ('09.01.2025', 1, null, 2, 100, 0, -100),
        ('09.01.2025', 1, null, 3, 100, 0, -100),
        ('09.01.2025', null, 2, 2, 0, 1000, 900),
        ('09.01.2025', null, 3, 3, 0, 1000, 900);
+
+
+-- SELECT setval(pg_get_serial_sequence('student', 'id'), coalesce(max(id), 1)) FROM student;

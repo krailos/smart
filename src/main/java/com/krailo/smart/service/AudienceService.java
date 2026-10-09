@@ -2,6 +2,7 @@ package com.krailo.smart.service;
 
 
 import com.krailo.smart.dto.AudienceDto;
+import com.krailo.smart.entity.Audience;
 import com.krailo.smart.mapper.AudienceMapper;
 import com.krailo.smart.repository.AudienceRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -26,6 +27,11 @@ public class AudienceService {
 
     public AudienceDto findById(Integer id) {
         return audienceRepository.findById(id).map(audienceMapper::mapEntityToDto)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Audience whith id= %d not exist", id)));
+    }
+
+    public Audience findByIdEntity(Integer id) {
+        return audienceRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Audience whith id= %d not exist", id)));
     }
 

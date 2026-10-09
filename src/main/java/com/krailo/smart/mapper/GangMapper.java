@@ -2,28 +2,25 @@ package com.krailo.smart.mapper;
 
 import com.krailo.smart.dto.GangDto;
 import com.krailo.smart.entity.Gang;
-import com.krailo.smart.repository.SubjectRepository;
-import com.krailo.smart.repository.TeacherRepository;
+import com.krailo.smart.service.SubjectService;
+import com.krailo.smart.service.TeacherService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 @Component
 @AllArgsConstructor
 public class GangMapper implements Mapper<Gang, GangDto> {
     
-    SubjectRepository subjectRepository;
-    TeacherRepository teacherRepository;
+    SubjectService subjectService;
+    TeacherService teacherService;
+    GangsStudentsMapper gangsStudentsMapper;
 
     @Override
     public GangDto mapEntityToDto(Gang o) {
-        return new GangDto(o.getId(), o.getName(), o.getDescription(),
-                Optional.of(o.getSubject()).orElse(null),
-                o.getSubject().getId(),
-                Optional.of( o.getTeacher()).orElse(null),
-                o.getTeacher().getId(),
-                o.getGangStudents() );
+        return GangDto.builder().id(o.getId()).name(o.getName()).description(o.getDescription())
+                .subjectId(o.getSubject().getId()).teacherId(o.getTeacher().getId())
+                .gangsStudentsDto(o.getGangStudents().stream().map(gangsStudentsMapper::mapEntityToDto).toList())
+                .build();
     }
 
     @Override
@@ -31,8 +28,8 @@ public class GangMapper implements Mapper<Gang, GangDto> {
        Gang e = new Gang();
        e.setName(d.getName());
        e.setDescription(d.getDescription());
-       e.setSubject(subjectRepository.findById(d.getSubjectId()).get());
-       e.setTeacher(teacherRepository.findById(d.getTeacherId()).get());       
+       e.setSubject(subjectService.findByIdEntity(d.getSubjectId()));
+       e.setTeacher(teacherService.findByIdEntity(d.getTeacherId()));
         return e;
     }
 
@@ -41,8 +38,8 @@ public class GangMapper implements Mapper<Gang, GangDto> {
         e.setId(d.getId());
         e.setName(d.getName());
         e.setDescription(d.getDescription());
-        e.setSubject(subjectRepository.findById(d.getSubjectId()).get());
-        e.setTeacher(teacherRepository.findById(d.getTeacherId()).get());   
+        e.setSubject(subjectService.findByIdEntity(d.getSubjectId()));
+        e.setTeacher(teacherService.findByIdEntity(d.getTeacherId()));
         return e;
     }
 

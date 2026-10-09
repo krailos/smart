@@ -4,12 +4,14 @@ import com.krailo.smart.entity.Audience;
 import com.krailo.smart.entity.Gang;
 import com.krailo.smart.entity.LessonsStudents;
 import com.krailo.smart.entity.Subject;
+import lombok.Builder;
 import lombok.Value;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
+@Builder
 @Value
 public class LessonDto {    
     
