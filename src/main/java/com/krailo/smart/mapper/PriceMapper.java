@@ -3,7 +3,7 @@ package com.krailo.smart.mapper;
 import com.krailo.smart.dto.PriceDto;
 import com.krailo.smart.entity.Price;
 import com.krailo.smart.repository.SubjectRepository;
-import jakarta.persistence.EntityNotFoundException;
+import com.krailo.smart.service.SubjectService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -12,17 +12,18 @@ import org.springframework.stereotype.Component;
 public class PriceMapper implements Mapper<Price, PriceDto> {
 
     SubjectRepository subjectRepository;
+    SubjectService subjectService;
 
     @Override
     public PriceDto mapEntityToDto(Price entity) {
 
-        return new PriceDto(
-                entity.getId(),
-                entity.getName(), 
-                entity.getValue(),
-                entity.getDate(),
-                entity.getSubject().getId(), 
-                entity.getSubject());
+        return PriceDto.builder()
+                .id(entity.getId())
+                .name(entity.getName())
+                .value(entity.getValue())
+                .date(entity.getDate())
+                .subjectId(entity.getSubject().getId())
+                .build();
     }
 
     @Override
@@ -31,8 +32,7 @@ public class PriceMapper implements Mapper<Price, PriceDto> {
         entity.setName(dto.getName());
         entity.setValue(dto.getValue());
         entity.setDate(dto.getDate());
-        entity.setSubject(subjectRepository.findById(dto.getSubjectId()).orElseThrow(() -> new EntityNotFoundException(
-                String.format("Subject whith id= %d not exist", dto.getSubjectId()))));
+        entity.setSubject(subjectService.findByIdEntity(dto.getSubjectId()));
         return entity;
     }
 
@@ -41,8 +41,7 @@ public class PriceMapper implements Mapper<Price, PriceDto> {
         entity.setName(dto.getName());
         entity.setValue(dto.getValue());
         entity.setDate(dto.getDate());
-        entity.setSubject(subjectRepository.findById(dto.getSubjectId()).orElseThrow(() -> new EntityNotFoundException(
-                String.format("Subject whith id= %d not exist", dto.getSubjectId()))));
+        entity.setSubject(subjectService.findByIdEntity(dto.getSubjectId()));
         return entity;
     }
 

@@ -6,17 +6,16 @@ import com.krailo.smart.service.AudienceService;
 import com.krailo.smart.service.GangService;
 import com.krailo.smart.service.SubjectService;
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
 @AllArgsConstructor
+@NoArgsConstructor
 public class ScheduleMapper implements Mapper<Schedule, ScheduleDto> {
 
-    //   private AudienceRepository audienceRepository;
     private AudienceService audienceService;
-    //   private GangRepository gangRepository;
     private GangService gangService;
-    //    private SubjectRepository subjectRepository;
     private SubjectService subjectService;
 
 

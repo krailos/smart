@@ -17,8 +17,11 @@ public class GangMapper implements Mapper<Gang, GangDto> {
 
     @Override
     public GangDto mapEntityToDto(Gang o) {
-        return GangDto.builder().id(o.getId()).name(o.getName()).description(o.getDescription())
-                .subjectId(o.getSubject().getId()).teacherId(o.getTeacher().getId())
+        return GangDto.builder().id(o.getId())
+                .name(o.getName())
+                .description(o.getDescription())
+                .subjectId(o.getSubject().getId())
+                .teacherId(o.getTeacher().getId())
                 .gangsStudentsDto(o.getGangStudents().stream().map(gangsStudentsMapper::mapEntityToDto).toList())
                 .build();
     }

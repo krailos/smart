@@ -14,14 +14,19 @@ public class GangsStudentsMapper implements Mapper<GangsStudents, GangsStudentsD
 
     @Override
     public GangsStudents mapDtoToEntityForCreate(GangsStudentsDto dto) {
-        return GangsStudents.builder().gang(gangService.findByIdEntity(dto.getGangId()))
-                .student(studentService.findByIdEntity(dto.getStudentId())).build();
+        return GangsStudents.builder()
+                .gang(gangService.findByIdEntity(dto.getGangId()))
+                .student(studentService.findByIdEntity(dto.getStudentId()))
+                .build();
     }
 
     @Override
     public GangsStudentsDto mapEntityToDto(GangsStudents e) {
-        return GangsStudentsDto.builder().id(e.getId()).gangId(e.getGang().getId())
-                .studentId(e.getStudent().getId()).build();
+        return GangsStudentsDto.builder()
+                .id(e.getId())
+                .gangId(e.getGang().getId())
+                .studentId(e.getStudent().getId())
+                .build();
     }
 
     @Override

@@ -38,17 +38,5 @@ public class LessonsStudents {
     private boolean present;
     @Column(name = "is_lesson_payed")
     private boolean payed;
-    
-//    public void setLesson (Lesson lesson) {
-//        this.lesson = lesson;
-//        this.lesson.getLessonStudents().add(this);
-//    }
-//    
-//    public void setStudent (Student student) {
-//        this.student = student;
-//        this.student.getStudentLessons().add(this);
-//    }
-    
-    
 
 }

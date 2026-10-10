@@ -1,6 +1,7 @@
 package com.krailo.smart.controller;
 
 import com.krailo.smart.dto.GangDto;
+import com.krailo.smart.dto.GangsStudentsDto;
 import com.krailo.smart.dto.StudentDto;
 import com.krailo.smart.entity.Gang;
 import com.krailo.smart.entity.GangsStudents;
@@ -49,8 +50,8 @@ public class GangController {
     public String findByStudents (@PathVariable("id") Integer id, Model model) {
         GangDto gangDto =  gangService.findById(id);
         List<StudentDto> students = new ArrayList<StudentDto>();
-        for (GangsStudents gs : gangDto.getGangStudents()) {
-            students.add(studentService.findById(gs.getStudent().getId()));
+        for (GangsStudentsDto gs : gangDto.getGangsStudentsDto()) {
+            students.add(studentService.findById(gs.getStudentId()));
         }
           model.addAttribute("gang", gangDto);
           model.addAttribute("students", students);

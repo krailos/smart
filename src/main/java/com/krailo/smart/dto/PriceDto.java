@@ -1,10 +1,11 @@
 package com.krailo.smart.dto;
 
-import com.krailo.smart.entity.Subject;
+import lombok.Builder;
 import lombok.Value;
 
 import java.time.LocalDate;
 
+@Builder
 @Value
 public class PriceDto {
     
@@ -13,6 +14,6 @@ public class PriceDto {
     private int value;
     private LocalDate date;
     private Integer subjectId;
-    private Subject subject;
+
 
 }
