@@ -1,13 +1,17 @@
 package com.krailo.smart.dto;
 
 import com.krailo.smart.enumeration.WeekDay;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Value;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalTime;
 
 @Builder
-@Value
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class ScheduleDto {
 
     private int id;

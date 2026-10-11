@@ -1,12 +1,13 @@
 package com.krailo.smart.dto;
 
-import lombok.Builder;
-import lombok.Value;
+import lombok.*;
 
 import java.util.List;
 
 @Builder
-@Value
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class GangDto {
 
     private Integer id;

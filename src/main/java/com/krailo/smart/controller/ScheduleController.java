@@ -1,12 +1,20 @@
 package com.krailo.smart.controller;
 
+import com.krailo.smart.dto.AudienceDto;
+import com.krailo.smart.dto.GangDto;
 import com.krailo.smart.dto.ScheduleDto;
-import com.krailo.smart.entity.Subject;
+import com.krailo.smart.dto.SubjectDto;
+import com.krailo.smart.enumeration.WeekDay;
+import com.krailo.smart.service.AudienceService;
+import com.krailo.smart.service.GangService;
 import com.krailo.smart.service.ScheduleService;
+import com.krailo.smart.service.SubjectService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Controller
 @RequestMapping("/schedules")
@@ -14,6 +22,9 @@ import org.springframework.web.bind.annotation.*;
 public class ScheduleController {
 
     private ScheduleService scheduleService;
+    private AudienceService audienceService;
+    private SubjectService subjectService;
+    private GangService gangService;
 
     @GetMapping
     public String findAll(Model model) {
@@ -29,7 +40,16 @@ public class ScheduleController {
 
     @GetMapping("/schedule/new")
     public String createForm(Model model) {
-        model.addAttribute("gang", new Subject());
+        ScheduleDto scheduleDto = ScheduleDto.builder().build();
+        List<AudienceDto> audienceDtoList = audienceService.findAll();
+        List<SubjectDto> subjectDtoList = subjectService.findAll();
+        List<GangDto> gangDtoList = gangService.findAll();
+        WeekDay [] weekDays = WeekDay.values();
+        model.addAttribute("schedule",scheduleDto );
+        model.addAttribute("audiences",audienceDtoList );
+        model.addAttribute("subjects",subjectDtoList );
+        model.addAttribute("gangs",gangDtoList );
+        model.addAttribute("weekDays",weekDays );
         return "scheduleNew";
     }
 

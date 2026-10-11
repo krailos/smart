@@ -1,8 +1,11 @@
 package com.krailo.smart.dto;
 
-import lombok.Value;
+import lombok.*;
 
-@Value
+@Builder
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class AudienceDto {
 
     private Integer id;

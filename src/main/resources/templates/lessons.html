@@ -59,12 +59,12 @@
 					<tr th:each="lesson, index : ${lessons}">
 						<td th:text="${index.count}"></td>
 						  <td th:text="${lesson.date}"></td>
-						<td th:text="${lesson.subject.name}"></td>
-						<td th:text="${lesson.gang.name}"></td>
-						<td th:text="${lesson.audience.name}"></td>					
+						<td th:text="${lesson.subjectDto.name}"></td>
+						<td th:text="${lesson.gangDto.name}"></td>
+						<td th:text="${lesson.audienceDto.name}"></td>
 						<td th:text="${lesson.startTime}"></td>
 						<td th:text="${lesson.endTime}"></td>
-						<td th:text="${lesson.lessonsStudents.size}"></td>
+						<td th:text="${lesson.lessonsStudentsDto.size()}"></td>
 						
 
 						<td><a th:href="@{/}">

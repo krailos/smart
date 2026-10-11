@@ -2,7 +2,6 @@ package com.krailo.smart.mapper;
 
 import com.krailo.smart.dto.PriceDto;
 import com.krailo.smart.entity.Price;
-import com.krailo.smart.repository.SubjectRepository;
 import com.krailo.smart.service.SubjectService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -11,7 +10,6 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class PriceMapper implements Mapper<Price, PriceDto> {
 
-    SubjectRepository subjectRepository;
     SubjectService subjectService;
     SubjectMapper subjectMapper;
 

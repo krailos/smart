@@ -1,18 +1,17 @@
 package com.krailo.smart.dto;
 
-import lombok.Builder;
-import lombok.Value;
-
-import java.util.List;
+import lombok.*;
 
 @Builder
-@Value
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class SubjectDto {
-    
+
     private Integer id;
     private String name;
     private String description;
-    private List<PriceDto> pricesDto;
-    private List<GangDto> gangsDto;
+    // private List<PriceDto> pricesDto;
+    // private List<GangDto> gangsDto;
 
 }
