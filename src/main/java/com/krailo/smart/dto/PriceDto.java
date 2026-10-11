@@ -13,7 +13,7 @@ public class PriceDto {
     private String name;
     private int value;
     private LocalDate date;
-    private Integer subjectId;
+    private SubjectDto subjectDto;
 
 
 }

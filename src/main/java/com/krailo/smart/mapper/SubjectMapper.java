@@ -2,10 +2,12 @@ package com.krailo.smart.mapper;
 
 import com.krailo.smart.dto.SubjectDto;
 import com.krailo.smart.entity.Subject;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
 
 @Component
+@AllArgsConstructor
 public class SubjectMapper implements Mapper<Subject, SubjectDto> {
     private PriceMapper priceMapper;
     private GangMapper gangMapper;

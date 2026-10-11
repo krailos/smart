@@ -15,7 +15,6 @@ public class ScheduleController {
 
     private ScheduleService scheduleService;
 
-
     @GetMapping
     public String findAll(Model model) {
         model.addAttribute("schedules", scheduleService.findAll());

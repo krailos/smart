@@ -59,9 +59,9 @@
 					<tr th:each="schedule, index : ${schedules}">
 						<td th:text="${index.count}"></td>
 						<td th:text="${schedule.weekDay}"></td>
-						<td th:text="${schedule.subject.name}"></td>
-						<td th:text="${schedule.gang.name}"></td>
-						<td th:text="${schedule.audience.name}"></td>
+						<td th:text="${schedule.subjectDto.name}"></td>
+						<td th:text="${schedule.gangDto.name}"></td>
+						<td th:text="${schedule.audienceDto.name}"></td>
 						<td th:text="${schedule.startTime}"></td>
 						<td th:text="${schedule.endTime}"></td>   						
                         

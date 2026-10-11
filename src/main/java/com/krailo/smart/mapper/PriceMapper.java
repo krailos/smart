@@ -13,6 +13,7 @@ public class PriceMapper implements Mapper<Price, PriceDto> {
 
     SubjectRepository subjectRepository;
     SubjectService subjectService;
+    SubjectMapper subjectMapper;
 
     @Override
     public PriceDto mapEntityToDto(Price entity) {
@@ -22,7 +23,7 @@ public class PriceMapper implements Mapper<Price, PriceDto> {
                 .name(entity.getName())
                 .value(entity.getValue())
                 .date(entity.getDate())
-                .subjectId(entity.getSubject().getId())
+                .subjectDto(subjectMapper.mapEntityToDto(entity.getSubject()))
                 .build();
     }
 
@@ -32,7 +33,7 @@ public class PriceMapper implements Mapper<Price, PriceDto> {
         entity.setName(dto.getName());
         entity.setValue(dto.getValue());
         entity.setDate(dto.getDate());
-        entity.setSubject(subjectService.findByIdEntity(dto.getSubjectId()));
+        entity.setSubject(subjectService.findByIdEntity(dto.getSubjectDto().getId()));
         return entity;
     }
 
@@ -41,7 +42,7 @@ public class PriceMapper implements Mapper<Price, PriceDto> {
         entity.setName(dto.getName());
         entity.setValue(dto.getValue());
         entity.setDate(dto.getDate());
-        entity.setSubject(subjectService.findByIdEntity(dto.getSubjectId()));
+        entity.setSubject(subjectService.findByIdEntity(dto.getSubjectDto().getId()));
         return entity;
     }
 

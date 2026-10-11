@@ -46,21 +46,21 @@ public class LessonController {
         ScheduleDto scheduleDto = scheduleService.findById(scheduleId);
 
         // заповнюю lessonDto даними, щоб передати у форму
-        LessonDto lessonDto = LessonDto.builder().audienceId(scheduleDto.getAudienceId())
-                .subjectId(scheduleDto.getSubjectId()).gangId(scheduleDto.getGangId())
+        LessonDto lessonDto = LessonDto.builder().audienceDto(scheduleDto.getAudienceDto())
+                .subjectDto(scheduleDto.getSubjectDto()).gangDto(scheduleDto.getGangDto())
                 .startTime(scheduleDto.getStartTime()).endTime(scheduleDto.getEndTime()).build();
 
         // отримую студентів які повинні бути на уроці (через групу в якої урок), щоб передати у форму
-        List<GangsStudentsDto> gangsStudentsDtoList = gangService.findById(scheduleDto.getGangId()).getGangsStudentsDto();
+        List<GangsStudentsDto> gangsStudentsDtoList = gangService.findById(scheduleDto.getGangDto().getId()).getGangsStudentsDto();
         List<StudentDto> studentsDtoList = new ArrayList<StudentDto>();
         for (GangsStudentsDto gangsStudentsDto : gangsStudentsDtoList) {
             studentsDtoList.add(studentService.findById(gangsStudentsDto.getStudentId()));
         }
 
         // передаю дані в модель
-        model.addAttribute("subject", subjectService.findById(scheduleDto.getSubjectId()));
-        model.addAttribute("gang", gangService.findById(scheduleDto.getGangId()));
-        model.addAttribute("audience", audienceService.findById(scheduleDto.getAudienceId()));
+        model.addAttribute("subject", subjectService.findById(scheduleDto.getSubjectDto().getId()));
+        model.addAttribute("gang", gangService.findById(scheduleDto.getGangDto().getId()));
+        model.addAttribute("audience", audienceService.findById(scheduleDto.getAudienceDto().getId()));
         model.addAttribute("lesson", lessonDto);
         model.addAttribute("students", studentsDtoList);
         return "lessonNew";

@@ -13,17 +13,20 @@ import org.springframework.stereotype.Component;
 public class LessonMapper implements Mapper<Lesson, LessonDto> {
     
     private SubjectService subjectService;
+    private SubjectMapper subjectMapper;
     private GangService gangService;
+    private GangMapper gangMapper;
     private AudienceService audienceService;
+    private AudienceMapper audienceMapper;
     private LessonsStudentsMapper lessonsStudentsMapper;
 
     @Override
     public LessonDto mapEntityToDto(Lesson e) {
         return LessonDto.builder()
                 .id(e.getId())
-                .subjectId(e.getSubject().getId())
-                .gangId(e.getGang().getId())
-                .audienceId(e.getAudience().getId())
+                .subjectDto(subjectMapper.mapEntityToDto(e.getSubject()))
+                .gangDto(gangMapper.mapEntityToDto(e.getGang()))
+                .audienceDto(audienceMapper.mapEntityToDto(e.getAudience()))
                 .date(e.getDate())
                 .startTime(e.getStartTime())
                 .endTime(e.getEndTime())
@@ -35,9 +38,9 @@ public class LessonMapper implements Mapper<Lesson, LessonDto> {
     @Override
     public Lesson mapDtoToEntityForCreate(LessonDto d) {
        Lesson e = new Lesson();
-        e.setSubject(subjectService.findByIdEntity(d.getSubjectId()));
-        e.setGang(gangService.findByIdEntity(d.getGangId()));
-        e.setAudience(audienceService.findByIdEntity(d.getAudienceId()));
+        e.setSubject(subjectService.findByIdEntity(d.getSubjectDto().getId()));
+        e.setGang(gangService.findByIdEntity(d.getGangDto().getId()));
+        e.setAudience(audienceService.findByIdEntity(d.getAudienceDto().getId()));
         e.setDate(d.getDate());
         e.setStartTime(d.getStartTime());
         e.setEndTime(d.getEndTime());
@@ -47,9 +50,9 @@ public class LessonMapper implements Mapper<Lesson, LessonDto> {
 
     @Override
     public Lesson mapDtoToEntityForUpdate(LessonDto d, Lesson e) {
-        e.setSubject(subjectService.findByIdEntity(d.getSubjectId()));
-        e.setGang(gangService.findByIdEntity(d.getGangId()));
-        e.setAudience(audienceService.findByIdEntity(d.getAudienceId()));
+        e.setSubject(subjectService.findByIdEntity(d.getSubjectDto().getId()));
+        e.setGang(gangService.findByIdEntity(d.getGangDto().getId()));
+        e.setAudience(audienceService.findByIdEntity(d.getAudienceDto().getId()));
         e.setDate(d.getDate());
         e.setStartTime(d.getStartTime());
         e.setEndTime(d.getEndTime());

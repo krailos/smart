@@ -12,9 +12,9 @@ import java.util.List;
 public class LessonDto {    
     
     private Integer id;
-    private Integer subjectId;
-    private Integer gangId;
-    private Integer audienceId;
+    private SubjectDto subjectDto;
+    private GangDto gangDto;
+    private AudienceDto audienceDto;
     private LocalDate date;
     private LocalTime startTime;
     private LocalTime endTime;

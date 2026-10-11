@@ -37,7 +37,7 @@ public class PriceController {
     public String findById (@PathVariable("id") Integer id, Model model) {
           PriceDto priceDto =  priceService.findById(id);
           model.addAttribute("price", priceDto);
-          model.addAttribute("subject", subjectService.findById(priceDto.getSubjectId()));
+          model.addAttribute("subject", subjectService.findById(priceDto.getSubjectDto().getId()));
         return "price";
     }
     
