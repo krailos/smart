@@ -1,9 +1,6 @@
 package com.krailo.smart.controller;
 
-import com.krailo.smart.dto.GangsStudentsDto;
-import com.krailo.smart.dto.LessonDto;
-import com.krailo.smart.dto.ScheduleDto;
-import com.krailo.smart.dto.StudentDto;
+import com.krailo.smart.dto.*;
 import com.krailo.smart.mapper.LessonMapper;
 import com.krailo.smart.repository.StudentRepository;
 import com.krailo.smart.service.*;
@@ -15,7 +12,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -46,23 +42,26 @@ public class LessonController {
         ScheduleDto scheduleDto = scheduleService.findById(scheduleId);
 
         // заповнюю lessonDto даними, щоб передати у форму
-        LessonDto lessonDto = LessonDto.builder().audienceDto(scheduleDto.getAudienceDto())
-                .subjectDto(scheduleDto.getSubjectDto()).gangDto(scheduleDto.getGangDto())
-                .startTime(scheduleDto.getStartTime()).endTime(scheduleDto.getEndTime()).build();
+        SubjectDto subjectDto = scheduleDto.getSubjectDto();
+        GangDto gangDto =scheduleDto.getGangDto();
+        AudienceDto audienceDto = scheduleDto.getAudienceDto();
+        LessonDto lessonDto = LessonDto.builder()
+                .audienceDto(audienceDto)
+                .subjectDto(subjectDto)
+                .gangDto(gangDto)
+                .startTime(scheduleDto.getStartTime())
+                .endTime(scheduleDto.getEndTime()).build();
 
-        // отримую студентів які повинні бути на уроці (через групу в якої урок), щоб передати у форму
-        List<GangsStudentsDto> gangsStudentsDtoList = gangService.findById(scheduleDto.getGangDto().getId()).getGangsStudentsDto();
-        List<StudentDto> studentsDtoList = new ArrayList<StudentDto>();
+        // отримую студентів які повинні бути на уроці (через групу в якої урок)
+        List<GangsStudentsDto> gangsStudentsDtoList = gangDto.getGangsStudentsDto();
+        List<LessonsStudentsDto> lessonsStudentsDtoList = lessonDto.getLessonsStudentsDto();
+        // передаю студентів з групи в урок
         for (GangsStudentsDto gangsStudentsDto : gangsStudentsDtoList) {
-            studentsDtoList.add(studentService.findById(gangsStudentsDto.getStudentId()));
+            lessonsStudentsDtoList.add(LessonsStudentsDto.builder().studentDto(gangsStudentsDto.getStudentDto()).build());
         }
 
         // передаю дані в модель
-        model.addAttribute("subject", subjectService.findById(scheduleDto.getSubjectDto().getId()));
-        model.addAttribute("gang", gangService.findById(scheduleDto.getGangDto().getId()));
-        model.addAttribute("audience", audienceService.findById(scheduleDto.getAudienceDto().getId()));
         model.addAttribute("lesson", lessonDto);
-        model.addAttribute("students", studentsDtoList);
         return "lessonNew";
     }
 

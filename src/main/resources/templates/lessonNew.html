@@ -45,15 +45,15 @@
           <div class="mb-3">
       
              <label for="aud" class="form-label">  Аудиторія          
-                <input disabled class="form-control" id="aud" type="text" th:value="${lesson.audience.name}" />
+                <input disabled class="form-control" id="aud" type="text" th:value="${lesson.audienceDto.name}" />
                 <input id="audId" type="hidden" class="form-control"  name="audienceId" th:value="${lesson.audience.id}" />
              </label>
             <label for="subject" class="form-label"> Курс             
-                <input disabled class="form-control" id="subject" type="text" th:value="${lesson.subject.name}" />
+                <input disabled class="form-control" id="subject" type="text" th:value="${lesson.subjectDto.name}" />
                 <input type="hidden" class="form-control"  name="subjectId" th:value="${lesson.subject.id}" />
             </label>
             <label for="gang" class="form-label"> Група
-               <input disabled class="form-control" id="gang" type="text" th:value="${lesson.gang.name}" />
+               <input disabled class="form-control" id="gang" type="text" th:value="${lesson.gangDto.name}" />
                <input type="hidden" class="form-control" name="gangId" th:value="${lesson.gang.id}" />
             </label>
             <label for="date" class="form-label">Дата
@@ -83,21 +83,21 @@
 				    </tr>
 				  </thead>
 				  <tbody class="table-group-divider"> 
-				    <tr th:each="ls, index : *{lessonsStudents}"  th:field="*{lessonsStudents}">				     
+				    <tr th:each="ls, index : *{lessonsStudentsDto}"  th:field="*{lessonsStudentsDto}">
 				      <td th:text="${index.count}"></td>				   
 				      <td>
 				        <input class="form-control" type="hidden" 
-				            th:text="${ls.student.lastName}" 
-				            th:value="${ls.student.id}"
-				            th:field="*{lessonsStudents[__${index.index}__].student.id}">
+				            th:text="${ls.studentDto.lastName}"
+				            th:value="${ls.studentDto.id}"
+				            th:field="*{lessonsStudentsDto[__${index.index}__].student.id}">
 				      </td>
-				      <td th:text="${ls.student.firstName}"></td>
+				      <td th:text="${ls.studentDto.firstName}"></td>
 				      			
 				      <td>
 				        <div class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" role=switch
                             value="true" 
-                            th:field="*{lessonsStudents[__${index.index}__].present}">
+                            th:field="*{lessonsStudentsDto[__${index.index}__].present}">
                         </div>
                       </td>   
                       
@@ -105,7 +105,7 @@
                         <div class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" role=switch
                             value="true" 
-                            th:field="*{lessonsStudents[__${index.index}__].payed}">
+                            th:field="*{lessonsStudentsDto[__${index.index}__].payed}">
                         </div>
                       </td>                                   
                          		

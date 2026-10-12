@@ -1,16 +1,17 @@
 package com.krailo.smart.dto;
 
 
-import lombok.Builder;
-import lombok.Value;
+import lombok.*;
 
 @Builder
-@Value
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class LessonsStudentsDto {
 
     private Integer id;
     private Integer lessonId;
-    private  Integer studentId;
+    private  StudentDto studentDto;
     private boolean present;
     private boolean payed;
 }
