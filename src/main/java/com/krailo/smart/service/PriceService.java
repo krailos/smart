@@ -1,7 +1,7 @@
 package com.krailo.smart.service;
 
 import com.krailo.smart.dto.PriceDto;
-import com.krailo.smart.entity.Subject;
+import com.krailo.smart.dto.SubjectDto;
 import com.krailo.smart.mapper.PriceMapper;
 import com.krailo.smart.repository.PriceRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -18,6 +18,7 @@ import java.util.Optional;
 public class PriceService {
 
     private PriceRepository priceRepository;
+    private SubjectService subjectService;
     private PriceMapper priceMapper;
 
     public List<PriceDto> findAll() {
@@ -29,8 +30,8 @@ public class PriceService {
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Price whith id= %d not exist", id)));
     }
 
-    public List<PriceDto> findBySubject(Subject subject) {
-      return priceRepository.findBySubject(subject).stream().map(priceMapper::mapEntityToDto).toList();
+    public List<PriceDto> findBySubject(SubjectDto subjectDto) {
+      return priceRepository.findBySubject(subjectService.findByIdEntity(subjectDto.getId())).stream().map(priceMapper::mapEntityToDto).toList();
     }
 
     public PriceDto create(PriceDto priceDto) {

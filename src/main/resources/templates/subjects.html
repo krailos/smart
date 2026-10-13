@@ -55,8 +55,8 @@
 					<tr th:each="subject, index : ${subjects}">
 						<td th:text="${index.count}"></td>
 						<td th:text="${subject.name}"></td>
-						<td th:if="${subject.prices.size} > 0" th:text="${subject.prices[0].value}"></td>
-						<td th:unless="${subject.prices.size} > 0" th:text="${нема}"></td>
+						<td th:if="${subject.pricesDto.size()} > 0" th:text="${subject.pricesDto[0].value}"></td>
+						<td th:unless="${subject.pricesDto.size()} > 0" th:text="${нема}"></td>
 						<td th:text="${subject.description}"></td>
 						<td><a th:href="@{prices/{subjectId}/bysubject(subjectId=${subject.id})}">
                                 <button class="btn btn-primary">Змінити вартість</button>

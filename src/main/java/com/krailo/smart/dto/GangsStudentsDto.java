@@ -11,6 +11,9 @@ public class GangsStudentsDto  {
 
     private Integer id;
     private Integer gangId;
-    private StudentDto studentDto;
+    private String gangName;
+    private Integer studentId;
+    private String studentFirstName;
+    private String studentLastName;
 
 }

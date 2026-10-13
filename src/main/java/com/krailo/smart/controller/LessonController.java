@@ -57,7 +57,9 @@ public class LessonController {
         List<LessonsStudentsDto> lessonsStudentsDtoList = lessonDto.getLessonsStudentsDto();
         // передаю студентів з групи в урок
         for (GangsStudentsDto gangsStudentsDto : gangsStudentsDtoList) {
-            lessonsStudentsDtoList.add(LessonsStudentsDto.builder().studentDto(gangsStudentsDto.getStudentDto()).build());
+            lessonsStudentsDtoList.add(LessonsStudentsDto.builder()
+                    .studentDto(studentService.findById(gangsStudentsDto.getStudentId()))
+                    .build());
         }
 
         // передаю дані в модель

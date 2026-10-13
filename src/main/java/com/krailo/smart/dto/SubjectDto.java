@@ -1,6 +1,11 @@
 package com.krailo.smart.dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Builder
 @Data
@@ -11,7 +16,7 @@ public class SubjectDto {
     private Integer id;
     private String name;
     private String description;
-    // private List<PriceDto> pricesDto;
-    // private List<GangDto> gangsDto;
+    private List<PriceDto> pricesDto;
+    private List<GangDto> gangsDto;
 
 }

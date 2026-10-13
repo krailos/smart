@@ -1,7 +1,7 @@
 package com.krailo.smart.controller;
 
 import com.krailo.smart.dto.PriceDto;
-import com.krailo.smart.entity.Subject;
+import com.krailo.smart.dto.SubjectDto;
 import com.krailo.smart.service.PriceService;
 import com.krailo.smart.service.SubjectService;
 import lombok.RequiredArgsConstructor;
@@ -25,9 +25,9 @@ public class PriceController {
     
     @GetMapping("/{id}/bysubject")
     public String findBySubject( @PathVariable("id") Integer id, Model model) {
-        Subject subject = subjectService.findByIdEntity(id);
-        model.addAttribute("prices", priceService.findBySubject(subject));
-        model.addAttribute("subject", subjectService.findById(id));
+        SubjectDto subjectDto = subjectService.findById(id);
+        model.addAttribute("subject", subjectDto);
+        model.addAttribute("prices", subjectDto.getPricesDto());
         return "prices";
     }
     
@@ -37,21 +37,24 @@ public class PriceController {
     public String findById (@PathVariable("id") Integer id, Model model) {
           PriceDto priceDto =  priceService.findById(id);
           model.addAttribute("price", priceDto);
-          model.addAttribute("subject", subjectService.findById(priceDto.getSubjectDto().getId()));
         return "price";
     }
     
     
-    @GetMapping("/price/new")
-    public String createForm (Model model) {
-    model.addAttribute("subjects", subjectService.findAll());
-    return "priceNew";
-    }
+//    @GetMapping("/price/new")
+//    public String createForm (Model model) {
+//    model.addAttribute("subjects", subjectService.findAll());
+//    return "priceNew";
+//    }
     
     @GetMapping("/price/new/{id}")
-    public String createFormWhithChackedSubject (@PathVariable("id") Integer priceId, Model model) {
-    model.addAttribute("subjects", subjectService.findAll());
-    model.addAttribute("subjectChoosen", subjectService.findById(priceId));
+    public String createFormWhithChackedSubject (@PathVariable("id") Integer subjectId, Model model) {
+        SubjectDto subjectDto =  subjectService.findById(subjectId);
+        PriceDto priceDto = PriceDto.builder()
+                .subjectId(subjectDto.getId())
+                .subjectName(subjectDto.getName())
+                .build();
+    model.addAttribute("price", priceDto);
     return "priceNew";
     }
     
@@ -60,7 +63,7 @@ public class PriceController {
     public String create ( @ModelAttribute PriceDto priceDto) {
         System.out.println(priceDto);
         priceService.create(priceDto);  
-        return "redirect:/prices";     
+        return "redirect:/subjects";
     }
     
     

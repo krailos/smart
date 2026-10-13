@@ -51,7 +51,7 @@ public class GangController {
         GangDto gangDto =  gangService.findById(id);
         List<StudentDto> students = new ArrayList<StudentDto>();
         for (GangsStudentsDto gs : gangDto.getGangsStudentsDto()) {
-            students.add(gs.getStudentDto());
+            students.add(studentService.findById(gs.getStudentId()));
         }
           model.addAttribute("gang", gangDto);
           model.addAttribute("students", students);

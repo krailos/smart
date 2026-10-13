@@ -14,7 +14,10 @@ public class GangDto {
     private String name;
     private String description;
     private Integer subjectId;
+    private String subjectNme;
     private Integer teacherId;
+    private String teacherFirstName;
+    private String teacherLastName;
     private List<GangsStudentsDto> gangsStudentsDto;
 
 }

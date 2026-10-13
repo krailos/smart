@@ -22,7 +22,8 @@ public class SubjectService {
 
     
     public List<SubjectDto> findAll() {
-      return subjectRepository.findAll().stream().peek(s -> s.getPrices().sort((o1, o2) -> o2.getDate().compareTo(o1.getDate())))
+      return subjectRepository.findAll().stream()
+              .peek(s -> s.getPrices().sort((o1, o2) -> o2.getDate().compareTo(o1.getDate())))
               .map(subjectMapper::mapEntityToDto).toList();
   }
 

@@ -10,6 +10,9 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class SubjectMapper implements Mapper<Subject, SubjectDto> {
 
+    PriceMapper priceMapper;
+    GangMapper gangMapper;
+
     @Override
     public SubjectDto mapEntityToDto(Subject entity) {
 
@@ -17,8 +20,8 @@ public class SubjectMapper implements Mapper<Subject, SubjectDto> {
                 .id(entity.getId())
                 .name(entity.getName())
                 .description(entity.getDescription())
-                //.pricesDto(entity.getPrices().stream().map(priceMapper::mapEntityToDto).toList())
-                //.gangsDto(entity.getGangs().stream().map(gangMapper::mapEntityToDto).toList())
+                .pricesDto(entity.getPrices().stream().map(priceMapper::mapEntityToDto).toList())
+                .gangsDto(entity.getGangs().stream().map(gangMapper::mapEntityToDto).toList())
                 .build();
     }
 

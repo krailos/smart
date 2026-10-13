@@ -2,16 +2,14 @@ package com.krailo.smart.mapper;
 
 import com.krailo.smart.dto.PriceDto;
 import com.krailo.smart.entity.Price;
-import com.krailo.smart.service.SubjectService;
+import com.krailo.smart.entity.Subject;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
+
 
 @Component
 @AllArgsConstructor
 public class PriceMapper implements Mapper<Price, PriceDto> {
-
-    SubjectService subjectService;
-    SubjectMapper subjectMapper;
 
     @Override
     public PriceDto mapEntityToDto(Price entity) {
@@ -21,7 +19,8 @@ public class PriceMapper implements Mapper<Price, PriceDto> {
                 .name(entity.getName())
                 .value(entity.getValue())
                 .date(entity.getDate())
-                .subjectDto(subjectMapper.mapEntityToDto(entity.getSubject()))
+                .subjectId(entity.getSubject().getId())
+                .subjectName(entity.getSubject().getName())
                 .build();
     }
 
@@ -31,7 +30,7 @@ public class PriceMapper implements Mapper<Price, PriceDto> {
         entity.setName(dto.getName());
         entity.setValue(dto.getValue());
         entity.setDate(dto.getDate());
-        entity.setSubject(subjectService.findByIdEntity(dto.getSubjectDto().getId()));
+        entity.setSubject(Subject.builder().id(dto.getSubjectId()).build());
         return entity;
     }
 
@@ -40,7 +39,7 @@ public class PriceMapper implements Mapper<Price, PriceDto> {
         entity.setName(dto.getName());
         entity.setValue(dto.getValue());
         entity.setDate(dto.getDate());
-        entity.setSubject(subjectService.findByIdEntity(dto.getSubjectDto().getId()));
+        entity.setSubject(Subject.builder().id(dto.getSubjectId()).build());
         return entity;
     }
 
