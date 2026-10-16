@@ -53,6 +53,11 @@ public class LessonService {
                 .map(lessonMapper::mapEntityToDto).orElseThrow();
     }
 
+    public Lesson createEntity(LessonDto lessonDto) {
+        return Optional.of(lessonDto).map(lessonMapper::mapDtoToEntityForCreate).map(lessonRepository::saveAndFlush)
+                .orElseThrow();
+    }
+
     public LessonDto update(Integer id, LessonDto lessonDto) {
         return lessonRepository.findById(id).map(entity -> lessonMapper.mapDtoToEntityForUpdate(lessonDto, entity))
                 .map(lessonRepository::saveAndFlush).map(lessonMapper::mapEntityToDto)

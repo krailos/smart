@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -35,6 +36,7 @@ public class Lesson {
     @Column(name = "lesson_end")
     private LocalTime endTime;
     @OneToMany(mappedBy = "lesson")
-    private List<LessonsStudents> lessonsStudents;
+    @Builder.Default
+    private List<LessonsStudents> lessonsStudents = new ArrayList<>();
 
 }

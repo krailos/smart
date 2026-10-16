@@ -16,7 +16,9 @@ public class LessonsStudentsMapper implements Mapper<LessonsStudents, LessonsStu
         return LessonsStudents.builder()
                 .lesson(Lesson.builder().id(dto.getLessonId()).build())
                 .student(Student.builder().id(dto.getStudentId()).build())
-                .present(dto.isPresent()).payed(dto.isPayed()).build();
+                .present(dto.isPresent())
+                .payed(dto.isPayed())
+                .build();
     }
 
     @Override
@@ -24,6 +26,9 @@ public class LessonsStudentsMapper implements Mapper<LessonsStudents, LessonsStu
         return LessonsStudentsDto.builder()
                 .id(e.getId())
                 .lessonId(e.getLesson().getId())
+                .lessonDate(e.getLesson().getDate())
+                .subjectName(e.getLesson().getSubject().getName())
+                .studentId(e.getStudent().getId())
                 .studentLastName(e.getStudent().getLastName())
                 .studentFirstName(e.getStudent().getFirstName())
                 .present(e.isPresent())

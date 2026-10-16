@@ -20,13 +20,10 @@ import java.util.Optional;
 @AllArgsConstructor
 public class TransactionStudentService {
 
-    private final LessonRepository lessonRepository;
     private SubjectService subjectService;
     private LessonService lessonService;
-    private LessonsStudentsService lessonsStudentsService;
     private TransactionStudentRepository transactionStudentRepository;
     private StudentRepository studentRepository;
-    private SubjectRepository subjectRepository;
     private LessonsStudentsRepository lessonsStudentsRepository;
     private TransactionStudentMapper transactionStudentMapper;
 
@@ -35,16 +32,27 @@ public class TransactionStudentService {
     }
 
     public void create(LessonDto lessonDto) {
-//        System.out.println("----TEST LessonDTO----");
-//        System.out.println(lessonDto.toString());
-//        Lesson lesson = lessonService.findByIdEntity(lessonDto.getId());
-//        System.out.println("----TEST Lesson----");
-//        System.out.println(lesson.toString());
-//        Price subjectPrice = findSubjectPrice(lessonDto);
-//        List<TransactionStudent> transactionStudentFill = fillTransactionStudent(lessonDto);
-//        System.out.println("----TEST  transaction fill----");
-//        transactionStudentFill.stream().forEach(System.out::println);
-//        System.out.println("----END TEST----");
+        System.out.println("----TEST LessonDTO----");
+        System.out.println(lessonDto);
+        // тільки lesson без колекції (чому її нема хз, щось з кешем хібернейт)
+        Lesson lesson = lessonService.findByIdEntity(lessonDto.getId());
+        System.out.println("----TEST Lesson----");
+        System.out.println(lesson);
+        System.out.println("----TEST select on lessons student----");
+        // колекція lessonsStudent з бази через select
+        List<LessonsStudents> lessonsStudentsSelect = lessonsStudentsRepository.findAllByLesson(lesson);
+        lessonsStudentsSelect.forEach(System.out::println);
+        lessonsStudentsSelect.stream().map(ls -> ls.getStudent()).forEach(System.out::println);
+        lessonsStudentsSelect.stream().map(ls -> ls.getLesson()).forEach(System.out::println);
+        System.out.println("----TEST subject----");
+        Price subjectPrice = findSubjectPrice(lessonDto);
+        System.out.println(subjectPrice);
+        System.out.println("----TEST  transaction fill----");
+        List<TransactionStudent> transactionStudentFill = fillTransactionStudent(lesson, lessonsStudentsSelect);
+        transactionStudentFill.stream().forEach(System.out::println);
+        System.out.println("----TEST  transaction calculate and create----");
+        calculateSaveTransactionStudent(subjectPrice, transactionStudentFill);
+        System.out.println("----END TEST----");
     }
 
     private Price findSubjectPrice(LessonDto lessonDto) {
@@ -55,15 +63,10 @@ public class TransactionStudentService {
                 .orElseGet(null);
     }
 
-    private List<TransactionStudent> fillTransactionStudent(LessonDto lessonDto) {
-        Lesson lesson = lessonService.findByIdEntity(lessonDto.getId());
-        System.out.println("----lesson----");
-        System.out.println(lesson);
-        List<LessonsStudents> lessonsStudents = lessonsStudentsRepository.findAllByLesson(lesson);
-        System.out.println("----lessonsStudents----");
-        lessonsStudents.forEach(System.out::println);
-        LocalDate lessonDate = lessonDto.getDate();
-        Subject lessonSubject = subjectService.findByIdEntity(lessonDto.getSubjectId());
+    private List<TransactionStudent> fillTransactionStudent( Lesson lesson, List<LessonsStudents> lessonsStudents) {
+
+        LocalDate lessonDate = lesson.getDate();
+        Subject lessonSubject = lesson.getSubject();
         List<TransactionStudent> transactionStudentsList = new ArrayList<>();
         for (LessonsStudents ls : lessonsStudents) {
             Student student = ls.getStudent();
@@ -92,18 +95,18 @@ public class TransactionStudentService {
             int priceValue = subjectPrice.getValue();
             double credit = priceValue - priceValue * discount / 100.0;
             if (!ts.isStudentPresent() || !ts.isLessonPayed()) {
-                transactionStudentRepository.save(ts);
+                transactionStudentRepository.saveAndFlush(ts);
             } else {
                 ts.setSubjectFulPrice(priceValue);
                 ts.setDiscountValue(discount);
                 ts.setCredit(credit);
-                transactionStudentRepository.save(ts);
+                transactionStudentRepository.saveAndFlush(ts);
                 // зберігаю студента в бд з новим балансом
                 Student student = ts.getStudent();
                 double balanceUpdate = student.getBalance();
                 balanceUpdate = balanceUpdate - credit;
                 student.setBalance(balanceUpdate);
-                studentRepository.save(student);
+                studentRepository.saveAndFlush(student);
             }
         }
     }
