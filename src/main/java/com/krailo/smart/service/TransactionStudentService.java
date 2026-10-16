@@ -100,11 +100,12 @@ public class TransactionStudentService {
                 ts.setSubjectFulPrice(priceValue);
                 ts.setDiscountValue(discount);
                 ts.setCredit(credit);
-                transactionStudentRepository.saveAndFlush(ts);
-                // зберігаю студента в бд з новим балансом
                 Student student = ts.getStudent();
                 double balanceUpdate = student.getBalance();
                 balanceUpdate = balanceUpdate - credit;
+                ts.setBalance(balanceUpdate);
+                transactionStudentRepository.saveAndFlush(ts);
+                // зберігаю студента в бд з новим балансом
                 student.setBalance(balanceUpdate);
                 studentRepository.saveAndFlush(student);
             }

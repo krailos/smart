@@ -36,10 +36,11 @@ public class TransactionStudent {
     @Column(name = "discount_value")
     private int discountValue;
     @Column(name = "is_student_present")
-    boolean studentPresent;
+    private boolean studentPresent;
     @Column(name = "is_lesson_payed")
-    boolean lessonPayed;
+    private boolean lessonPayed;
     private double debit;
     private double credit;
+    private double balance;
 
 }

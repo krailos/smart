@@ -11,7 +11,7 @@ import java.time.LocalDate;
 public class TransactionStudentDto {
 
     private Integer id;
-    private LocalDate date;
+    private LocalDate transactionDate;
     private Integer lessonId;
     private LocalDate lessonDate;
     private String subjectName;
@@ -26,5 +26,6 @@ public class TransactionStudentDto {
     private int discountValue;
     private double debit;
     private double credit;
-    
+    private double balance;
+
 }

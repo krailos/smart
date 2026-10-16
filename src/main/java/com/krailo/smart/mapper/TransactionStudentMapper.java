@@ -15,7 +15,7 @@ public class TransactionStudentMapper implements Mapper<TransactionStudent, Tran
     @Override
     public TransactionStudent mapDtoToEntityForCreate(TransactionStudentDto dto) {
         return TransactionStudent.builder()
-                .date(dto.getDate())
+                .date(dto.getTransactionDate())
                 .lesson(Lesson.builder().id(dto.getLessonId()).build())
                 .payment(Payment.builder().id(dto.getPaymentId()).build())
                 .student(Student.builder().id(dto.getStudentId()).build())
@@ -25,6 +25,7 @@ public class TransactionStudentMapper implements Mapper<TransactionStudent, Tran
                 .discountValue(dto.getDiscountValue())
                 .debit(dto.getDebit())
                 .credit(dto.getCredit())
+                .balance(dto.getBalance())
                 .build();
     }
 
@@ -32,12 +33,12 @@ public class TransactionStudentMapper implements Mapper<TransactionStudent, Tran
     public TransactionStudentDto mapEntityToDto(TransactionStudent entity) {
         return TransactionStudentDto.builder()
                 .id(entity.getId())
-                .date(entity.getDate())
+                .transactionDate(entity.getDate())
                 .lessonId(entity.getLesson().getId())
                 .lessonDate(entity.getLesson().getDate())
                 .subjectName(entity.getLesson().getSubject().getName())
-                .paymentId(entity.getPayment().getId())
-                .paymentDate(entity.getPayment().getDate())
+                // .paymentId(entity.getPayment().getId())
+                //.paymentDate(entity.getPayment().getDate())
                 .studentId(entity.getStudent().getId())
                 .studentLastName(entity.getStudent().getLastName())
                 .studentFirstName(entity.getStudent().getFirstName())
@@ -47,13 +48,14 @@ public class TransactionStudentMapper implements Mapper<TransactionStudent, Tran
                 .discountValue(entity.getDiscountValue())
                 .debit(entity.getDebit())
                 .credit(entity.getCredit())
+                .balance(entity.getBalance())
                 .build();
     }
 
     @Override
     public TransactionStudent mapDtoToEntityForUpdate(TransactionStudentDto dto, TransactionStudent entity) {
         entity.setId(dto.getId());
-        entity.setDate(dto.getDate());
+        entity.setDate(dto.getTransactionDate());
         entity.setLesson(Lesson.builder().id(dto.getLessonId()).build());
         entity.setPayment(Payment.builder().id(dto.getPaymentId()).build());
         entity.setStudent(Student.builder().id(dto.getStudentId()).build());
@@ -63,6 +65,7 @@ public class TransactionStudentMapper implements Mapper<TransactionStudent, Tran
         entity.setDiscountValue(dto.getDiscountValue());
         entity.setDebit(dto.getDebit());
         entity.setCredit(dto.getCredit());
+        entity.setBalance(dto.getBalance());
         return entity;
     }
 }
