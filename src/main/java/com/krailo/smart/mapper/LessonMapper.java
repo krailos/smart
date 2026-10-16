@@ -1,7 +1,10 @@
 package com.krailo.smart.mapper;
 
 import com.krailo.smart.dto.LessonDto;
+import com.krailo.smart.entity.Audience;
+import com.krailo.smart.entity.Gang;
 import com.krailo.smart.entity.Lesson;
+import com.krailo.smart.entity.Subject;
 import com.krailo.smart.service.AudienceService;
 import com.krailo.smart.service.GangService;
 import com.krailo.smart.service.SubjectService;
@@ -24,13 +27,17 @@ public class LessonMapper implements Mapper<Lesson, LessonDto> {
     public LessonDto mapEntityToDto(Lesson e) {
         return LessonDto.builder()
                 .id(e.getId())
-                .subjectDto(subjectMapper.mapEntityToDto(e.getSubject()))
-                .gangDto(gangMapper.mapEntityToDto(e.getGang()))
-                .audienceDto(audienceMapper.mapEntityToDto(e.getAudience()))
+                .subjectId(e.getSubject().getId())
+                .subjectName(e.getSubject().getName())
+                .gangId(e.getGang().getId())
+                .gangName(e.getGang().getName())
+                .audienceId(e.getAudience().getId())
+                .audienceName(e.getAudience().getName())
                 .date(e.getDate())
                 .startTime(e.getStartTime())
                 .endTime(e.getEndTime())
-                .lessonsStudentsDto(e.getLessonsStudents().stream().map(lessonsStudentsMapper::mapEntityToDto).toList())
+                .lessonsStudentsDto(e.getLessonsStudents().stream()
+                        .map(lessonsStudentsMapper::mapEntityToDto).toList())
                 .build();
     }
 
@@ -38,9 +45,9 @@ public class LessonMapper implements Mapper<Lesson, LessonDto> {
     @Override
     public Lesson mapDtoToEntityForCreate(LessonDto d) {
        Lesson e = new Lesson();
-        e.setSubject(subjectService.findByIdEntity(d.getSubjectDto().getId()));
-        e.setGang(gangService.findByIdEntity(d.getGangDto().getId()));
-        e.setAudience(audienceService.findByIdEntity(d.getAudienceDto().getId()));
+        e.setSubject(Subject.builder().id(d.getSubjectId()).build());
+        e.setGang(Gang.builder().id(d.getGangId()).build());
+        e.setAudience(Audience.builder().id(d.getAudienceId()).build());
         e.setDate(d.getDate());
         e.setStartTime(d.getStartTime());
         e.setEndTime(d.getEndTime());
@@ -50,9 +57,9 @@ public class LessonMapper implements Mapper<Lesson, LessonDto> {
 
     @Override
     public Lesson mapDtoToEntityForUpdate(LessonDto d, Lesson e) {
-        e.setSubject(subjectService.findByIdEntity(d.getSubjectDto().getId()));
-        e.setGang(gangService.findByIdEntity(d.getGangDto().getId()));
-        e.setAudience(audienceService.findByIdEntity(d.getAudienceDto().getId()));
+        e.setSubject(Subject.builder().id(d.getSubjectId()).build());
+        e.setGang(Gang.builder().id(d.getGangId()).build());
+        e.setAudience(Audience.builder().id(d.getAudienceId()).build());
         e.setDate(d.getDate());
         e.setStartTime(d.getStartTime());
         e.setEndTime(d.getEndTime());

@@ -8,17 +8,18 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
 @EqualsAndHashCode(exclude = {"gangsStudents", "studentsDiscounts", "payments", "lessonsStudents", "balanceStudents"})
-@ToString(exclude =  {"gangsStudents", "studentsDiscounts", "payments", "lessonsStudents", "balanceStudents"})
+@ToString(exclude = {"gangsStudents", "studentsDiscounts", "payments", "lessonsStudents", "balanceStudents"})
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Entity
 public class Student {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -40,19 +41,22 @@ public class Student {
     private LocalDate birthDate;
     private String description;
     private double balance;
+    @Builder.Default
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
-    private List<StudentsDiscounts> studentsDiscounts;
+    private List<StudentsDiscounts> studentsDiscounts = new ArrayList<>();
+    @Builder.Default
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
-    private List<Payment> payments;
+    private List<Payment> payments = new ArrayList<>();
+    @Builder.Default
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
-    private List<LessonsStudents> lessonsStudents;
+    private List<LessonsStudents> lessonsStudents = new ArrayList<>();
+    @Builder.Default
     @OneToMany(mappedBy = "student")
-    private List<BalanceStudent> balanceStudents;
-    
-    
+    private List<TransactionStudent> balanceStudents = new ArrayList<>();
+
+
 //    @ManyToMany(mappedBy = "students", fetch = FetchType.LAZY)
 //    private List<Lesson> lessons;
-    
 
 
 }

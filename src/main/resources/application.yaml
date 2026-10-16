@@ -19,7 +19,7 @@ logging:
     root: INFO                        # Загальний рівень для всього проєкту
     com.example.yourproject: DEBUG    # Детальне логування для вашого коду
     org.springframework.web: INFO     # Логування веб-запитів Spring
-    org.hibernate.SQL: DEBUG          # Показувати SQL-запити у консолі (якщо є JPA)
+    org.hibernate.SQL: INFO          # НЕ показувати SQL-запити у консолі (якщо є JPA)
   file:
     name: smart.log
     path: /

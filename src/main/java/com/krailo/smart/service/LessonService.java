@@ -49,7 +49,7 @@ public class LessonService {
     }
 
     public LessonDto create(LessonDto lessonDto) {
-        return Optional.of(lessonDto).map(lessonMapper::mapDtoToEntityForCreate).map(lessonRepository::save)
+        return Optional.of(lessonDto).map(lessonMapper::mapDtoToEntityForCreate).map(lessonRepository::saveAndFlush)
                 .map(lessonMapper::mapEntityToDto).orElseThrow();
     }
 

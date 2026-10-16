@@ -29,9 +29,9 @@ VALUES ('1', '1', 'Читарика-ОШ', ' опис групи'),
 
 INSERT INTO student (first_name, last_name,
                      contact_name, phone, gender, student_status, birth_date, balance)
-VALUES ('Олег', 'Маршалко', 'мама Олена', '0671111111', 'ХЛОПЕЦЬ', 'УЧЕНЬ', '01.01.2011', 0),
-       ('Іван', 'Пилипчак', 'мама Олена', '0671111111', 'ХЛОПЕЦЬ', 'УЧЕНЬ', '01.01.2011', 0),
-       ('Дмитро', 'Богуславець', 'мама Олена', '0671111111', 'ХЛОПЕЦЬ', 'УЧЕНЬ', '01.01.2011', 0),
+VALUES ('Олег', 'Маршалко', 'мама Олена', '0671111111', 'ХЛОПЕЦЬ', 'УЧЕНЬ', '01.01.2011', '1000'),
+       ('Іван', 'Пилипчак', 'мама Олена', '0671111111', 'ХЛОПЕЦЬ', 'УЧЕНЬ', '01.01.2011', '800'),
+       ('Дмитро', 'Богуславець', 'мама Олена', '0671111111', 'ХЛОПЕЦЬ', 'УЧЕНЬ', '01.01.2011', '-750'),
        ('Олена', 'Бивень', 'мама Олена', '0671111111', 'ДІВЧИНА', 'УЧЕНЬ', '01.01.2011', 0),
        ('Оксана', 'Куличок', 'мама Олена', '0671111111', 'ДІВЧИНА', 'УЧЕНЬ', '01.01.2011', 0),
        ('Іванка', 'Зарічна', 'мама Олена', '0671111111', 'ДІВЧИНА', 'УЧЕНЬ', '01.01.2011', 0),
@@ -113,11 +113,13 @@ INSERT INTO account (code, name, account_type)
 VALUES ('361', 'клієнти', 'ACTIVE'),
        ('702', 'дохід від наданих послуг', 'ACTIVE_PASSIVE');
 
-INSERT INTO balance_student (transaction_date, lesson_id, payment_id, student_id, debit, credit, balance)
-VALUES ('09.01.2025', 1, null, 2, 100, 0, -100),
-       ('09.01.2025', 1, null, 3, 100, 0, -100),
-       ('09.01.2025', null, 2, 2, 0, 1000, 900),
-       ('09.01.2025', null, 3, 3, 0, 1000, 900);
+INSERT INTO transaction_student (transaction_date, lesson_id, payment_id, student_id, is_student_present,
+                                 is_lesson_payed, subject_full_price,
+                                 discount_value, debit, credit)
+VALUES ('09.01.2025', 1, null, 2, true, false, 0, 0, 100, 0),
+       ('09.01.2025', 1, null, 3,true, false, 0, 0, 100, 0),
+       ('09.01.2025', null, 2, 2,null, null, null, null, null, 1000),
+       ('09.01.2025', null, 3, 3, null, null,null, null, null, 1000);
 
 
 -- SELECT setval(pg_get_serial_sequence('student', 'id'), coalesce(max(id), 1)) FROM student;

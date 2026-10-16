@@ -1,6 +1,6 @@
 package com.krailo.smart.controller;
 
-import com.krailo.smart.service.BalanceStudentService;
+import com.krailo.smart.service.TransactionStudentService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @AllArgsConstructor
 public class BalanceStudentController {
 
-    BalanceStudentService balanceStudentService;
+    TransactionStudentService balanceStudentService;
 
     @GetMapping("/recordsStudents")
     public String findAll(Model model) {

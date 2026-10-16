@@ -15,9 +15,12 @@ import java.time.LocalTime;
 public class ScheduleDto {
 
     private int id;
-    private AudienceDto audienceDto;
-    private GangDto gangDto;
-    private SubjectDto subjectDto;
+    private Integer subjectId;
+    private String subjectName;
+    private Integer gangId;
+    private String gangName;
+    private Integer audienceId;
+    private String audienceName;
     private WeekDay weekDay;
     private LocalTime startTime;
     private LocalTime endTime;

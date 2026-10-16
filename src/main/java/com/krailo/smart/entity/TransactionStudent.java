@@ -14,8 +14,8 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "balance_student")
-public class BalanceStudent {
+@Table(name = "transaction_student")
+public class TransactionStudent {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,8 +31,15 @@ public class BalanceStudent {
     @ManyToOne
     @JoinColumn(name = "student_id")
     private Student student;
+    @Column(name = "subject_full_price")
+    private int subjectFulPrice;
+    @Column(name = "discount_value")
+    private int discountValue;
+    @Column(name = "is_student_present")
+    boolean studentPresent;
+    @Column(name = "is_lesson_payed")
+    boolean lessonPayed;
     private double debit;
     private double credit;
-    private double balance;
 
 }
