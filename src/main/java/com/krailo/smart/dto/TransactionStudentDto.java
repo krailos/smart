@@ -1,6 +1,9 @@
 package com.krailo.smart.dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
@@ -11,7 +14,6 @@ import java.time.LocalDate;
 public class TransactionStudentDto {
 
     private Integer id;
-    private LocalDate transactionDate;
     private Integer lessonId;
     private LocalDate lessonDate;
     private String subjectName;
@@ -23,7 +25,8 @@ public class TransactionStudentDto {
     boolean studentPresent;
     boolean lessonPayed;
     private int subjectFulPrice;
-    private int discountValue;
+    private int discountPercentage;
+    private double discountSum;
     private double debit;
     private double credit;
     private double balance;

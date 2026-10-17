@@ -8,7 +8,6 @@ import com.krailo.smart.entity.Lesson;
 import com.krailo.smart.entity.LessonsStudents;
 import com.krailo.smart.repository.LessonsStudentsRepository;
 import com.krailo.smart.service.*;
-import jakarta.persistence.EntityManager;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -31,7 +30,7 @@ public class LessonController {
     private LessonsStudentsService lessonsStudentsService;
     private TransactionStudentService transactionStudentService;
     private GangService gangService;
-    private EntityManager entityManager;
+
 
 
     @GetMapping("/lessons")

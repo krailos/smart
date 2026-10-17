@@ -15,14 +15,14 @@ public class TransactionStudentMapper implements Mapper<TransactionStudent, Tran
     @Override
     public TransactionStudent mapDtoToEntityForCreate(TransactionStudentDto dto) {
         return TransactionStudent.builder()
-                .date(dto.getTransactionDate())
                 .lesson(Lesson.builder().id(dto.getLessonId()).build())
                 .payment(Payment.builder().id(dto.getPaymentId()).build())
                 .student(Student.builder().id(dto.getStudentId()).build())
                 .studentPresent(dto.isStudentPresent())
                 .lessonPayed(dto.isLessonPayed())
                 .subjectFulPrice(dto.getSubjectFulPrice())
-                .discountValue(dto.getDiscountValue())
+                .discountPercentage(dto.getDiscountPercentage())
+                .discountSum(dto.getDiscountSum())
                 .debit(dto.getDebit())
                 .credit(dto.getCredit())
                 .balance(dto.getBalance())
@@ -33,7 +33,6 @@ public class TransactionStudentMapper implements Mapper<TransactionStudent, Tran
     public TransactionStudentDto mapEntityToDto(TransactionStudent entity) {
         return TransactionStudentDto.builder()
                 .id(entity.getId())
-                .transactionDate(entity.getDate())
                 .lessonId(entity.getLesson().getId())
                 .lessonDate(entity.getLesson().getDate())
                 .subjectName(entity.getLesson().getSubject().getName())
@@ -45,7 +44,8 @@ public class TransactionStudentMapper implements Mapper<TransactionStudent, Tran
                 .studentPresent(entity.isStudentPresent())
                 .lessonPayed(entity.isLessonPayed())
                 .subjectFulPrice(entity.getSubjectFulPrice())
-                .discountValue(entity.getDiscountValue())
+                .discountPercentage(entity.getDiscountPercentage())
+                .discountSum(entity.getDiscountSum())
                 .debit(entity.getDebit())
                 .credit(entity.getCredit())
                 .balance(entity.getBalance())
@@ -55,14 +55,14 @@ public class TransactionStudentMapper implements Mapper<TransactionStudent, Tran
     @Override
     public TransactionStudent mapDtoToEntityForUpdate(TransactionStudentDto dto, TransactionStudent entity) {
         entity.setId(dto.getId());
-        entity.setDate(dto.getTransactionDate());
         entity.setLesson(Lesson.builder().id(dto.getLessonId()).build());
         entity.setPayment(Payment.builder().id(dto.getPaymentId()).build());
         entity.setStudent(Student.builder().id(dto.getStudentId()).build());
         entity.setStudentPresent(dto.isStudentPresent());
         entity.setLessonPayed(dto.isLessonPayed());
         entity.setSubjectFulPrice(dto.getSubjectFulPrice());
-        entity.setDiscountValue(dto.getDiscountValue());
+        entity.setDiscountPercentage(dto.getDiscountPercentage());
+        entity.setDiscountSum(dto.getDiscountSum());
         entity.setDebit(dto.getDebit());
         entity.setCredit(dto.getCredit());
         entity.setBalance(dto.getBalance());

@@ -6,8 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-
 
 @Data
 @Builder
@@ -20,8 +18,6 @@ public class TransactionStudent {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @Column(name = "transaction_date")
-    private LocalDate date;
     @ManyToOne
     @JoinColumn(name = "lesson_id")
     private Lesson lesson;
@@ -33,12 +29,13 @@ public class TransactionStudent {
     private Student student;
     @Column(name = "subject_full_price")
     private int subjectFulPrice;
-    @Column(name = "discount_value")
-    private int discountValue;
+    @Column(name = "discount_percentage")
+    private int discountPercentage;
     @Column(name = "is_student_present")
     private boolean studentPresent;
     @Column(name = "is_lesson_payed")
     private boolean lessonPayed;
+    private double discountSum;
     private double debit;
     private double credit;
     private double balance;

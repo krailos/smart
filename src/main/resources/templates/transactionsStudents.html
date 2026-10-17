@@ -41,7 +41,6 @@
             <thead>
             <tr>
                 <th scope="col">#</th>
-                <th scope="col">Дата</th>
                 <th scope="col">Дата уроку</th>
                 <th scope="col">Курс</th>
                 <th scope="col">ID оплати</th>
@@ -61,7 +60,6 @@
             <tbody>
             <tr th:each="ts, index : ${transactionsStudents}">
                 <td th:text="${index.count}"></td>
-                <td th:text="${ts.transactionDate}"></td>
                 <td th:text="${ts.lessonDate}"></td>
                 <td th:text="${ts.subjectName}"></td>
                 <td th:text="${ts.paymentId}"></td>
@@ -72,7 +70,7 @@
                 <td th:text="${ts.studentPresent}"></td>
                 <td th:text="${ts.lessonPayed}"></td>
                 <td th:text="${ts.subjectFulPrice}"></td>
-                <td th:text="${ts.discountValue}"></td>
+                <td th:text="${ts.discountSum}"></td>
                 <td th:text="${ts.credit}"></td>
                 <td th:text="${ts.debit}"></td>
                 <td th:text="${ts.balance}"></td>
