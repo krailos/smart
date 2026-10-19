@@ -25,9 +25,13 @@ public class PaymentService {
         return paymentRepository.findAll().stream().map(paymentMapper::mapEntityToDto).toList();
     }
 
+    public Payment findByIdEntity(Integer id) {
+        return paymentRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("Payment whith id= %d not exist", id)));
+    }
+
     public PaymentDto findById(Integer id) {
         return paymentRepository.findById(id).map(paymentMapper::mapEntityToDto)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Audience whith id= %d not exist", id)));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Payment whith id= %d not exist", id)));
     }
     
     public List<Payment> findAllByStudentEntity(Student student) {

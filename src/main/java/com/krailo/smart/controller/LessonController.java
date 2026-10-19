@@ -87,7 +87,7 @@ public class LessonController {
             System.out.println("---- Test lesoonsStudent created-----");
             System.out.println(lessonsStudentsRepository.saveAndFlush(ls));
         }
-        transactionStudentService.create(lessonDtoWithId);
+        transactionStudentService.createByLesson(lessonDtoWithId);
         return "redirect:/lessons";
     }
 

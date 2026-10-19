@@ -1,6 +1,7 @@
 package com.krailo.smart.service;
 
 import com.krailo.smart.dto.LessonDto;
+import com.krailo.smart.dto.PaymentDto;
 import com.krailo.smart.dto.TransactionStudentDto;
 import com.krailo.smart.entity.*;
 import com.krailo.smart.mapper.TransactionStudentMapper;
@@ -29,13 +30,33 @@ public class TransactionStudentService {
     private StudentRepository studentRepository;
     private LessonsStudentsRepository lessonsStudentsRepository;
     private TransactionStudentMapper transactionStudentMapper;
+    private PaymentService paymentService;
+    private StudentService studentService;
     private EntityManager entityManager;
 
     public List<TransactionStudentDto> findAll() {
         return transactionStudentRepository.findAll().stream().map(transactionStudentMapper::mapEntityToDto).toList();
     }
 
-    public void create(LessonDto lessonDto) {
+    public void createByPayment (PaymentDto paymentDto){
+        entityManager.clear();
+        Payment payment = paymentService.findByIdEntity(paymentDto.getId());
+        Student student = studentService.findByIdEntity(paymentDto.getStudentId());
+        double credit = paymentDto.getValue();
+        double balancePrev = student.getBalance();
+        double balance = balancePrev + credit;
+        TransactionStudent transactionStudent = TransactionStudent.builder()
+                .payment(payment)
+                .student(student)
+                .credit(credit)
+                .balance(balance)
+                .build();
+        transactionStudentRepository.saveAndFlush(transactionStudent);
+        student.setBalance(balance);
+        studentRepository.saveAndFlush(student);
+    }
+
+    public void createByLesson(LessonDto lessonDto) {
         entityManager.clear();
         System.out.println("----TEST LessonDTO----");
         System.out.println(lessonDto);
@@ -56,10 +77,10 @@ public class TransactionStudentService {
         Price subjectPrice = findSubjectPrice(lessonDto);
         System.out.println(subjectPrice);
         System.out.println("----TEST  transaction fill----");
-        List<TransactionStudent> transactionStudentFill = fillTransactionStudent(lesson, lessonsStudents);
+        List<TransactionStudent> transactionStudentFill = fillTransactionByLesson(lesson, lessonsStudents);
         transactionStudentFill.stream().forEach(System.out::println);
         System.out.println("----TEST  transaction calculate and create----");
-        calculateSaveTransactionStudent(subjectPrice, transactionStudentFill);
+        calculateSaveTransactionByLesson(subjectPrice, transactionStudentFill);
         System.out.println("----END TEST----");
     }
 
@@ -71,7 +92,7 @@ public class TransactionStudentService {
                 .orElseGet(null);
     }
 
-    private List<TransactionStudent> fillTransactionStudent( Lesson lesson, List<LessonsStudents> lessonsStudents) {
+    private List<TransactionStudent> fillTransactionByLesson(Lesson lesson, List<LessonsStudents> lessonsStudents) {
 
         LocalDate lessonDate = lesson.getDate();
         System.out.println("lessonDate -------" + lessonDate.toString());
@@ -101,7 +122,7 @@ public class TransactionStudentService {
         return transactionStudentsList;
     }
 
-    private void calculateSaveTransactionStudent(Price subjectPrice, List<TransactionStudent> transactionStudentList) {
+    private void calculateSaveTransactionByLesson(Price subjectPrice, List<TransactionStudent> transactionStudentList) {
         for (TransactionStudent ts : transactionStudentList) {
             int discountPercentage = ts.getDiscountPercentage();
             int priceValue = subjectPrice.getValue();

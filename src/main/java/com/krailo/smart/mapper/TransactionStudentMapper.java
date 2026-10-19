@@ -1,12 +1,11 @@
 package com.krailo.smart.mapper;
 
 import com.krailo.smart.dto.TransactionStudentDto;
-import com.krailo.smart.entity.Lesson;
-import com.krailo.smart.entity.Payment;
-import com.krailo.smart.entity.Student;
-import com.krailo.smart.entity.TransactionStudent;
+import com.krailo.smart.entity.*;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 @Component
 @AllArgsConstructor
@@ -33,11 +32,22 @@ public class TransactionStudentMapper implements Mapper<TransactionStudent, Tran
     public TransactionStudentDto mapEntityToDto(TransactionStudent entity) {
         return TransactionStudentDto.builder()
                 .id(entity.getId())
-                .lessonId(entity.getLesson().getId())
-                .lessonDate(entity.getLesson().getDate())
-                .subjectName(entity.getLesson().getSubject().getName())
-                // .paymentId(entity.getPayment().getId())
-                //.paymentDate(entity.getPayment().getDate())
+                .lessonId(Optional.ofNullable(entity.getLesson())
+                        .map(Lesson::getId)
+                        .orElse(null))
+                .lessonDate(Optional.ofNullable(entity.getLesson())
+                        .map(Lesson::getDate)
+                        .orElse(null))
+                .subjectName(Optional.ofNullable(entity.getLesson())
+                        .map(Lesson::getSubject)
+                        .map(Subject::getName)
+                        .orElse(null))
+                .paymentId(Optional.ofNullable(entity.getPayment())
+                        .map(Payment::getId)
+                        .orElse(null))
+                .paymentDate(Optional.ofNullable(entity.getPayment())
+                        .map(Payment::getDate)
+                        .orElse(null))
                 .studentId(entity.getStudent().getId())
                 .studentLastName(entity.getStudent().getLastName())
                 .studentFirstName(entity.getStudent().getFirstName())

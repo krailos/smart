@@ -3,18 +3,20 @@ package com.krailo.smart.controller;
 import com.krailo.smart.dto.PaymentDto;
 import com.krailo.smart.service.PaymentService;
 import com.krailo.smart.service.StudentService;
-import lombok.RequiredArgsConstructor;
+import com.krailo.smart.service.TransactionStudentService;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequestMapping("/payments")
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class PaymentController {
 
     private final PaymentService paymentService;
     private final StudentService studentService;
+    private TransactionStudentService transactionStudentService;
 
     @GetMapping
     public String findAll(Model model) {
@@ -41,11 +43,12 @@ public class PaymentController {
     
     @PostMapping("/create")
    // @ResponseStatus(HttpStatus.CREATED)
-    public String create ( @ModelAttribute PaymentDto payment) {
-        System.out.println(payment);
-        System.out.println(payment.getStudentId());
-        System.out.println(payment.getStudent());
-        paymentService.create(payment);  
+    public String create ( @ModelAttribute PaymentDto paymentDto) {
+        System.out.println(paymentDto);
+        System.out.println(paymentDto.getStudentId());
+        System.out.println(paymentDto.getStudent());
+        PaymentDto paymentDtoWithId = paymentService.create(paymentDto);
+        transactionStudentService.createByPayment(paymentDtoWithId);
         return "redirect:/payments";     
     }
     

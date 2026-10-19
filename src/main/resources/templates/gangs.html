@@ -55,9 +55,9 @@
 					<tr th:each="gang, index : ${gangs}">
 						<td th:text="${index.count}"></td>
 						<td th:text="${gang.name}"></td>
-						<td th:text="${gang.getSubject().getName()}"></td>
-						<td th:text="${gang.getTeacher().getLastName()}"></td>
-						<td th:text="${gang.gangStudents.size}"></td>
+						<td th:text="${gang.subjectNme}"></td>
+						<td th:text="${gang.teacherLastName}"></td>
+						<td th:text="${gang.gangsStudentsDto.size()}"></td>
 						<td th:text="${gang.description}"></td>
 						<td><a th:href="@{/gangs/{id}/bystudents(id=${gang.id})}">
                                 <button class="btn btn-primary">студенти</button>
