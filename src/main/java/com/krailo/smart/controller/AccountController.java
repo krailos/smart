@@ -34,7 +34,7 @@ public class AccountController {
     @GetMapping("/account/new")
     public String createForm (Model model) {
         model.addAttribute("account", new Account());
-        return "audienceNew";
+        return "acountNew";
     }
 
 

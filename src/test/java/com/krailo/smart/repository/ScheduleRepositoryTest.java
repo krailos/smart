@@ -1,4 +1,4 @@
-package repository;
+package com.krailo.smart.repository;
 
 
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;

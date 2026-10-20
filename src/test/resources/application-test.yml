@@ -7,6 +7,7 @@ spring:
     password:
 
   jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
     # Hibernate сам створить усі таблиці на основі @Entity класів
     hibernate:
       ddl-auto: create-drop
@@ -15,5 +16,22 @@ spring:
     properties:
       hibernate:
         format_sql: true
-    # Вмикаємо виконання файлу data.sql ПІСЛЯ того, як Hibernate створить схему
+    # Вмикаємо виконання файлу data_v1.sql ПІСЛЯ того, як Hibernate створить схему
     defer-datasource-initialization: true
+
+# 2. Секція логування (З САМОГО ПОЧАТКУ, на одному рівні зі spring)
+logging:
+  level:
+    root: INFO
+    org.hibernate.SQL: DEBUG
+
+    # 1. Для Hibernate 6+ (показує параметри, які біндяться до запиту)
+    org.hibernate.orm.jdbc.bind: TRACE
+
+    # 2. Додатково для відображення результатів завантаження
+    org.hibernate.orm.results.loading: TRACE
+
+    # 3. Для Spring Data (показує параметри на рівні репозиторіїв)
+    org.springframework.orm.jpa: DEBUG
+
+

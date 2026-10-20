@@ -16,8 +16,7 @@ DROP TABLE IF EXISTS price CASCADE;
 DROP TABLE IF EXISTS students_discounts CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS account CASCADE;
-DROP TABLE IF EXISTS balance_student CASCADE;
-
+DROP TABLE IF EXISTS transaction_student CASCADE;
 
 
 
@@ -51,6 +50,7 @@ CREATE TABLE audience
     id          serial                NOT NULL,
     name        character varying(50) NOT NULL,
     description character varying(150),
+    is_deleted  boolean default false,
     CONSTRAINT audience__pkey PRIMARY KEY (id)
 );
 
@@ -100,7 +100,7 @@ CREATE TABLE student
     student_status student_status        NOT NULL,
     birth_date     date,
     description    character varying(150),
-    balance double precision,
+    balance        double precision,
     CONSTRAINT student__pkey PRIMARY KEY (id)
 );
 
@@ -174,7 +174,7 @@ CREATE TABLE discount
 CREATE TABLE price
 (
     id          serial                                                          NOT NULL,
-    name        character varying(50)                                           NOT NULL,
+    name        character varying(50),
     subject_id  int REFERENCES subject (id) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
     price_value int                                                             NOT NULL,
     price_date  date                                                            NOT NULL,
@@ -212,16 +212,20 @@ CREATE TABLE account
     CONSTRAINT accounts__pk PRIMARY KEY (id)
 );
 
-CREATE TABLE balance_student
+CREATE TABLE transaction_student
 (
-    id               serial                NOT NULL,
-    transaction_date date                  NOT NULL,
-    lesson_id        int REFERENCES lesson (id) ON UPDATE CASCADE ON DELETE CASCADE,
-    payment_id       int REFERENCES payment (id) ON UPDATE CASCADE ON DELETE CASCADE,
-    student_id       int REFERENCES student (id) ON UPDATE CASCADE ON DELETE CASCADE,
-    debit            int,
-    credit           int,
-    balance          int,
+    id                  serial    NOT NULL,
+    lesson_id           int REFERENCES lesson (id) ON UPDATE CASCADE ON DELETE CASCADE,
+    payment_id          int REFERENCES payment (id) ON UPDATE CASCADE ON DELETE CASCADE,
+    student_id          int REFERENCES student (id) ON UPDATE CASCADE ON DELETE CASCADE,
+    is_student_present  BOOLEAN,
+    is_lesson_payed     BOOLEAN,
+    subject_full_price  int,
+    discount_percentage int,
+    discount_sum        double precision,
+    debit               double precision,
+    credit              double precision,
+    balance             double precision,
     CONSTRAINT balance_student__pk PRIMARY KEY (id)
 );
 
