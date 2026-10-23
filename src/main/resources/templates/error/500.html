@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 — Сторінку не знайдено</title>
+    <title>500 — Помилка сервера</title>
     <style>
         /* Базові скидання налаштувань для швидкості рендерингу */
         * {
@@ -36,7 +36,7 @@
         .error-code {
             font-size: 7rem;
             font-weight: 800;
-            color: #04aa0d; /* Помаранчевий колір для 404 */
+            color: #dc3545; /* Червоний колір для помилок сервера */
             line-height: 1;
             margin-bottom: 15px;
             letter-spacing: -2px;
@@ -88,22 +88,17 @@
 <body>
 
 <div class="error-container">
-    <!-- Код помилки (якщо передано з контролера, інакше за замовчуванням 404) -->
-    <div class="error-code" th:text="${status != null} ? ${status} : '404'">500</div>
+    <!-- Цю сторінку показує сам Spring Boot (BasicErrorController) для помилок поза контролерами:
+         у шаблоні Thymeleaf, у фільтрах безпеки. Його ${error} — англійською, ${message} — порожній,
+         тому тексти тут постійні, без th:text -->
+    <div class="error-code">500</div>
 
     <!-- Головний текст заголовку -->
-    <h1 class="error-title" th:text="${error != null} ? ${error} : 'Сторінку не знайдено'">
-        Сторінку не знайдено
-    </h1>
+    <h1 class="error-title">Внутрішня помилка сервера</h1>
 
     <!-- Детальний опис для користувача -->
-    <p class="error-message" th:text="${message != null} ? ${message} : 'Можливо, адреса містить помилку або сторінку було видалено. Спробуйте повернутися на головну.'">
-        Запитувана сторінка не існує.
-    </p>
-
-    <!-- Детальний стектрейс -->
-    <p class="error-message" th:text="${stackTrace != null} ? ${stackTrace} : 'Тут мав бути детальний stackTrace'">
-        Запитувана сторінка не існує.
+    <p class="error-message">
+        На сервері сталася непередбачувана помилка. Спробуйте пізніше або поверніться на головну.
     </p>
 
     <!-- Кнопка «На головну» (прямий HTML перехід) -->
