@@ -6,6 +6,7 @@ import com.krailo.smart.entity.*;
 import com.krailo.smart.enumeration.Gender;
 import com.krailo.smart.enumeration.StudentStatus;
 import com.krailo.smart.enumeration.WeekDay;
+import com.krailo.smart.exception.LessonException;
 import com.krailo.smart.exception.PriceNotFoundException;
 import com.krailo.smart.repository.*;
 import org.junit.jupiter.api.AfterEach;
@@ -108,6 +109,47 @@ class LessonClosingServiceTest {
         assertThat(lessonsStudentsRepository.count()).isEqualTo(1);
         assertThat(transactionStudentRepository.count()).isEqualTo(1);
         assertThat(studentRepository.findById(student.getId()).orElseThrow().getBalance()).isEqualTo(-100);
+    }
+
+    @Test
+    void shouldReturnMoneyAndAllowClosingAgain_WhenLessonStorned() {
+        // Given: ціна 100; урок проведено (з учня списано 100)
+        priceRepository.save(Price.builder().subject(subject).value(100).date(LocalDate.of(2026, 9, 1)).build());
+        LessonDto held = lessonClosingService.closeLesson(lessonDto());
+        assertThat(balance()).isEqualTo(-100);
+
+        // When: виявилась помилка у формі — сторнуємо урок
+        lessonClosingService.stornoLesson(held.getId());
+
+        // Then: гроші повернуто, урок лишився в історії з позначкою і відв'язаний від розкладу
+        assertThat(balance()).isZero();
+        Lesson storned = lessonRepository.findById(held.getId()).orElseThrow();
+        assertThat(storned.isStorned()).isTrue();
+        assertThat(storned.getSchedule()).isNull();
+        assertThat(transactionStudentRepository.count()).isEqualTo(2); // списання + сторно
+
+        // і цей урок можна провести заново на ту саму дату
+        lessonClosingService.closeLesson(lessonDto());
+        assertThat(lessonRepository.count()).isEqualTo(2);
+        assertThat(balance()).isEqualTo(-100);
+    }
+
+    @Test
+    void shouldNotStornoLessonTwice() {
+        // Given
+        priceRepository.save(Price.builder().subject(subject).value(100).date(LocalDate.of(2026, 9, 1)).build());
+        LessonDto held = lessonClosingService.closeLesson(lessonDto());
+        lessonClosingService.stornoLesson(held.getId());
+
+        // When & Then: повторне сторно заборонене, гроші вдруге не повертаються
+        assertThatThrownBy(() -> lessonClosingService.stornoLesson(held.getId()))
+                .isInstanceOf(LessonException.class)
+                .hasMessageContaining("уже сторновано");
+        assertThat(balance()).isZero();
+    }
+
+    private double balance() {
+        return studentRepository.findById(student.getId()).orElseThrow().getBalance();
     }
 
     // урок з розкладу: учень присутній, урок платний

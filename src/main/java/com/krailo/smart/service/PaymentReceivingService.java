@@ -1,6 +1,8 @@
 package com.krailo.smart.service;
 
 import com.krailo.smart.dto.PaymentDto;
+import com.krailo.smart.entity.Payment;
+import com.krailo.smart.exception.PaymentException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,10 +21,24 @@ public class PaymentReceivingService {
     // ВСЕ в одній транзакції: якщо зарахування на баланс впаде,
     // оплата теж не збережеться (не буде оплати, яка "не потрапила" в баланс).
     public PaymentDto receivePayment(PaymentDto paymentDto) {
+        // від'ємні суми — тільки через сторнування (щоб було видно, яку оплату виправили)
+        if (paymentDto.getValue() <= 0) {
+            throw new PaymentException("Сума оплати має бути більшою за нуль");
+        }
         // 1. оплата
         PaymentDto paymentDtoWithId = paymentService.create(paymentDto);
         // 2. запис у журналі транзакцій і новий баланс учня
         transactionStudentService.createByPayment(paymentDtoWithId);
         return paymentDtoWithId;
+    }
+
+    // Сторнування: нова оплата з мінусовою сумою + запис у журналі + зменшення балансу — одна транзакція.
+    // Оригінальна оплата не змінюється і лишається в історії.
+    public PaymentDto stornoPayment(Integer paymentId) {
+        Payment original = paymentService.findByIdEntity(paymentId);
+        PaymentDto storno = paymentService.createStorno(original);
+        // createByPayment додає суму до балансу — для сторно вона від'ємна, тож баланс зменшиться
+        transactionStudentService.createByPayment(storno);
+        return storno;
     }
 }

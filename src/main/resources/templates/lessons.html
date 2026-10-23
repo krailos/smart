@@ -40,6 +40,10 @@
 	</nav>
 	<div class="container my-4">
 		<div class="row">
+			<!-- результат сторнування (flash-повідомлення після редиректу) -->
+			<div th:if="${successMessage}" class="alert alert-success" role="alert" th:text="${successMessage}"></div>
+			<div th:if="${errorMessage}" class="alert alert-danger" role="alert" th:text="${errorMessage}"></div>
+
 			<table class="table table-striped">
 				<thead>
 					<tr>
@@ -53,11 +57,13 @@
 						<th scope="col">Кінець уроку</th>
 						<th scope="col">Студенти</th>
 						<th scope="col">Редагувати</th>
-						<th scope="col">Видалити</th>
+						<th scope="col">Сторнування</th>
 					</tr>
 				</thead>
 				<tbody>
-					<tr th:each="lesson, index : ${lessons}">
+					<!-- сторнований урок — сірим і перекресленим -->
+					<tr th:each="lesson, index : ${lessons}"
+						th:classappend="${lesson.storned} ? 'text-decoration-line-through text-secondary'">
 						<td th:text="${index.count}"></td>
 						  <td th:text="${lesson.date}"></td>
 						<td th:text="${lesson.subjectName}"></td>
@@ -69,14 +75,18 @@
 						<td th:text="${lesson.lessonsStudentsDto.size()}"></td>
 						
 
-						<td><a th:href="@{/lessons/{id}(id=${lesson.id})}">
+						<td><a th:unless="${lesson.storned}" th:href="@{/lessons/{id}(id=${lesson.id})}">
 								<button class="btn btn-primary">Редагувати урок</button>
 						</a></td>
 						<td>
-							<form th:action="@{/lessons/{id}/delete( id=${lesson.id})}"
-								method="post">
-								<button class="btn btn-danger">Видалити</button>
+							<!-- помилка у формі уроку: сторнуємо (гроші повертаються) і проводимо заново з розкладу -->
+							<form th:unless="${lesson.storned}"
+								th:action="@{/lessons/{id}/storno( id=${lesson.id})}"
+								method="post"
+								onsubmit="return confirm('Сторнувати урок? Усі списання за цей урок повернуться учням, урок можна буде провести заново.');">
+								<button class="btn btn-warning">Сторнувати</button>
 							</form>
+							<span th:if="${lesson.storned}" class="badge text-bg-secondary">сторновано</span>
 						</td>
 					</tr>
 				</tbody>

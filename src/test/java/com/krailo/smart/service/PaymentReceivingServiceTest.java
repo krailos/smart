@@ -4,6 +4,7 @@ import com.krailo.smart.dto.PaymentDto;
 import com.krailo.smart.entity.Student;
 import com.krailo.smart.enumeration.Gender;
 import com.krailo.smart.enumeration.StudentStatus;
+import com.krailo.smart.exception.PaymentException;
 import com.krailo.smart.repository.PaymentRepository;
 import com.krailo.smart.repository.StudentRepository;
 import com.krailo.smart.repository.TransactionStudentRepository;
@@ -53,7 +54,10 @@ class PaymentReceivingServiceTest {
 
     @AfterEach
     void cleanUp() {
-        for (String table : List.of("transaction_student", "payment", "student")) {
+        // спершу сторно (воно посилається на оригінальну оплату), потім решта
+        jdbcTemplate.update("DELETE FROM transaction_student");
+        jdbcTemplate.update("DELETE FROM payment WHERE storno_of_id IS NOT NULL");
+        for (String table : List.of("payment", "student")) {
             jdbcTemplate.update("DELETE FROM " + table);
         }
     }
@@ -89,7 +93,53 @@ class PaymentReceivingServiceTest {
         assertThat(studentRepository.findById(student.getId()).orElseThrow().getBalance()).isZero();
     }
 
+    @Test
+    void shouldNotSavePayment_WhenValueIsNotPositive() {
+        // мінусові суми — тільки через сторнування
+        assertThatThrownBy(() -> paymentReceivingService.receivePayment(paymentDto(-500)))
+                .isInstanceOf(PaymentException.class);
+        assertThatThrownBy(() -> paymentReceivingService.receivePayment(paymentDto(0)))
+                .isInstanceOf(PaymentException.class);
+
+        assertThat(paymentRepository.count()).isZero();
+    }
+
+    @Test
+    void shouldStornoPayment_AndReturnBalanceBack() {
+        // Given: учень заплатив 500 (помилково)
+        PaymentDto original = paymentReceivingService.receivePayment(paymentDto(500));
+
+        // When: сторнуємо
+        PaymentDto storno = paymentReceivingService.stornoPayment(original.getId());
+
+        // Then: оригінал лишився, з'явилось сторно -500, яке посилається на оригінал; баланс повернувся до 0
+        assertThat(paymentRepository.count()).isEqualTo(2);
+        assertThat(storno.getValue()).isEqualTo(-500);
+        assertThat(storno.getStornoOfId()).isEqualTo(original.getId());
+        assertThat(paymentRepository.existsByStornoOfId(original.getId())).isTrue();
+        assertThat(transactionStudentRepository.count()).isEqualTo(2);
+        assertThat(studentRepository.findById(student.getId()).orElseThrow().getBalance()).isZero();
+    }
+
+    @Test
+    void shouldNotStornoTwice() {
+        // Given: оплату вже сторновано
+        PaymentDto original = paymentReceivingService.receivePayment(paymentDto(500));
+        PaymentDto storno = paymentReceivingService.stornoPayment(original.getId());
+
+        // When & Then: повторне сторно і сторно сторна — заборонені
+        assertThatThrownBy(() -> paymentReceivingService.stornoPayment(original.getId()))
+                .isInstanceOf(PaymentException.class)
+                .hasMessageContaining("уже сторновано");
+        assertThatThrownBy(() -> paymentReceivingService.stornoPayment(storno.getId()))
+                .isInstanceOf(PaymentException.class);
+
+        // баланс не змінився: 500 - 500 = 0, жодних зайвих записів
+        assertThat(paymentRepository.count()).isEqualTo(2);
+        assertThat(studentRepository.findById(student.getId()).orElseThrow().getBalance()).isZero();
+    }
+
     private PaymentDto paymentDto(int value) {
-        return new PaymentDto(null, null, student.getId(), value, LocalDate.of(2026, 10, 24), "тест");
+        return new PaymentDto(null, null, student.getId(), value, LocalDate.of(2026, 10, 24), "тест", null, null);
     }
 }

@@ -44,6 +44,7 @@ public class LessonMapper implements Mapper<Lesson, LessonDto> {
                 .endTime(e.getEndTime())
                 .lessonsStudentsDto(e.getLessonsStudents().stream()
                         .map(lessonsStudentsMapper::mapEntityToDto).toList())
+                .storned(e.isStorned())
                 .build();
     }
 

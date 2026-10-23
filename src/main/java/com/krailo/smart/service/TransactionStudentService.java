@@ -151,4 +151,30 @@ public class TransactionStudentService {
         }
     }
 
+    // Сторно уроку: для кожного списання з цього уроку — запис з протилежною сумою, гроші повертаються на баланс.
+    // Для уроку credit — це сума, яку СПИСАЛИ (баланс -= credit), тому сторно: credit = -списане, баланс += списане.
+    public void createStornoByLesson(Lesson lesson) {
+        for (TransactionStudent charge : transactionStudentRepository.findAllByLesson(lesson)) {
+            if (charge.getCredit() == 0) {
+                continue; // учень був відсутній або урок безоплатний — списання не було
+            }
+            Student student = charge.getStudent();
+            double balanceUpdate = student.getBalance() + charge.getCredit();
+            TransactionStudent storno = TransactionStudent.builder()
+                    .lesson(lesson)
+                    .student(student)
+                    .studentPresent(charge.isStudentPresent())
+                    .lessonPayed(charge.isLessonPayed())
+                    .subjectFulPrice(charge.getSubjectFulPrice())
+                    .discountPercentage(charge.getDiscountPercentage())
+                    .discountSum(-charge.getDiscountSum())
+                    .credit(-charge.getCredit())
+                    .balance(balanceUpdate)
+                    .build();
+            transactionStudentRepository.saveAndFlush(storno);
+            student.setBalance(balanceUpdate);
+            studentRepository.saveAndFlush(student);
+        }
+    }
+
 }

@@ -15,8 +15,9 @@ public interface LessonRepository extends JpaRepository<Lesson, Integer> {
     @Query("""
             SELECT l from Lesson l 
             JOIN FETCH l.lessonsStudents ls
-            WHERE ls.student = :student 
+            WHERE ls.student = :student
             AND l.date BETWEEN :start AND :end
+            AND l.storned = false
             """)
     List<Lesson> findAllByStudentAndBetweenDates (Student student, LocalDate start, LocalDate end);
 

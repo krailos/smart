@@ -4,6 +4,7 @@ import com.krailo.smart.dto.LessonDto;
 import com.krailo.smart.entity.Gang;
 import com.krailo.smart.entity.Lesson;
 import com.krailo.smart.entity.Student;
+import com.krailo.smart.exception.LessonException;
 import com.krailo.smart.exception.ScheduleConflictException;
 import com.krailo.smart.mapper.LessonMapper;
 import com.krailo.smart.repository.LessonRepository;
@@ -85,6 +86,9 @@ public class LessonService {
 
     public LessonDto update(Integer id, LessonDto lessonDto) {
         Lesson lesson = findByIdEntity(id);
+        if (lesson.isStorned()) {
+            throw new LessonException("Сторнований урок не редагується — проведіть урок заново з розкладу");
+        }
         requireDate(lessonDto);
         // дату змінили — на нову дату з цього ж слоту розкладу не повинно бути іншого уроку (сам урок не рахуємо)
         if (lesson.getSchedule() != null && lessonRepository.existsByScheduleIdAndDateAndIdNot(
@@ -113,10 +117,5 @@ public class LessonService {
         }
     }
 
-    public boolean delete(Integer id) {
-        return lessonRepository.findById(id).map(entity -> {
-            lessonRepository.delete(entity);
-            return true;
-        }).orElse(false);
-    }
+    // Уроки не видаляються: помилково проведений урок сторнують (LessonClosingService.stornoLesson)
 }

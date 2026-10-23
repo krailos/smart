@@ -34,35 +34,32 @@
 	</nav>
 	<div class="container">
 		<div>
-			<div class="text-center fs-6 text-uppercase fw-semibold">Новий платіж</div>
-			<form th:action="@{/payments/{id}/update (  id=${payment.id})}" method="post">
-				<div class="text-bg-light mb-3">
-				    <label for="date" class="form-label"> Дата
-				        <input class="form-control" id="date" type="date" name="date"
-                        th:value="${payment.date}"/>
-                    </label>              
-				    <select name="studentId" class="form-select" aria-label="Default select example">
-	                        <option selected>Виберіть студента</option>
-	                        <option 
-		                         th:each="student : ${students}"
-		                        th:text="|${student.LastName} ${student.firstName}  (${student.contactName} - ${student.phone} )|"    
-		                         th:value="${student.id}"
-		                         th:selected="${payment.student.id == student.id}" > name</option>                       
-                    </select>
-					<label for="value" class="form-label"> Сума 
-					   <input class="form-control" id="value" type="text"
-					   name="value"  th:value="${payment.value}"/>
-					</label> 
-					<label for="description" class="form-label"> Примітка
-					       <input class="form-control" id="description" type="text" 
-					       name="description" 
-					       th:value="${payment.description}"/>
-					</label>
-					
+			<div class="text-center fs-6 text-uppercase fw-semibold">Платіж</div>
+			<!-- оплати не редагуються: тільки перегляд; помилку виправляють сторнуванням -->
+			<div class="text-bg-light mb-3">
+			    <label for="date" class="form-label"> Дата
+			        <input class="form-control" id="date" type="date" th:value="${payment.date}" disabled/>
+                </label>
+				<label for="student" class="form-label"> Учень
+				   <input class="form-control" id="student" type="text" disabled
+				   th:value="|${payment.student.lastName} ${payment.student.firstName}|"/>
+				</label>
+				<label for="value" class="form-label"> Сума
+				   <input class="form-control" id="value" type="text" th:value="${payment.value}" disabled/>
+				</label>
+				<label for="description" class="form-label"> Примітка
+				       <input class="form-control" id="description" type="text" th:value="${payment.description}" disabled/>
+				</label>
+			</div>
 
-				</div>
-				<button type="submit" class="btn btn-primary">Виконати</button>
+			<form th:if="${payment.stornoOfId == null and !payment.storned}"
+				th:action="@{/payments/{id}/storno (id=${payment.id})}" method="post"
+				onsubmit="return confirm('Сторнувати цю оплату? Буде створено запис з мінусовою сумою, баланс учня зменшиться.');">
+				<button type="submit" class="btn btn-warning">Сторнувати</button>
 			</form>
+			<span th:if="${payment.storned}" class="badge text-bg-secondary">Оплату сторновано</span>
+			<span th:if="${payment.stornoOfId != null}" class="badge text-bg-danger">Це сторно іншої оплати</span>
+			<a th:href="@{/payments}" class="btn btn-outline-secondary ms-2">До списку</a>
 		</div>
 	</div>
 </body>

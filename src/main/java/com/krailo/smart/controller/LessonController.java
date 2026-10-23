@@ -5,6 +5,7 @@ import com.krailo.smart.dto.LessonDto;
 import com.krailo.smart.dto.LessonsStudentsDto;
 import com.krailo.smart.dto.ScheduleDto;
 import com.krailo.smart.dto.StudentDto;
+import com.krailo.smart.exception.LessonException;
 import com.krailo.smart.exception.PriceNotFoundException;
 import com.krailo.smart.exception.ScheduleConflictException;
 import com.krailo.smart.service.*;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -107,7 +109,7 @@ public class LessonController {
     public String update(@PathVariable("id") Integer id, @ModelAttribute LessonDto lessonDto, Model model) {
         try {
             lessonService.update(id, lessonDto);
-        } catch (ScheduleConflictException e) {
+        } catch (ScheduleConflictException | LessonException e) {
             // беремо урок з бази (учні, назви, час) і накладаємо те, що користувач вибрав у формі
             LessonDto lesson = lessonService.findById(id);
             lesson.setTeacherId(lessonDto.getTeacherId());
@@ -117,6 +119,20 @@ public class LessonController {
             model.addAttribute("errorMessage", e.getMessage());
             fillEditFormLists(model);
             return "lesson";
+        }
+        return "redirect:/lessons";
+    }
+
+    // Сторнування уроку: гроші повертаються учням, урок лишається в історії з позначкою,
+    // а слот розкладу на цю дату звільняється — урок можна провести заново
+    @PostMapping("/lessons/{id}/storno")
+    public String storno(@PathVariable("id") Integer id, RedirectAttributes redirectAttributes) {
+        try {
+            lessonClosingService.stornoLesson(id);
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Урок сторновано, гроші повернуто учням. За потреби проведіть урок заново з розкладу");
+        } catch (LessonException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/lessons";
     }

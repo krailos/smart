@@ -32,17 +32,16 @@ public class PaymentMapper implements Mapper<Payment, PaymentDto> {
                 e.getStudent(), 
                 e.getStudent().getId(), 
                 e.getValue(),
-                e.getDate(),  
-                e.getDescription());
+                e.getDate(),
+                e.getDescription(),
+                e.getStornoOf() == null ? null : e.getStornoOf().getId(),
+                paymentRepository.existsByStornoOfId(e.getId()));
     }
 
+    // оплати не редагуються — помилку виправляють сторнуванням (PaymentReceivingService.stornoPayment)
     @Override
     public Payment mapDtoToEntityForUpdate(PaymentDto d, Payment e) {
-        e.setStudent(studentRepository.findById(d.getStudentId()).get());
-        e.setValue(d.getValue());
-        e.setDate(d.getDate());
-        e.setDescription(d.getDescription());
-        return e;
+        throw new UnsupportedOperationException("Оплати не редагуються — використовуйте сторнування");
     }
 
 }

@@ -3,6 +3,7 @@ package com.krailo.smart.service;
 import com.krailo.smart.dto.PaymentDto;
 import com.krailo.smart.entity.Payment;
 import com.krailo.smart.entity.Student;
+import com.krailo.smart.exception.PaymentException;
 import com.krailo.smart.mapper.PaymentMapper;
 import com.krailo.smart.repository.PaymentRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -10,6 +11,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,18 +46,24 @@ public class PaymentService {
                 .map(paymentMapper::mapEntityToDto).orElseThrow();
     }
 
-    public PaymentDto update(Integer id, PaymentDto paymentDto) {
-        return paymentRepository.findById(id)
-                .map(entity -> paymentMapper.mapDtoToEntityForUpdate(paymentDto, entity))
-                .map(paymentRepository::saveAndFlush).map(paymentMapper::mapEntityToDto)
-                .orElseThrow(() -> new RuntimeException("smth wrong when update"));
-    }
-
-    public boolean delete(Integer id) {
-        return paymentRepository.findById(id).map(entity -> {
-            paymentRepository.delete(entity);
-            return true;
-        }).orElse(false);
+    // Оплати не редагуються і не видаляються (як у бухгалтерії) — помилкову оплату сторнують:
+    // створюємо нову оплату з протилежною сумою, яка посилається на оригінал.
+    public PaymentDto createStorno(Payment original) {
+        if (original.getStornoOf() != null) {
+            throw new PaymentException("Сторно не можна сторнувати");
+        }
+        if (paymentRepository.existsByStornoOfId(original.getId())) {
+            throw new PaymentException(String.format("Оплату від %s на %d грн уже сторновано",
+                    original.getDate(), original.getValue()));
+        }
+        Payment storno = Payment.builder()
+                .student(original.getStudent())
+                .value(-original.getValue())
+                .date(LocalDate.now())
+                .description(String.format("Сторно оплати від %s", original.getDate()))
+                .stornoOf(original)
+                .build();
+        return paymentMapper.mapEntityToDto(paymentRepository.saveAndFlush(storno));
     }
 
 }

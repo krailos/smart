@@ -35,6 +35,8 @@
 	<div class="container">
 		<div>
 			<div class="text-center fs-6 text-uppercase fw-semibold">Новий платіж</div>
+			<!-- Помилка: сума не більша за нуль тощо -->
+			<div th:if="${errorMessage}" class="alert alert-danger mt-3" role="alert" th:text="${errorMessage}"></div>
 			<form th:action="@{/payments/create}" method="post">
 				<div class="text-bg-light mb-3">
 				    <label for="date" class="form-label"> Дата

@@ -1,6 +1,7 @@
 package com.krailo.smart.controller;
 
 import com.krailo.smart.dto.PaymentDto;
+import com.krailo.smart.exception.PaymentException;
 import com.krailo.smart.service.PaymentReceivingService;
 import com.krailo.smart.service.PaymentService;
 import com.krailo.smart.service.StudentService;
@@ -8,6 +9,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/payments")
@@ -26,10 +28,10 @@ public class PaymentController {
     
     
     
+    // перегляд оплати (тільки читання)
     @GetMapping("/{id}")
     public String findById (@PathVariable("id") Integer id, Model model) {
-          model.addAttribute("payment", paymentService.findById(id)); 
-          model.addAttribute("students", studentService.findAll());
+          model.addAttribute("payment", paymentService.findById(id));
         return "payment";
     }
     
@@ -43,24 +45,29 @@ public class PaymentController {
     
     @PostMapping("/create")
    // @ResponseStatus(HttpStatus.CREATED)
-    public String create ( @ModelAttribute PaymentDto paymentDto) {
-        // оплата + журнал транзакцій + баланс — одна транзакція (див. PaymentReceivingService)
-        paymentReceivingService.receivePayment(paymentDto);
+    public String create ( @ModelAttribute PaymentDto paymentDto, Model model) {
+        try {
+            // оплата + журнал транзакцій + баланс — одна транзакція (див. PaymentReceivingService)
+            paymentReceivingService.receivePayment(paymentDto);
+        } catch (PaymentException e) {
+            model.addAttribute("students", studentService.findAll());
+            model.addAttribute("errorMessage", e.getMessage());
+            return "paymentNew";
+        }
         return "redirect:/payments";
     }
-    
-    @PostMapping("/{id}/update")
-    public String update (@PathVariable("id") Integer id, @ModelAttribute PaymentDto payment) {
-        System.out.println(payment);
-        System.out.println(payment.getStudentId());
-        paymentService.update(id, payment); 
-        return "redirect:/payments";        
-    }
-    
-    @PostMapping("/{id}/delete")
-    public String delete (@PathVariable("id") Integer id) {
-         paymentService.delete(id); 
-        return "redirect:/payments";        
+
+    // Оплати не редагуються і не видаляються — помилкову оплату сторнують
+    // (нова оплата з мінусовою сумою; оригінал лишається в історії)
+    @PostMapping("/{id}/storno")
+    public String storno (@PathVariable("id") Integer id, RedirectAttributes redirectAttributes) {
+        try {
+            paymentReceivingService.stornoPayment(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Оплату сторновано");
+        } catch (PaymentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/payments";
     }
 
 }

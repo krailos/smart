@@ -12,4 +12,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
     
     List<Payment> findAllByStudent(Student student);
 
+    // чи вже є сторно для цієї оплати
+    boolean existsByStornoOfId(Integer paymentId);
+
 }

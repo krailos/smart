@@ -39,17 +39,21 @@
 	</nav>
 	<div class="container my-4">
 		<div class="row">
+			<!-- результат сторнування (flash-повідомлення після редиректу) -->
+			<div th:if="${successMessage}" class="alert alert-success" role="alert" th:text="${successMessage}"></div>
+			<div th:if="${errorMessage}" class="alert alert-danger" role="alert" th:text="${errorMessage}"></div>
+
 			<table class="table table-striped">
 				<thead>
 					<tr>
 						<th scope="col">#</th>
 						<th scope="col">Прізвище</th>
-                        <th scope="col">Імя</th>  				
-                        <th scope="col">Сума</th>  				
-						<th scope="col">Дата</th>												
-						<th scope="col">Примітка</th>												
-						<th scope="col">Редагувати</th>
-						<th scope="col">Видалити</th>
+                        <th scope="col">Імя</th>
+                        <th scope="col">Сума</th>
+						<th scope="col">Дата</th>
+						<th scope="col">Примітка</th>
+						<th scope="col">Переглянути</th>
+						<th scope="col">Сторнування</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -57,24 +61,30 @@
 						<td th:text="${index.count}"></td>
 						<td th:text="${payment.student.lastName}"></td>
 						<td th:text="${payment.student.firstName}"></td>
-						<td th:text="${payment.value}"></td>	
+						<!-- сторно (мінусова сума) — червоним -->
+						<td th:text="${payment.value}" th:classappend="${payment.value < 0} ? 'text-danger fw-semibold'"></td>
 						<td th:text="${payment.date}"></td>
 						<td th:text="${payment.description}"></td>
-						
-						<td>					
+
+						<td>
 							<form th:action="@{/payments/{id} ( id=${payment.id})}"
 	                                method="get">
-	                                <button class="btn btn-success">Редагувати платіж</button>
+	                                <button class="btn btn-outline-secondary">Переглянути</button>
 	                            </form>
 						</td>
-						
+
 						<td>
-							<form th:action="@{/payments/{id}/delete( id=${payment.id})}"
-								method="post">
-								<button class="btn btn-danger">Видалити</button>
+							<!-- звичайну оплату можна сторнувати один раз; сторно не сторнують -->
+							<form th:if="${payment.stornoOfId == null and !payment.storned}"
+								th:action="@{/payments/{id}/storno( id=${payment.id})}"
+								method="post"
+								onsubmit="return confirm('Сторнувати цю оплату? Буде створено запис з мінусовою сумою, баланс учня зменшиться.');">
+								<button class="btn btn-warning">Сторнувати</button>
 							</form>
+							<span th:if="${payment.storned}" class="badge text-bg-secondary">сторновано</span>
+							<span th:if="${payment.stornoOfId != null}" class="badge text-bg-danger">сторно</span>
 						</td>
-						
+
 					</tr>
 				</tbody>
 			</table>

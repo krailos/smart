@@ -7,8 +7,8 @@ import java.time.LocalDate;
 
 
 @Data
-@EqualsAndHashCode(exclude = {"student"})
-@ToString(exclude ={"student"})
+@EqualsAndHashCode(exclude = {"student", "stornoOf"})
+@ToString(exclude ={"student", "stornoOf"})
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -27,6 +27,10 @@ public class Payment {
     @Column(name = "payment_date")
     private LocalDate date;
     private String description;
+    // якщо це сторно — оплата, яку воно "гасить" (сума тоді від'ємна); для звичайної оплати null
+    @ManyToOne
+    @JoinColumn(name = "storno_of_id")
+    private Payment stornoOf;
 
 
 }

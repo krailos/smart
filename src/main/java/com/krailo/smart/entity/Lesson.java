@@ -44,6 +44,9 @@ public class Lesson {
     private LocalTime startTime;
     @Column(name = "lesson_end")
     private LocalTime endTime;
+    // урок сторновано: списання повернуті учням, урок лишається тільки в історії
+    @Column(name = "is_storned")
+    private boolean storned;
     @OneToMany(mappedBy = "lesson")
     @Builder.Default
     private List<LessonsStudents> lessonsStudents = new ArrayList<>();

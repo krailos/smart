@@ -34,5 +34,6 @@ public class LessonDto {
     @DateTimeFormat(pattern = "HH:mm")
     private LocalTime endTime;
     private List<LessonsStudentsDto> lessonsStudentsDto;
+    private boolean storned; // урок сторновано
 
 }
