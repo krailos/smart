@@ -1,6 +1,7 @@
 package com.krailo.smart.service;
 
 import com.krailo.smart.dto.StudentsDiscountsDto;
+import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.mapper.StudentsDiscountsMapper;
 import com.krailo.smart.repository.StudentsDiscountsRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -29,6 +30,12 @@ public class StudentsDiscountsService {
     }
 
     public StudentsDiscountsDto create(StudentsDiscountsDto studentsDiscountsDto) {
+        // замість UNIQUE у БД: видалені знижки Hibernate не бачить (@SoftDelete),
+        // тож повторно призначити знижку після видалення можна, а дві однакові активні — ні
+        if (studentsDiscountsRepository.existsByStudentIdAndDiscountIdAndSubjectId(
+                studentsDiscountsDto.getStudentId(), studentsDiscountsDto.getDiscountId(), studentsDiscountsDto.getSubjectId())) {
+            throw new BusinessException("Учень уже має цю знижку на цей курс");
+        }
         return Optional.of(studentsDiscountsDto).map(studentsDiscountsMapper::mapDtoToEntityForCreate).map(studentsDiscountsRepository::save)
                 .map(studentsDiscountsMapper::mapEntityToDto).orElseThrow();
     }

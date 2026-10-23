@@ -1,6 +1,7 @@
 package com.krailo.smart.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.SoftDelete;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -11,6 +12,9 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+// видалення = м'яке (is_deleted = true): Hibernate сам ховає такі рядки з усіх запитів;
+// це "зв'язок без історії" — після видалення він справді не потрібен ніде
+@SoftDelete(columnName = "is_deleted")
 @Entity
 public class Price {
 

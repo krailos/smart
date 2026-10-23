@@ -39,6 +39,8 @@
 </nav>
 <div class="container my-4">
     <div class="row">
+        <!-- помилка: учень уже має цю знижку на цей курс (flash-повідомлення після редиректу) -->
+        <div th:if="${errorMessage}" class="alert alert-danger" role="alert" th:text="${errorMessage}"></div>
         <table class="table table-striped">
             <thead>
             <tr>

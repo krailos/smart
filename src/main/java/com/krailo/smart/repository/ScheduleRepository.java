@@ -27,4 +27,14 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
             @Param("excludeId") int excludeId
     );
 
+
+    // перевірки перед архівуванням: чи є запис у розкладі (м'яко видалені слоти Hibernate автоматично пропускає — @SoftDelete)
+    boolean existsByTeacherId(Integer teacherId);
+
+    boolean existsBySubjectId(Integer subjectId);
+
+    boolean existsByAudienceId(Integer audienceId);
+
+    boolean existsByGangId(Integer gangId);
+
 }

@@ -7,6 +7,7 @@ import com.krailo.smart.entity.Gang;
 import com.krailo.smart.entity.GangsStudents;
 import com.krailo.smart.entity.Student;
 import com.krailo.smart.entity.Teacher;
+import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.service.GangService;
 import com.krailo.smart.service.StudentService;
 import com.krailo.smart.service.SubjectService;
@@ -15,6 +16,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,9 +31,11 @@ public class GangController {
     private SubjectService subjectService;
     private TeacherService teacherService;
 
+    // /gangs — активні, /gangs?archived=true — архів (той самий шаблон)
     @GetMapping
-    public String findAll(Model model) {
-        model.addAttribute("gangs", gangService.findAll());
+    public String findAll(@RequestParam(defaultValue = "false") boolean archived, Model model) {
+        model.addAttribute("gangs", archived ? gangService.findAllArchived() : gangService.findAll());
+        model.addAttribute("archived", archived);
         return "gangs";
     }
     
@@ -100,10 +104,23 @@ public class GangController {
         return "redirect:/gangs";        
     }
     
-    @PostMapping("/{id}/delete")
-    public String delete (@PathVariable("id") Integer id) {
-         gangService.delete(id); 
-        return "redirect:/gangs";        
+    // архівування замість видалення (див. GangService.archive)
+    @PostMapping("/{id}/archive")
+    public String archive (@PathVariable("id") Integer id, RedirectAttributes redirectAttributes) {
+        try {
+            gangService.archive(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Групу переміщено в архів");
+        } catch (BusinessException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/gangs";
+    }
+
+    @PostMapping("/{id}/restore")
+    public String restore (@PathVariable("id") Integer id, RedirectAttributes redirectAttributes) {
+        gangService.restore(id);
+        redirectAttributes.addFlashAttribute("successMessage", "Групу відновлено з архіву");
+        return "redirect:/gangs?archived=true";
     }
 
 }

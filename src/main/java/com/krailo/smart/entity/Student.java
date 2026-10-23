@@ -36,6 +36,10 @@ public class Student {
     private StudentStatus studentStatus;
     private LocalDate birthDate;
     private String description;
+    // архів: запис зникає зі списків і випадаючих меню форм, але лишається в історії (уроки, оплати, розклад);
+    // на відміну від @SoftDelete, Hibernate його НЕ ховає — тому уроки й оплати й далі бачать ім'я
+    @Column(name = "is_deleted")
+    private boolean archived;
     private double balance;
     @Builder.Default
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)

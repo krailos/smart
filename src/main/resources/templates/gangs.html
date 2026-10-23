@@ -29,14 +29,20 @@
 					<li class="nav-item"><a th:href="@{/gangs/gang/new}">
 							<button class="btn btn-success">Додати групу</button>
 					</a></li>
-					
+					<!-- перемикач: активні / архів -->
+					<li class="nav-item ms-2"><a class="btn btn-outline-secondary"
+						th:href="${archived} ? @{/gangs} : @{/gangs(archived=true)}"
+						th:text="${archived} ? 'Активні групи' : 'Архів'"></a></li>
 				</ul>
 			</div>
 		</div>
 	</nav>
 	<div class="container my-4">
-		<div class="text-center text-uppercase fs-5 fw-bolder">ГРУПИ</div>
+		<div class="text-center text-uppercase fs-5 fw-bolder" th:text="${archived} ? 'ГРУПИ — АРХІВ' : 'ГРУПИ'">ГРУПИ</div>
 		<div class="row">
+			<!-- результат архівування / відновлення (flash-повідомлення після редиректу) -->
+			<div th:if="${successMessage}" class="alert alert-success" role="alert" th:text="${successMessage}"></div>
+			<div th:if="${errorMessage}" class="alert alert-danger" role="alert" th:text="${errorMessage}"></div>
 			<table class="table table-striped">
 				<thead>
 					<tr>
@@ -48,7 +54,7 @@
 						<th scope="col">Опис</th>
 						<th scope="col">Cтуденти</th>
 						<th scope="col">Редагувати</th>
-						<th scope="col">Видалити</th>
+						<th scope="col">Архів</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -67,10 +73,14 @@
 						</a></td>
 
 						<td>
-							<form th:action="@{/gangs/{id}/delete( id=${gang.id})}"
-								method="post">
-								<button class="btn btn-danger">Видалити</button>
-							</form> 
+							<!-- архівування замість видалення: проведені уроки групу пам'ятають -->
+							<form th:unless="${archived}" th:action="@{/gangs/{id}/archive( id=${gang.id})}"
+								method="post" onsubmit="return confirm('Перемістити групу в архів?');">
+								<button class="btn btn-outline-danger">В архів</button>
+							</form>
+							<form th:if="${archived}" th:action="@{/gangs/{id}/restore( id=${gang.id})}" method="post">
+								<button class="btn btn-outline-success">Відновити</button>
+							</form>
 						</td>
 					</tr>
 				</tbody>

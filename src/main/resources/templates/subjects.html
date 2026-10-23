@@ -33,12 +33,20 @@
 					   <a class="nav-link active"
                         aria-current="page" href="/prices">Вартість курсів</a>
                     </li-->
+					<!-- перемикач: активні / архів -->
+					<li class="nav-item ms-2"><a class="btn btn-outline-secondary"
+						th:href="${archived} ? @{/subjects} : @{/subjects(archived=true)}"
+						th:text="${archived} ? 'Активні курси' : 'Архів'"></a></li>
 				</ul>
 			</div>
 		</div>
 	</nav>
 	<div class="container my-4">
+		<div th:if="${archived}" class="text-center text-uppercase fs-5 fw-bolder">КУРСИ — АРХІВ</div>
 		<div class="row">
+			<!-- результат архівування / відновлення, помилка "ціна на цю дату вже є" (flash-повідомлення) -->
+			<div th:if="${successMessage}" class="alert alert-success" role="alert" th:text="${successMessage}"></div>
+			<div th:if="${errorMessage}" class="alert alert-danger" role="alert" th:text="${errorMessage}"></div>
 			<table class="table table-striped">
 				<thead>
 					<tr>
@@ -48,7 +56,7 @@
 						<th scope="col">Опис</th>
 						<th scope="col">Редагувати вартість</th>
 						<th scope="col">Редагувати</th>
-						<th scope="col">Видалити</th>
+						<th scope="col">Архів</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -66,10 +74,14 @@
 						</a></td>
 
 						<td>
-							<form th:action="@{/subjects/{id}/delete( id=${subject.id})}"
-								method="post">
-								<button class="btn btn-danger">Видалити</button>
-							</form> </a>
+							<!-- архівування замість видалення: уроки, ціни й оплати в історії лишаються -->
+							<form th:unless="${archived}" th:action="@{/subjects/{id}/archive( id=${subject.id})}"
+								method="post" onsubmit="return confirm('Перемістити курс в архів?');">
+								<button class="btn btn-outline-danger">В архів</button>
+							</form>
+							<form th:if="${archived}" th:action="@{/subjects/{id}/restore( id=${subject.id})}" method="post">
+								<button class="btn btn-outline-success">Відновити</button>
+							</form>
 						</td>
 					</tr>
 				</tbody>

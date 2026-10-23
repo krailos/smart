@@ -49,7 +49,8 @@ public class ReportController {
 
     @GetMapping("/account/form")
     public String showAccountForm (Model model) {
-        model.addAttribute("students", studentService.findAll());
+        // і активні, і архівні: учень в архіві теж може мати борг
+        model.addAttribute("students", studentService.findAllIncludingArchived());
         return "reportAccountForm";
     }
     

@@ -31,6 +31,10 @@ public class Teacher {
     @Column(name = "birth_date")
     private LocalDate birthDate;
     private String description;
+    // архів: запис зникає зі списків і випадаючих меню форм, але лишається в історії (уроки, оплати, розклад);
+    // на відміну від @SoftDelete, Hibernate його НЕ ховає — тому уроки й оплати й далі бачать ім'я
+    @Column(name = "is_deleted")
+    private boolean archived;
     @OneToMany (mappedBy = "teacher", fetch = FetchType.LAZY)
     private List<Gang> gangs;
     @OneToMany (mappedBy = "teacher", fetch = FetchType.LAZY)

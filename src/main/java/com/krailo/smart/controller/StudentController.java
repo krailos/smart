@@ -4,12 +4,14 @@ import com.krailo.smart.dto.StudentDto;
 import com.krailo.smart.entity.Student;
 import com.krailo.smart.enumeration.Gender;
 import com.krailo.smart.enumeration.StudentStatus;
+import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.service.StudentService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/students")
@@ -24,9 +26,12 @@ public class StudentController {
                           @RequestParam(defaultValue = "lastName") String sortBy,
                           @RequestParam(defaultValue = "asc") String sortDir,
                           @RequestParam(required = false) String keyword,
+                          // /students — активні, /students?archived=true — архів (той самий шаблон)
+                          @RequestParam(defaultValue = "false") boolean archived,
                           Model model) {
 
-        Page<StudentDto> studentPage  = studentService.findAllByPage(page, size, sortBy, sortDir, keyword);
+        Page<StudentDto> studentPage  = studentService.findAllByPage(page, size, sortBy, sortDir, keyword, archived);
+        model.addAttribute("archived", archived);
         model.addAttribute("studentPage", studentPage);
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", studentPage.getTotalPages());
@@ -70,10 +75,23 @@ public class StudentController {
         return "redirect:/students";
     }
 
-    @PostMapping("/{id}/delete")
-    public String delete(@PathVariable("id") Integer id) {
-        studentService.delete(id);
+    // архівування замість видалення (див. StudentService.archive)
+    @PostMapping("/{id}/archive")
+    public String archive(@PathVariable("id") Integer id, RedirectAttributes redirectAttributes) {
+        try {
+            studentService.archive(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Учня переміщено в архів");
+        } catch (BusinessException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
         return "redirect:/students";
+    }
+
+    @PostMapping("/{id}/restore")
+    public String restore(@PathVariable("id") Integer id, RedirectAttributes redirectAttributes) {
+        studentService.restore(id);
+        redirectAttributes.addFlashAttribute("successMessage", "Учня відновлено з архіву");
+        return "redirect:/students?archived=true";
     }
 
 }

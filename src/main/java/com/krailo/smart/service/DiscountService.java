@@ -1,6 +1,7 @@
 package com.krailo.smart.service;
 
 import com.krailo.smart.dto.DiscountDto;
+import com.krailo.smart.entity.Discount;
 import com.krailo.smart.mapper.DiscountMapper;
 import com.krailo.smart.repository.DiscountRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -19,8 +20,13 @@ public class DiscountService {
     private DiscountRepository discountRepository;
     private DiscountMapper discountMapper;
 
+    // тільки активні — для списку знижок і випадаючого меню "знижка учня"
     public List<DiscountDto> findAll() {
-        return discountRepository.findAll().stream().map(discountMapper::mapEntityToDto).toList();
+        return discountRepository.findAllByArchived(false).stream().map(discountMapper::mapEntityToDto).toList();
+    }
+
+    public List<DiscountDto> findAllArchived() {
+        return discountRepository.findAllByArchived(true).stream().map(discountMapper::mapEntityToDto).toList();
     }
 
     public DiscountDto findById(Integer id) {
@@ -40,11 +46,23 @@ public class DiscountService {
                 .orElseThrow(() -> new RuntimeException("smth wrong when update"));
     }
 
-    public boolean delete(Integer id) {
-        return discountRepository.findById(id).map(entity -> {
-            discountRepository.delete(entity);
-            return true;
-        }).orElse(false);
+    // Архівування замість видалення: знижку більше не можна призначити новим учням,
+    // але вже призначені знижки й розрахунки за минулі уроки лишаються як були.
+    public void archive(Integer id) {
+        Discount discount = findByIdEntity(id);
+        discount.setArchived(true);
+        discountRepository.save(discount);
+    }
+
+    public void restore(Integer id) {
+        Discount discount = findByIdEntity(id);
+        discount.setArchived(false);
+        discountRepository.save(discount);
+    }
+
+    private Discount findByIdEntity(Integer id) {
+        return discountRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Discount whith id= %d not exist", id)));
     }
 
 }

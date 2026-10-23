@@ -29,12 +29,12 @@ ScheduleController {
     private AudienceService audienceService;
     private SubjectService subjectService;
     private GangService gangService;
-    private TeacherService teacherService;
+        private TeacherService teacherService;
 
-    @GetMapping
-    public String findAll(Model model) {
-        model.addAttribute("schedules", scheduleService.findAll());
-        return "schedules";
+        @GetMapping
+        public String findAll(Model model) {
+            model.addAttribute("schedules", scheduleService.findAll());
+            return "schedules";
     }
 
     @GetMapping("/{id}")

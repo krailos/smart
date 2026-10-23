@@ -29,14 +29,20 @@
                 <li class="nav-item"><a th:href="@{/teachers/teacher/new}">
                     <button class="btn btn-success">Додати вчителя</button>
                 </a></li>
-
+                <!-- перемикач: активні / архів -->
+                <li class="nav-item ms-2"><a class="btn btn-outline-secondary"
+                    th:href="${archived} ? @{/teachers} : @{/teachers(archived=true)}"
+                    th:text="${archived} ? 'Активні вчителі' : 'Архів'"></a></li>
             </ul>
         </div>
     </div>
 </nav>
 <div class="container my-4">
-    <div class="text-center text-uppercase fs-5 fw-bolder">ВЧИТЕЛІ</div>
+    <div class="text-center text-uppercase fs-5 fw-bolder" th:text="${archived} ? 'ВЧИТЕЛІ — АРХІВ' : 'ВЧИТЕЛІ'">ВЧИТЕЛІ</div>
     <div class="row">
+        <!-- результат архівування / відновлення (flash-повідомлення після редиректу) -->
+        <div th:if="${successMessage}" class="alert alert-success" role="alert" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-danger" role="alert" th:text="${errorMessage}"></div>
         <table class="table table-striped">
             <thead>
             <tr>
@@ -48,7 +54,7 @@
                 <th scope="col">К-сть груп</th>
                 <th scope="col">Групи</th>
                 <th scope="col">Редагувати</th>
-                <th scope="col">Видалити</th>
+                <th scope="col">Архів</th>
             </tr>
             </thead>
             <tbody>
@@ -69,9 +75,13 @@
                     </a>
                 </td>
                 <td>
-                    <form th:action="@{/teachers/{id}/delete( id=${teacher.id})}"
-                          method="post">
-                        <button class="btn btn-danger">Видалити</button>
+                    <!-- архівування замість видалення: в історії (уроки, розклад) вчитель лишається -->
+                    <form th:unless="${archived}" th:action="@{/teachers/{id}/archive( id=${teacher.id})}"
+                          method="post" onsubmit="return confirm('Перемістити вчителя в архів?');">
+                        <button class="btn btn-outline-danger">В архів</button>
+                    </form>
+                    <form th:if="${archived}" th:action="@{/teachers/{id}/restore( id=${teacher.id})}" method="post">
+                        <button class="btn btn-outline-success">Відновити</button>
                     </form>
                 </td>
             </tr>

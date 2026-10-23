@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/discounts")
@@ -17,9 +18,11 @@ public class DiscountController {
     private DiscountService discountService;
     private StudentService studentService;
 
+    // /discounts — активні, /discounts?archived=true — архів (той самий шаблон)
     @GetMapping
-    public String findAll(Model model) {
-        model.addAttribute("discounts", discountService.findAll());
+    public String findAll(@RequestParam(defaultValue = "false") boolean archived, Model model) {
+        model.addAttribute("discounts", archived ? discountService.findAllArchived() : discountService.findAll());
+        model.addAttribute("archived", archived);
         return "discounts";
     }
 
@@ -51,10 +54,19 @@ public class DiscountController {
         return "redirect:/discounts";
     }
 
-    @PostMapping("/{id}/delete")
-    public String delete(@PathVariable("id") Integer id) {
-        discountService.delete(id);
+    // архівування замість видалення (див. DiscountService.archive)
+    @PostMapping("/{id}/archive")
+    public String archive(@PathVariable("id") Integer id, RedirectAttributes redirectAttributes) {
+        discountService.archive(id);
+        redirectAttributes.addFlashAttribute("successMessage", "Знижку переміщено в архів");
         return "redirect:/discounts";
+    }
+
+    @PostMapping("/{id}/restore")
+    public String restore(@PathVariable("id") Integer id, RedirectAttributes redirectAttributes) {
+        discountService.restore(id);
+        redirectAttributes.addFlashAttribute("successMessage", "Знижку відновлено з архіву");
+        return "redirect:/discounts?archived=true";
     }
 
 }

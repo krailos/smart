@@ -32,14 +32,20 @@
 
                       <li class="nav-item"><a class="nav-link active"
                         aria-current="page" href="/studentsDiscounts">Знижки та Студенти</a></li>
-
-
+					<!-- перемикач: активні / архів -->
+					<li class="nav-item ms-2"><a class="btn btn-outline-secondary"
+						th:href="${archived} ? @{/discounts} : @{/discounts(archived=true)}"
+						th:text="${archived} ? 'Активні знижки' : 'Архів'"></a></li>
 				</ul>
 			</div>
 		</div>
 	</nav>
 	<div class="container my-4">
+		<div th:if="${archived}" class="text-center text-uppercase fs-5 fw-bolder">ЗНИЖКИ — АРХІВ</div>
 		<div class="row">
+			<!-- результат архівування / відновлення (flash-повідомлення після редиректу) -->
+			<div th:if="${successMessage}" class="alert alert-success" role="alert" th:text="${successMessage}"></div>
+			<div th:if="${errorMessage}" class="alert alert-danger" role="alert" th:text="${errorMessage}"></div>
 			<table class="table table-striped">
 				<thead>
 					<tr>
@@ -48,7 +54,7 @@
 						<th scope="col">Величина знижки</th>
 						<th scope="col">Дата</th>												
 						<th scope="col">Редагувати</th>
-						<th scope="col">Видалити</th>
+						<th scope="col">Архів</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -61,9 +67,13 @@
 								<button class="btn btn-primary">Редагувати знижку</button>
 						</a></td>
 						<td>
-							<form th:action="@{/discounts/{id}/delete( id=${discount.id})}"
-								method="post">
-								<button class="btn btn-danger">Видалити</button>
+							<!-- архівування: знижку більше не можна призначити, але вже призначені працюють -->
+							<form th:unless="${archived}" th:action="@{/discounts/{id}/archive( id=${discount.id})}"
+								method="post" onsubmit="return confirm('Перемістити знижку в архів? Нові учні не зможуть її отримати.');">
+								<button class="btn btn-outline-danger">В архів</button>
+							</form>
+							<form th:if="${archived}" th:action="@{/discounts/{id}/restore( id=${discount.id})}" method="post">
+								<button class="btn btn-outline-success">Відновити</button>
 							</form>
 						</td>
 					</tr>

@@ -2,6 +2,7 @@ package com.krailo.smart.entity;
 
 import com.krailo.smart.enumeration.WeekDay;
 import jakarta.persistence.*;
+import org.hibernate.annotations.SoftDelete;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,6 +14,9 @@ import java.time.LocalTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+// видалення = м'яке (is_deleted = true): Hibernate сам ховає такі рядки з усіх запитів;
+// це "зв'язок без історії" — після видалення він справді не потрібен ніде
+@SoftDelete(columnName = "is_deleted")
 @Entity
 public class Schedule {
 

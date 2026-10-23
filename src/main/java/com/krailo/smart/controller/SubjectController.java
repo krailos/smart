@@ -2,11 +2,13 @@ package com.krailo.smart.controller;
 
 import com.krailo.smart.dto.SubjectDto;
 import com.krailo.smart.entity.Subject;
+import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.service.SubjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/subjects")
@@ -15,9 +17,11 @@ public class SubjectController {
 
     private final SubjectService subjectService;
 
+    // /subjects — активні, /subjects?archived=true — архів (той самий шаблон)
     @GetMapping
-    public String findAll(Model model) {
-        model.addAttribute("subjects", subjectService.findAll());
+    public String findAll(@RequestParam(defaultValue = "false") boolean archived, Model model) {
+        model.addAttribute("subjects", archived ? subjectService.findAllArchived() : subjectService.findAll());
+        model.addAttribute("archived", archived);
         return "subjects";
     }
     
@@ -50,10 +54,23 @@ public class SubjectController {
         return "redirect:/subjects";        
     }
     
-    @PostMapping("/{id}/delete")
-    public String delete (@PathVariable("id") Integer id) {
-         subjectService.delete(id); 
-        return "redirect:/subjects";        
+    // архівування замість видалення (див. SubjectService.archive)
+    @PostMapping("/{id}/archive")
+    public String archive (@PathVariable("id") Integer id, RedirectAttributes redirectAttributes) {
+        try {
+            subjectService.archive(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Курс переміщено в архів");
+        } catch (BusinessException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/subjects";
+    }
+
+    @PostMapping("/{id}/restore")
+    public String restore (@PathVariable("id") Integer id, RedirectAttributes redirectAttributes) {
+        subjectService.restore(id);
+        redirectAttributes.addFlashAttribute("successMessage", "Курс відновлено з архіву");
+        return "redirect:/subjects?archived=true";
     }
 
 }

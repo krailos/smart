@@ -5,9 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.SoftDelete;
 
-@SoftDelete(columnName = "is_deleted")
+// Раніше тут був @SoftDelete: тоді розклад і уроки з "видаленою" аудиторією отримували audience = null
+// і сторінки падали. Тепер аудиторію архівують — як вчителів, учнів, курси, групи, знижки.
 @Data
 @Builder
 @AllArgsConstructor
@@ -20,7 +20,8 @@ public class Audience {
     private Integer id;
     private String name;
     private String description;
-    @Column(name = "is_deleted", insertable = false, updatable = false)
-    private boolean deleted;
+    // архів: запис зникає зі списків і випадаючих меню форм, але лишається в історії (уроки, розклад)
+    @Column(name = "is_deleted")
+    private boolean archived;
 
 }

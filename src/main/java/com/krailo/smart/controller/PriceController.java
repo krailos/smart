@@ -2,12 +2,14 @@ package com.krailo.smart.controller;
 
 import com.krailo.smart.dto.PriceDto;
 import com.krailo.smart.dto.SubjectDto;
+import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.service.PriceService;
 import com.krailo.smart.service.SubjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/prices")
@@ -60,9 +62,13 @@ public class PriceController {
     
     
     @PostMapping("/create")
-    public String create ( @ModelAttribute PriceDto priceDto) {
-        System.out.println(priceDto);
-        priceService.create(priceDto);  
+    public String create ( @ModelAttribute PriceDto priceDto, RedirectAttributes redirectAttributes) {
+        try {
+            priceService.create(priceDto);
+        } catch (BusinessException e) {
+            // ціна курсу на цю дату вже є — показуємо повідомлення на сторінці курсів
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
         return "redirect:/subjects";
     }
     

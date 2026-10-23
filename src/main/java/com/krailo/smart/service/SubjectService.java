@@ -2,7 +2,10 @@ package com.krailo.smart.service;
 
 import com.krailo.smart.dto.SubjectDto;
 import com.krailo.smart.entity.Subject;
+import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.mapper.SubjectMapper;
+import com.krailo.smart.repository.GangRepository;
+import com.krailo.smart.repository.ScheduleRepository;
 import com.krailo.smart.repository.SubjectRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
@@ -19,13 +22,23 @@ public class SubjectService {
 
     private SubjectRepository subjectRepository;
     private SubjectMapper subjectMapper;
+    private GangRepository gangRepository;
+    private ScheduleRepository scheduleRepository;
 
-    
+    // тільки активні — для списку курсів і всіх випадаючих меню у формах
     public List<SubjectDto> findAll() {
-      return subjectRepository.findAll().stream()
-              .peek(s -> s.getPrices().sort((o1, o2) -> o2.getDate().compareTo(o1.getDate())))
-              .map(subjectMapper::mapEntityToDto).toList();
+      return findAllByArchived(false);
   }
+
+    public List<SubjectDto> findAllArchived() {
+        return findAllByArchived(true);
+    }
+
+    private List<SubjectDto> findAllByArchived(boolean archived) {
+        return subjectRepository.findAllByArchived(archived).stream()
+                .peek(s -> s.getPrices().sort((o1, o2) -> o2.getDate().compareTo(o1.getDate())))
+                .map(subjectMapper::mapEntityToDto).toList();
+    }
 
 
     public SubjectDto findById(Integer id) {
@@ -50,10 +63,23 @@ public class SubjectService {
                 .orElseThrow(() -> new RuntimeException("smth wrong when update"));
     }
 
-    public boolean delete(Integer id) {
-        return subjectRepository.findById(id).map(entity -> {
-            subjectRepository.delete(entity);
-            return true;
-        }).orElse(false);
+    // Архівування замість видалення: курс зникає зі списків і форм, але уроки, ціни й оплати в історії лишаються.
+    // Не можна архівувати, поки курс потрібен у майбутньому: є активні групи або заняття в розкладі.
+    public void archive(Integer id) {
+        Subject subject = findByIdEntity(id);
+        if (gangRepository.existsBySubjectIdAndArchivedFalse(id)) {
+            throw new BusinessException("Не можна архівувати курс: є активні групи цього курсу. Спершу архівуйте групи");
+        }
+        if (scheduleRepository.existsBySubjectId(id)) {
+            throw new BusinessException("Не можна архівувати курс: він є в розкладі. Спершу видаліть ці заняття з розкладу");
+        }
+        subject.setArchived(true);
+        subjectRepository.save(subject);
+    }
+
+    public void restore(Integer id) {
+        Subject subject = findByIdEntity(id);
+        subject.setArchived(false);
+        subjectRepository.save(subject);
     }
 }

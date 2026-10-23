@@ -3,6 +3,7 @@ package com.krailo.smart.controller;
 import com.krailo.smart.dto.StudentsDiscountsDto;
 import com.krailo.smart.entity.Student;
 import com.krailo.smart.entity.StudentsDiscounts;
+import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.service.DiscountService;
 import com.krailo.smart.service.StudentService;
 import com.krailo.smart.service.StudentsDiscountsService;
@@ -11,6 +12,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -61,12 +63,14 @@ public class StudentsDiscountsController {
     
     @PostMapping("/create")
    // @ResponseStatus(HttpStatus.CREATED)
-    public String create ( @ModelAttribute StudentsDiscountsDto studentsDiscountsDto) {
-        System.out.println(studentsDiscountsDto.getStudentId());
-        System.out.println(studentsDiscountsDto.getDiscountId());
-        System.out.println(studentsDiscountsDto.getSubjectId());
-        studentsDiscountsService.create(studentsDiscountsDto);  
-        return "redirect:/studentsDiscounts";     
+    public String create ( @ModelAttribute StudentsDiscountsDto studentsDiscountsDto, RedirectAttributes redirectAttributes) {
+        try {
+            studentsDiscountsService.create(studentsDiscountsDto);
+        } catch (BusinessException e) {
+            // така сама знижка учня вже є — показуємо повідомлення на сторінці списку
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/studentsDiscounts";
     }
     
     @PostMapping("/{id}/update")

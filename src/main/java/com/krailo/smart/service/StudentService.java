@@ -2,8 +2,10 @@ package com.krailo.smart.service;
 
 import com.krailo.smart.dto.StudentDto;
 import com.krailo.smart.entity.Student;
+import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.exception.ResourceNotFoundException;
 import com.krailo.smart.mapper.StudentMapper;
+import com.krailo.smart.repository.GangsStudentsRepository;
 import com.krailo.smart.repository.StudentRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -24,9 +26,11 @@ public class StudentService {
     
     private StudentRepository studentRepository;
     private StudentMapper studentMapper;
+    private GangsStudentsRepository gangsStudentsRepository;
 
 
-    public Page<StudentDto> findAllByPage(int page, int size, String sortBy, String sortDir, String keyword){
+    // archived = false — список активних учнів, true — архів
+    public Page<StudentDto> findAllByPage(int page, int size, String sortBy, String sortDir, String keyword, boolean archived){
         Sort sort = sortDir.equalsIgnoreCase("desc") ?
                 Sort.by(sortBy).descending() :
                 Sort.by(sortBy).ascending();
@@ -34,17 +38,23 @@ public class StudentService {
         // Перевіряємо наявність ключового слова
         Page<Student> studentPage;
         if (keyword != null && !keyword.trim().isEmpty()) {
-            studentPage = studentRepository.searchStudents(keyword.trim(), pageable);
+            studentPage = studentRepository.searchStudents(keyword.trim(), archived, pageable);
         } else {
-            studentPage = studentRepository.findAll(pageable);
+            studentPage = studentRepository.findAllByArchived(archived, pageable);
         }
         // Мапимо сутності в DTO
         return studentPage.map(student -> studentMapper.mapEntityToDto(student));
     }
-    
+
+    // тільки активні — для випадаючих меню у формах (оплата, знижка учня)
     public List<StudentDto> findAll() {
-      return studentRepository.findAll().stream().sorted(Comparator.comparing(Student::getLastName)).map(studentMapper::mapEntityToDto).toList();
+      return studentRepository.findAllByArchived(false).stream().sorted(Comparator.comparing(Student::getLastName)).map(studentMapper::mapEntityToDto).toList();
   }
+
+    // активні й архівні — для звітів: учень в архіві теж може мати борг
+    public List<StudentDto> findAllIncludingArchived() {
+        return studentRepository.findAll().stream().sorted(Comparator.comparing(Student::getLastName)).map(studentMapper::mapEntityToDto).toList();
+    }
 
 
     public StudentDto findById(Integer id) {
@@ -70,10 +80,21 @@ public class StudentService {
                 .orElseThrow(() -> new RuntimeException("smth wrong when update"));
     }
 
-    public boolean delete(Integer id) {
-        return studentRepository.findById(id).map(entity -> {
-            studentRepository.delete(entity);
-            return true;
-        }).orElse(false);
+    // Архівування замість видалення: учень зникає зі списків і форм,
+    // але його уроки, оплати, журнал транзакцій і баланс лишаються (звіт по ньому можна зробити й з архіву).
+    // Не можна архівувати, поки учень у активній групі — інакше він з'являтиметься у формі проведення уроку.
+    public void archive(Integer id) {
+        Student student = findByIdEntity(id);
+        if (gangsStudentsRepository.existsByStudentIdAndGangArchivedFalse(id)) {
+            throw new BusinessException("Не можна архівувати учня: він ще в активній групі. Спершу приберіть його з групи");
+        }
+        student.setArchived(true);
+        studentRepository.save(student);
+    }
+
+    public void restore(Integer id) {
+        Student student = findByIdEntity(id);
+        student.setArchived(false);
+        studentRepository.save(student);
     }
 }

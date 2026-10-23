@@ -1,6 +1,8 @@
 package com.krailo.smart.controller;
 
+import com.krailo.smart.dto.AudienceDto;
 import com.krailo.smart.dto.GangsStudentsDto;
+import com.krailo.smart.dto.TeacherDto;
 import com.krailo.smart.dto.LessonDto;
 import com.krailo.smart.dto.LessonsStudentsDto;
 import com.krailo.smart.dto.ScheduleDto;
@@ -98,8 +100,9 @@ public class LessonController {
 
     @GetMapping("/lessons/{id}")
     public String findById(@PathVariable("id") Integer id, Model model) {
-        model.addAttribute("lesson", lessonService.findById(id));
-        fillEditFormLists(model);
+        LessonDto lesson = lessonService.findById(id);
+        model.addAttribute("lesson", lesson);
+        fillEditFormLists(model, lesson.getTeacherId(), lesson.getAudienceId());
         return "lesson";
     }
 
@@ -112,12 +115,12 @@ public class LessonController {
         } catch (ScheduleConflictException | LessonException e) {
             // беремо урок з бази (учні, назви, час) і накладаємо те, що користувач вибрав у формі
             LessonDto lesson = lessonService.findById(id);
+            fillEditFormLists(model, lesson.getTeacherId(), lesson.getAudienceId());
             lesson.setTeacherId(lessonDto.getTeacherId());
             lesson.setAudienceId(lessonDto.getAudienceId());
             lesson.setDate(lessonDto.getDate());
             model.addAttribute("lesson", lesson);
             model.addAttribute("errorMessage", e.getMessage());
-            fillEditFormLists(model);
             return "lesson";
         }
         return "redirect:/lessons";
@@ -137,9 +140,20 @@ public class LessonController {
         return "redirect:/lessons";
     }
 
-    private void fillEditFormLists(Model model) {
-        model.addAttribute("teachers", teacherService.findAll());
-        model.addAttribute("audiences", audienceService.findAll());
+    // Списки для форми редагування уроку: активні вчителі й аудиторії + ті, що зараз записані в уроці.
+    // Вчитель старого уроку міг потрапити в архів — якщо його не буде в списку,
+    // випадаюче меню при збереженні "тихо" замінить його першим вчителем зі списку.
+    private void fillEditFormLists(Model model, Integer lessonTeacherId, Integer lessonAudienceId) {
+        List<TeacherDto> teachers = new ArrayList<>(teacherService.findAll());
+        if (teachers.stream().noneMatch(t -> t.getId().equals(lessonTeacherId))) {
+            teachers.add(teacherService.findById(lessonTeacherId));
+        }
+        List<AudienceDto> audiences = new ArrayList<>(audienceService.findAll());
+        if (audiences.stream().noneMatch(a -> a.getId().equals(lessonAudienceId))) {
+            audiences.add(audienceService.findById(lessonAudienceId));
+        }
+        model.addAttribute("teachers", teachers);
+        model.addAttribute("audiences", audiences);
     }
 
     // форма уроку надсилає тільки id (поля з назвами disabled і не відправляються),

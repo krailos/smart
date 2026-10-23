@@ -3,8 +3,10 @@ package com.krailo.smart.service;
 
 import com.krailo.smart.dto.AudienceDto;
 import com.krailo.smart.entity.Audience;
+import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.mapper.AudienceMapper;
 import com.krailo.smart.repository.AudienceRepository;
+import com.krailo.smart.repository.ScheduleRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,9 +22,15 @@ public class AudienceService {
 
     private AudienceRepository audienceRepository;
     private AudienceMapper audienceMapper;
+    private ScheduleRepository scheduleRepository;
 
+    // тільки активні — для списку аудиторій і всіх випадаючих меню у формах
     public List<AudienceDto> findAll() {
-        return audienceRepository.findAll().stream().map(audienceMapper::mapEntityToDto).toList();
+        return audienceRepository.findAllByArchived(false).stream().map(audienceMapper::mapEntityToDto).toList();
+    }
+
+    public List<AudienceDto> findAllArchived() {
+        return audienceRepository.findAllByArchived(true).stream().map(audienceMapper::mapEntityToDto).toList();
     }
 
     public AudienceDto findById(Integer id) {
@@ -47,11 +55,22 @@ public class AudienceService {
                 .orElseThrow(() -> new RuntimeException("smth wrong when update"));
     }
 
-    public boolean delete(Integer id) {
-        return audienceRepository.findById(id).map(entity -> {
-            audienceRepository.delete(entity);
-            return true;
-        }).orElse(false);
+    // Архівування замість видалення: аудиторія зникає зі списків і форм, але проведені уроки її пам'ятають.
+    // Не можна архівувати, поки аудиторія є в розкладі.
+    public void archive(Integer id) {
+        Audience audience = findByIdEntity(id);
+        if (scheduleRepository.existsByAudienceId(id)) {
+            throw new BusinessException("Не можна архівувати аудиторію: вона є в розкладі. "
+                    + "Спершу перенесіть ці заняття в іншу аудиторію або видаліть їх з розкладу");
+        }
+        audience.setArchived(true);
+        audienceRepository.save(audience);
+    }
+
+    public void restore(Integer id) {
+        Audience audience = findByIdEntity(id);
+        audience.setArchived(false);
+        audienceRepository.save(audience);
     }
 
 }

@@ -3,8 +3,10 @@ package com.krailo.smart.service;
 import com.krailo.smart.dto.GangDto;
 import com.krailo.smart.entity.Gang;
 import com.krailo.smart.entity.Teacher;
+import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.mapper.GangMapper;
 import com.krailo.smart.repository.GangRepository;
+import com.krailo.smart.repository.ScheduleRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,11 +22,16 @@ public class GangService {
 
     private GangRepository gangRepository;
     private GangMapper gangMapper;
+    private ScheduleRepository scheduleRepository;
 
-    
+    // тільки активні — для списку груп і всіх випадаючих меню у формах
     public List<GangDto> findAll() {
-      return gangRepository.findAll().stream().map(gangMapper::mapEntityToDto).toList();
+      return gangRepository.findAllByArchived(false).stream().map(gangMapper::mapEntityToDto).toList();
   }
+
+    public List<GangDto> findAllArchived() {
+        return gangRepository.findAllByArchived(true).stream().map(gangMapper::mapEntityToDto).toList();
+    }
 
     public List<GangDto> findAllByTeacher(Teacher teacher) {
         return gangRepository.findAllByTeacher(teacher).stream().map(gangMapper::mapEntityToDto).toList();
@@ -54,10 +61,20 @@ public class GangService {
                 .orElseThrow(() -> new RuntimeException("smth wrong when update"));
     }
 
-    public boolean delete(Integer id) {
-        return gangRepository.findById(id).map(entity -> {
-            gangRepository.delete(entity);
-            return true;
-        }).orElse(false);
+    // Архівування замість видалення: група зникає зі списків і форм, але проведені уроки її пам'ятають.
+    // Не можна архівувати, поки група є в розкладі.
+    public void archive(Integer id) {
+        Gang gang = findByIdEntity(id);
+        if (scheduleRepository.existsByGangId(id)) {
+            throw new BusinessException("Не можна архівувати групу: вона є в розкладі. Спершу видаліть її заняття з розкладу");
+        }
+        gang.setArchived(true);
+        gangRepository.save(gang);
+    }
+
+    public void restore(Integer id) {
+        Gang gang = findByIdEntity(id);
+        gang.setArchived(false);
+        gangRepository.save(gang);
     }
 }
