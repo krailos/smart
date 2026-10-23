@@ -47,6 +47,7 @@
 						<th scope="col">Дата</th>
 						<th scope="col">Предмет</th>
 						<th scope="col">Група</th>
+						<th scope="col">Вчитель</th>
 						<th scope="col">Аудиторія</th>						
 						<th scope="col">Початок урок</th>
 						<th scope="col">Кінець уроку</th>
@@ -61,13 +62,14 @@
 						  <td th:text="${lesson.date}"></td>
 						<td th:text="${lesson.subjectName}"></td>
 						<td th:text="${lesson.gangName}"></td>
+						<td th:text="${lesson.teacherName}"></td>
 						<td th:text="${lesson.audienceName}"></td>
 						<td th:text="${lesson.startTime}"></td>
 						<td th:text="${lesson.endTime}"></td>
 						<td th:text="${lesson.lessonsStudentsDto.size()}"></td>
 						
 
-						<td><a th:href="@{/}">
+						<td><a th:href="@{/lessons/{id}(id=${lesson.id})}">
 								<button class="btn btn-primary">Редагувати урок</button>
 						</a></td>
 						<td>

@@ -5,6 +5,7 @@ import com.krailo.smart.entity.Audience;
 import com.krailo.smart.entity.Gang;
 import com.krailo.smart.entity.Lesson;
 import com.krailo.smart.entity.Subject;
+import com.krailo.smart.entity.Teacher;
 import com.krailo.smart.service.AudienceService;
 import com.krailo.smart.service.GangService;
 import com.krailo.smart.service.SubjectService;
@@ -31,6 +32,8 @@ public class LessonMapper implements Mapper<Lesson, LessonDto> {
                 .subjectName(e.getSubject().getName())
                 .gangId(e.getGang().getId())
                 .gangName(e.getGang().getName())
+                .teacherId(e.getTeacher().getId())
+                .teacherName(e.getTeacher().getLastName() + " " + e.getTeacher().getFirstName())
                 .audienceId(e.getAudience().getId())
                 .audienceName(e.getAudience().getName())
                 .date(e.getDate())
@@ -46,10 +49,10 @@ public class LessonMapper implements Mapper<Lesson, LessonDto> {
     public Lesson mapDtoToEntityForCreate(LessonDto d) {
        Lesson e = new Lesson();
         e.setSubject(Subject.builder().id(d.getSubjectId()).build());
-        // вчитель уроку = вчитель групи
         Gang gang = gangService.findByIdEntity(d.getGangId());
         e.setGang(gang);
-        e.setTeacher(gang.getTeacher());
+        // вчитель, який фактично провів урок (вибраний у формі); якщо не вибрано — основний вчитель групи
+        e.setTeacher(d.getTeacherId() != null ? Teacher.builder().id(d.getTeacherId()).build() : gang.getTeacher());
         e.setAudience(Audience.builder().id(d.getAudienceId()).build());
         e.setDate(d.getDate());
         e.setStartTime(d.getStartTime());
@@ -61,9 +64,11 @@ public class LessonMapper implements Mapper<Lesson, LessonDto> {
     @Override
     public Lesson mapDtoToEntityForUpdate(LessonDto d, Lesson e) {
         e.setSubject(Subject.builder().id(d.getSubjectId()).build());
-        Gang gang = gangService.findByIdEntity(d.getGangId());
-        e.setGang(gang);
-        e.setTeacher(gang.getTeacher());
+        e.setGang(Gang.builder().id(d.getGangId()).build());
+        // змінюємо вчителя тільки якщо його явно вибрали — історію (хто провів урок) не переписуємо
+        if (d.getTeacherId() != null) {
+            e.setTeacher(Teacher.builder().id(d.getTeacherId()).build());
+        }
         e.setAudience(Audience.builder().id(d.getAudienceId()).build());
         e.setDate(d.getDate());
         e.setStartTime(d.getStartTime());

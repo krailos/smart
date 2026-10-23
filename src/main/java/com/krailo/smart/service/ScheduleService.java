@@ -68,6 +68,7 @@ public class ScheduleService {
     }
 
     // Кидає ScheduleConflictException, якщо в цей час уже зайнятий кабінет, вчитель, група або хтось з учнів групи.
+    // Якщо вчителя не вибрано — записує в d.teacherId основного вчителя групи.
     // excludeId — id розкладу, який редагуємо (для нового розкладу = 0)
     private void checkConflicts(ScheduleDto d, int excludeId) {
         if (d.getStartTime() == null || d.getEndTime() == null || !d.getStartTime().isBefore(d.getEndTime())) {
@@ -76,7 +77,15 @@ public class ScheduleService {
 
         Gang gang = gangRepository.findById(d.getGangId())
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Gang whith id= %d not exist", d.getGangId())));
-        Integer teacherId = gang.getTeacher() == null ? null : gang.getTeacher().getId();
+
+        // вчителя не вибрали у формі — беремо основного вчителя групи
+        if (d.getTeacherId() == null && gang.getTeacher() != null) {
+            d.setTeacherId(gang.getTeacher().getId());
+        }
+        if (d.getTeacherId() == null) {
+            throw new ScheduleConflictException("Оберіть вчителя: у групи немає основного вчителя");
+        }
+        Integer teacherId = d.getTeacherId();
         List<Integer> studentIds = students(gang).stream().map(Student::getId).toList();
 
         // Шукаємо заняття того ж дня, які перетинаються за часом із новим

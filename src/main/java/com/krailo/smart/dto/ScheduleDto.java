@@ -20,6 +20,8 @@ public class ScheduleDto {
     private String subjectName;
     private Integer gangId;
     private String gangName;
+    private Integer teacherId; // якщо не вибрано у формі — сервіс підставить основного вчителя групи
+    private String teacherName;
     private Integer audienceId;
     private String audienceName;
     private WeekDay weekDay;

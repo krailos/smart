@@ -44,6 +44,10 @@
         <form th:action="@{/lessons/create}" method="post" th:object="${lesson}">
             <div class="mb-3">
 
+                <!-- Помилка введення: не вказана дата, кінець раніше за початок -->
+                <div th:if="${errorMessage}" class="alert alert-danger mt-3" role="alert"
+                     th:text="${errorMessage}"></div>
+
                 <label for="aud" class="form-label"> Аудиторія
                     <input disabled class="form-control" id="aud" type="text" th:field="*{audienceName}"/>
                     <input id="audId" type="hidden" class="form-control" th:field="*{audienceId}"/>
@@ -56,9 +60,17 @@
                     <input disabled class="form-control" id="gang" type="text" th:field="*{gangName}"/>
                     <input type="hidden" class="form-control" name="gangId" th:field="*{gangId}"/>
                 </label>
+                <!-- Хто фактично проводить урок: за замовчуванням вчитель з розкладу, можна вибрати заміну -->
+                <label for="teacher" class="form-label"> Вчитель
+                    <select id="teacher" class="form-select" th:field="*{teacherId}">
+                        <option th:each="teacher : ${teachers}"
+                                th:value="${teacher.id}"
+                                th:text="${teacher.lastName + ' ' + teacher.firstName}"></option>
+                    </select>
+                </label>
                 <label for="date" class="form-label">Дата
                     <input class="form-control" id="date" type="date" name="date"
-                           th:value="${#dates.format(#dates.createToday(), 'yyyy-MM-dd')}"/>
+                           th:value="${lesson.date != null} ? ${lesson.date} : ${#dates.format(#dates.createToday(), 'yyyy-MM-dd')}"/>
                 </label>
                 <label for="start" class="form-label">
                     Початок уроку

@@ -228,6 +228,80 @@ public class ScheduleServiceTest {
     }
 
 
+    @Test
+    void shouldUseGangTeacher_WhenTeacherIsNotSelected() {
+        // Given: у формі вчителя не вибрано
+        ScheduleDto dto = newDto();
+        stubSuccessfulSave();
+
+        // When
+        scheduleService.create(dto);
+
+        // Then: підставлено основного вчителя групи (id=1)
+        assertThat(dto.getTeacherId()).isEqualTo(testTeacher.getId());
+    }
+
+    @Test
+    void shouldCreateSchedule_WhenGangTeacherIsBusyButOtherTeacherSelected() {
+        // Given: основний вчитель групи (id=1) в цей час веде іншу групу,
+        // але для цього заняття вибрано іншого вчителя (id=2)
+        Gang gangOfTestTeacher = gang(3, "gang3", testTeacher);
+        ScheduleDto dto = newDto();
+        dto.setTeacherId(otherTeacher.getId());
+        when(scheduleRepository.findOverlappingSchedules(testWeekDay, testStartTime, testEndTime, 0))
+                .thenReturn(List.of(existing(otherAudience, gangOfTestTeacher)));
+        stubSuccessfulSave();
+
+        // When
+        scheduleService.create(dto);
+
+        // Then: конфлікту немає — вибраний вчитель вільний
+        verify(scheduleRepository).save(any(Schedule.class));
+        assertThat(dto.getTeacherId()).isEqualTo(otherTeacher.getId());
+    }
+
+    @Test
+    void shouldThrowException_WhenSelectedTeacherIsBusy() {
+        // Given: вибрано вчителя id=2, а він у цей час веде іншу групу
+        ScheduleDto dto = newDto();
+        dto.setTeacherId(otherTeacher.getId());
+        Gang gangOfOtherTeacher = gang(3, "gang3", otherTeacher);
+        when(gangRepository.findById(1)).thenReturn(Optional.of(testGang));
+        when(scheduleRepository.findOverlappingSchedules(testWeekDay, testStartTime, testEndTime, 0))
+                .thenReturn(List.of(existing(otherAudience, gangOfOtherTeacher)));
+
+        // When & Then
+        assertThatThrownBy(() -> scheduleService.create(dto))
+                .isInstanceOf(ScheduleConflictException.class)
+                .hasMessageContaining("Вчитель");
+
+        verify(scheduleRepository, never()).save(any());
+    }
+
+    @Test
+    void shouldThrowException_WhenNoTeacherSelectedAndGangHasNoTeacher() {
+        // Given: у групи немає основного вчителя і у формі нікого не вибрано
+        Gang gangWithoutTeacher = gang(1, "noTeacher", null);
+        when(gangRepository.findById(1)).thenReturn(Optional.of(gangWithoutTeacher));
+
+        // When & Then
+        assertThatThrownBy(() -> scheduleService.create(newDto()))
+                .isInstanceOf(ScheduleConflictException.class)
+                .hasMessageContaining("Оберіть вчителя");
+
+        verify(scheduleRepository, never()).save(any());
+    }
+
+
+    // успішне збереження: група 1 знайдена, мапер і save повертають заглушки
+    private void stubSuccessfulSave() {
+        Schedule saved = Schedule.builder().id(12).build();
+        when(gangRepository.findById(1)).thenReturn(Optional.of(testGang));
+        when(scheduleMapper.mapDtoToEntityForCreate(any(ScheduleDto.class))).thenReturn(saved);
+        when(scheduleRepository.save(saved)).thenReturn(saved);
+        when(scheduleMapper.mapEntityToDto(saved)).thenReturn(ScheduleDto.builder().id(12).build());
+    }
+
     // нове заняття: кабінет 1, група 1 (вчитель 1, учень Петренко), вівторок 13:30–14:30
     private ScheduleDto newDto() {
         return ScheduleDto.builder()

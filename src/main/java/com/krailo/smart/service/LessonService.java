@@ -1,8 +1,10 @@
 package com.krailo.smart.service;
 
 import com.krailo.smart.dto.LessonDto;
+import com.krailo.smart.entity.Gang;
 import com.krailo.smart.entity.Lesson;
 import com.krailo.smart.entity.Student;
+import com.krailo.smart.exception.ScheduleConflictException;
 import com.krailo.smart.mapper.LessonMapper;
 import com.krailo.smart.repository.LessonRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -21,6 +23,7 @@ public class LessonService {
 
     private LessonRepository lessonRepository;
     private LessonMapper lessonMapper;
+    private GangService gangService;
 
     public List<LessonDto> findAll() {
         return lessonRepository.findAll().stream()
@@ -49,6 +52,18 @@ public class LessonService {
     }
 
     public LessonDto create(LessonDto lessonDto) {
+        // вчителя не вибрали у формі — урок проводить основний вчитель групи
+        if (lessonDto.getTeacherId() == null) {
+            Gang gang = gangService.findByIdEntity(lessonDto.getGangId());
+            if (gang.getTeacher() != null) {
+                lessonDto.setTeacherId(gang.getTeacher().getId());
+            }
+        }
+        if (lessonDto.getTeacherId() == null) {
+            throw new ScheduleConflictException("Оберіть вчителя уроку");
+        }
+        validate(lessonDto);
+
         return Optional.of(lessonDto).map(lessonMapper::mapDtoToEntityForCreate).map(lessonRepository::saveAndFlush)
                 .map(lessonMapper::mapEntityToDto).orElseThrow();
     }
@@ -59,9 +74,22 @@ public class LessonService {
     }
 
     public LessonDto update(Integer id, LessonDto lessonDto) {
+        validate(lessonDto);
+
         return lessonRepository.findById(id).map(entity -> lessonMapper.mapDtoToEntityForUpdate(lessonDto, entity))
                 .map(lessonRepository::saveAndFlush).map(lessonMapper::mapEntityToDto)
                 .orElseThrow(() -> new RuntimeException("smth wrong when update"));
+    }
+
+    // Перевірка введених даних уроку. Конфлікти (зайнятий вчитель, кабінет, група) перевіряються
+    // на етапі розкладу — урок походить від розкладу, тут їх не перевіряємо.
+    private void validate(LessonDto d) {
+        if (d.getDate() == null) {
+            throw new ScheduleConflictException("Вкажіть дату уроку");
+        }
+        if (d.getStartTime() == null || d.getEndTime() == null || !d.getStartTime().isBefore(d.getEndTime())) {
+            throw new ScheduleConflictException("Час завершення уроку має бути пізніше за час початку");
+        }
     }
 
     public boolean delete(Integer id) {
