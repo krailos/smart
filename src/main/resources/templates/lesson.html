@@ -51,7 +51,7 @@
 
                     <div class="card-body p-4 p-sm-5">
 
-                        <!-- Помилка введення: не вказана дата, кінець раніше за початок -->
+                        <!-- Помилка: на цю дату вже є урок з цього розкладу, не вказана дата -->
                         <div th:if="${errorMessage}" class="alert alert-danger mb-4" role="alert"
                              th:text="${errorMessage}"></div>
 
@@ -75,7 +75,7 @@
                             </div>
                         </div>
 
-                        <!-- 2. Дата та час в один рядок -->
+                        <!-- 2. Дата (можна змінити) та час (тільки перегляд — час задає розклад) -->
                         <div class="row g-4 mb-4">
                             <div class="col-md-5">
                                 <label for="date" class="form-label fw-semibold text-secondary mb-2">Дата</label>
@@ -83,11 +83,11 @@
                             </div>
                             <div class="col-md-3">
                                 <label for="startTime" class="form-label fw-semibold text-secondary mb-2">Початок</label>
-                                <input type="time" id="startTime" th:field="*{startTime}" class="form-control form-control-lg fs-6">
+                                <input type="time" id="startTime" th:value="*{startTime}" class="form-control form-control-lg fs-6" disabled>
                             </div>
                             <div class="col-md-4">
                                 <label for="endTime" class="form-label fw-semibold text-secondary mb-2">Завершення</label>
-                                <input type="time" id="endTime" th:field="*{endTime}" class="form-control form-control-lg fs-6">
+                                <input type="time" id="endTime" th:value="*{endTime}" class="form-control form-control-lg fs-6" disabled>
                             </div>
                         </div>
 

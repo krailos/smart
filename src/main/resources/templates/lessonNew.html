@@ -44,9 +44,12 @@
         <form th:action="@{/lessons/create}" method="post" th:object="${lesson}">
             <div class="mb-3">
 
-                <!-- Помилка введення: не вказана дата, кінець раніше за початок -->
+                <!-- Помилка: урок за цим розкладом на цю дату вже проведено, не вказана дата, кінець раніше за початок -->
                 <div th:if="${errorMessage}" class="alert alert-danger mt-3" role="alert"
                      th:text="${errorMessage}"></div>
+
+                <!-- з якого слоту розкладу проводиться урок (захист від повторного проведення) -->
+                <input type="hidden" th:field="*{scheduleId}"/>
 
                 <label for="aud" class="form-label"> Аудиторія
                     <input disabled class="form-control" id="aud" type="text" th:field="*{audienceName}"/>

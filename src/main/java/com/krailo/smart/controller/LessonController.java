@@ -50,6 +50,7 @@ public class LessonController {
         ScheduleDto scheduleDto = scheduleService.findById(scheduleId);
         // заповнюю lessonDto даними, щоб передати у форму
         LessonDto lessonDto = LessonDto.builder()
+                .scheduleId(scheduleId) // урок походить від цього слоту розкладу
                 .audienceId(scheduleDto.getAudienceId())
                 .audienceName(scheduleDto.getAudienceName())
                 .subjectId(scheduleDto.getSubjectId())
@@ -117,20 +118,18 @@ public class LessonController {
         return "lesson";
     }
 
-    // редагуються тільки вчитель, аудиторія, дата і час;
+    // редагуються вчитель (хто провів урок), аудиторія і дата; час — тільки перегляд (його задає розклад);
     // відмітки учнів (присутність/оплата) тут не змінюються — від них залежить баланс
     @PostMapping("/lessons/{id}/update")
     public String update(@PathVariable("id") Integer id, @ModelAttribute LessonDto lessonDto, Model model) {
         try {
             lessonService.update(id, lessonDto);
         } catch (ScheduleConflictException e) {
-            // беремо урок з бази (учні, назви) і накладаємо те, що користувач ввів у формі
+            // беремо урок з бази (учні, назви, час) і накладаємо те, що користувач вибрав у формі
             LessonDto lesson = lessonService.findById(id);
             lesson.setTeacherId(lessonDto.getTeacherId());
             lesson.setAudienceId(lessonDto.getAudienceId());
             lesson.setDate(lessonDto.getDate());
-            lesson.setStartTime(lessonDto.getStartTime());
-            lesson.setEndTime(lessonDto.getEndTime());
             model.addAttribute("lesson", lesson);
             model.addAttribute("errorMessage", e.getMessage());
             fillEditFormLists(model);

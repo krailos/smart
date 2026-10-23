@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -44,8 +45,9 @@ class LessonMapperTest {
         // When
         Lesson lesson = lessonMapper.mapDtoToEntityForCreate(dto);
 
-        // Then: в уроці записано того, хто ФАКТИЧНО провів урок
+        // Then: в уроці записано того, хто ФАКТИЧНО провів урок, і слот розкладу, з якого він походить
         assertThat(lesson.getTeacher().getId()).isEqualTo(2);
+        assertThat(lesson.getSchedule().getId()).isEqualTo(3);
     }
 
     @Test
@@ -73,8 +75,33 @@ class LessonMapperTest {
         assertThat(lesson.getTeacher()).isEqualTo(substitute);
     }
 
+    @Test
+    void shouldChangeDateButNotTime_WhenUpdating() {
+        // Given: урок 23.10 12:00–13:00; у формі змінили дату на 24.10,
+        // а час з форми не приходить (поля disabled) — у DTO його немає
+        Lesson lesson = Lesson.builder().id(5)
+                .date(LocalDate.of(2026, 10, 23))
+                .startTime(LocalTime.of(12, 0))
+                .endTime(LocalTime.of(13, 0))
+                .build();
+        LessonDto dto = lessonDto(2);
+        dto.setDate(LocalDate.of(2026, 10, 24));
+        dto.setStartTime(null);
+        dto.setEndTime(null);
+
+        // When
+        lessonMapper.mapDtoToEntityForUpdate(dto, lesson);
+
+        // Then: дату змінено, час лишився як був
+        assertThat(lesson.getDate()).isEqualTo(LocalDate.of(2026, 10, 24));
+        assertThat(lesson.getStartTime()).isEqualTo(LocalTime.of(12, 0));
+        assertThat(lesson.getEndTime()).isEqualTo(LocalTime.of(13, 0));
+        assertThat(lesson.getTeacher().getId()).isEqualTo(2);
+    }
+
     private LessonDto lessonDto(Integer teacherId) {
         return LessonDto.builder()
+                .scheduleId(3)
                 .subjectId(1)
                 .gangId(gang.getId())
                 .audienceId(1)

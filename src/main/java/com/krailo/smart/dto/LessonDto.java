@@ -17,6 +17,7 @@ import java.util.List;
 public class LessonDto {    
     
     private Integer id;
+    private Integer scheduleId; // з якого слоту розкладу проведено урок
     private Integer subjectId;
     private String subjectName;
     private Integer gangId;

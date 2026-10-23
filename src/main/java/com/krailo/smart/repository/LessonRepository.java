@@ -19,6 +19,12 @@ public interface LessonRepository extends JpaRepository<Lesson, Integer> {
             AND l.date BETWEEN :start AND :end
             """)
     List<Lesson> findAllByStudentAndBetweenDates (Student student, LocalDate start, LocalDate end);
-      
+
+    // чи вже проведено урок з цього слоту розкладу на цю дату
+    boolean existsByScheduleIdAndDate(Integer scheduleId, LocalDate date);
+
+    // те саме, але без уроку, який редагуємо (id)
+    boolean existsByScheduleIdAndDateAndIdNot(Integer scheduleId, LocalDate date, Integer id);
+
 
 }

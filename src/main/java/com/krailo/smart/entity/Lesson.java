@@ -9,17 +9,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-@EqualsAndHashCode(exclude = {"subject","gang", "audience", "lessonsStudents" })
-@ToString(exclude = {"subject","gang", "audience", "lessonsStudents" })
+@EqualsAndHashCode(exclude = {"subject","gang", "audience", "lessonsStudents", "schedule" })
+@ToString(exclude = {"subject","gang", "audience", "lessonsStudents", "schedule" })
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+// один слот розкладу = не більше одного уроку на дату (те саме обмеження є в міграції V17)
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"schedule_id", "lesson_date"}))
 public class Lesson {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+    // з якого слоту розкладу проведено урок
+    @ManyToOne
+    @JoinColumn(name = "schedule_id")
+    private Schedule schedule;
     @ManyToOne
     @JoinColumn(name = "subject_id")
     private Subject subject;

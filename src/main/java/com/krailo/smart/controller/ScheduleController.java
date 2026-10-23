@@ -22,7 +22,8 @@ import java.util.List;
 @Controller
 @RequestMapping("/schedules")
 @AllArgsConstructor
-public class ScheduleController {
+public class
+ScheduleController {
 
     private ScheduleService scheduleService;
     private AudienceService audienceService;

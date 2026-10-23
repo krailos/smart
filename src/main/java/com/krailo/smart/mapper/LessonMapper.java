@@ -4,6 +4,7 @@ import com.krailo.smart.dto.LessonDto;
 import com.krailo.smart.entity.Audience;
 import com.krailo.smart.entity.Gang;
 import com.krailo.smart.entity.Lesson;
+import com.krailo.smart.entity.Schedule;
 import com.krailo.smart.entity.Subject;
 import com.krailo.smart.entity.Teacher;
 import com.krailo.smart.service.AudienceService;
@@ -28,6 +29,8 @@ public class LessonMapper implements Mapper<Lesson, LessonDto> {
     public LessonDto mapEntityToDto(Lesson e) {
         return LessonDto.builder()
                 .id(e.getId())
+                // у старих уроків (до V17) розкладу немає
+                .scheduleId(e.getSchedule() == null ? null : e.getSchedule().getId())
                 .subjectId(e.getSubject().getId())
                 .subjectName(e.getSubject().getName())
                 .gangId(e.getGang().getId())
@@ -48,6 +51,7 @@ public class LessonMapper implements Mapper<Lesson, LessonDto> {
     @Override
     public Lesson mapDtoToEntityForCreate(LessonDto d) {
        Lesson e = new Lesson();
+        e.setSchedule(Schedule.builder().id(d.getScheduleId()).build());
         e.setSubject(Subject.builder().id(d.getSubjectId()).build());
         Gang gang = gangService.findByIdEntity(d.getGangId());
         e.setGang(gang);
@@ -71,8 +75,7 @@ public class LessonMapper implements Mapper<Lesson, LessonDto> {
         }
         e.setAudience(Audience.builder().id(d.getAudienceId()).build());
         e.setDate(d.getDate());
-        e.setStartTime(d.getStartTime());
-        e.setEndTime(d.getEndTime());
+        // час уроку не змінюємо: його задає розклад
         return e;
     }
 

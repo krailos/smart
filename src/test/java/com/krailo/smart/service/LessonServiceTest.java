@@ -3,6 +3,7 @@ package com.krailo.smart.service;
 import com.krailo.smart.dto.LessonDto;
 import com.krailo.smart.entity.Gang;
 import com.krailo.smart.entity.Lesson;
+import com.krailo.smart.entity.Schedule;
 import com.krailo.smart.entity.Teacher;
 import com.krailo.smart.exception.ScheduleConflictException;
 import com.krailo.smart.mapper.LessonMapper;
@@ -16,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -103,14 +105,79 @@ class LessonServiceTest {
     }
 
     @Test
-    void shouldNotUpdateLesson_WhenEndTimeIsNotAfterStartTime() {
-        // Given: при редагуванні переплутали час
+    void shouldThrowException_WhenLessonFromThisScheduleAlreadyHeldOnThisDate() {
+        // Given: урок за розкладом id=3 на 23.10 вже проведено (повторне натискання / F5)
         LessonDto dto = lessonDto(2);
-        dto.setStartTime(LocalTime.of(17, 0));
+        when(lessonRepository.existsByScheduleIdAndDate(3, date)).thenReturn(true);
+
+        // When & Then
+        assertThatThrownBy(() -> lessonService.create(dto))
+                .isInstanceOf(ScheduleConflictException.class)
+                .hasMessageContaining("уже проведено");
+
+        // урок не збережено — з учнів не спишуть двічі
+        verify(lessonRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void shouldThrowException_WhenLessonIsNotFromSchedule() {
+        // Given: немає слоту розкладу
+        LessonDto dto = lessonDto(2);
+        dto.setScheduleId(null);
+
+        // When & Then
+        assertThatThrownBy(() -> lessonService.create(dto))
+                .isInstanceOf(ScheduleConflictException.class)
+                .hasMessageContaining("тільки з розкладу");
+
+        verify(lessonRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void shouldThrowException_WhenUpdatingDateToDayWithLessonFromSameSchedule() {
+        // Given: урок id=5 за розкладом id=3; переносимо на 23.10, а на цю дату з цього розкладу вже є інший урок
+        Lesson lesson = Lesson.builder().id(5).schedule(Schedule.builder().id(3).build()).build();
+        when(lessonRepository.findById(5)).thenReturn(Optional.of(lesson));
+        when(lessonRepository.existsByScheduleIdAndDateAndIdNot(3, date, 5)).thenReturn(true);
+
+        // When & Then
+        assertThatThrownBy(() -> lessonService.update(5, lessonDto(2)))
+                .isInstanceOf(ScheduleConflictException.class)
+                .hasMessageContaining("уже проведено");
+
+        verify(lessonRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void shouldUpdateLessonDate_WhenNoOtherLessonOnThatDate() {
+        // Given
+        Lesson lesson = Lesson.builder().id(5).schedule(Schedule.builder().id(3).build()).build();
+        when(lessonRepository.findById(5)).thenReturn(Optional.of(lesson));
+        when(lessonRepository.existsByScheduleIdAndDateAndIdNot(3, date, 5)).thenReturn(false);
+        when(lessonMapper.mapDtoToEntityForUpdate(any(LessonDto.class), eq(lesson))).thenReturn(lesson);
+        when(lessonRepository.saveAndFlush(lesson)).thenReturn(lesson);
+        when(lessonMapper.mapEntityToDto(lesson)).thenReturn(LessonDto.builder().id(5).build());
+
+        // When
+        LessonDto result = lessonService.update(5, lessonDto(2));
+
+        // Then
+        assertThat(result.getId()).isEqualTo(5);
+        verify(lessonRepository).saveAndFlush(lesson);
+    }
+
+    @Test
+    void shouldThrowException_WhenUpdatingWithoutDate() {
+        // Given: дату у формі стерли
+        Lesson lesson = Lesson.builder().id(5).build();
+        when(lessonRepository.findById(5)).thenReturn(Optional.of(lesson));
+        LessonDto dto = lessonDto(2);
+        dto.setDate(null);
 
         // When & Then
         assertThatThrownBy(() -> lessonService.update(5, dto))
-                .isInstanceOf(ScheduleConflictException.class);
+                .isInstanceOf(ScheduleConflictException.class)
+                .hasMessageContaining("дату");
 
         verify(lessonRepository, never()).saveAndFlush(any());
     }
@@ -123,9 +190,10 @@ class LessonServiceTest {
         when(lessonMapper.mapEntityToDto(saved)).thenReturn(LessonDto.builder().id(5).build());
     }
 
-    // урок групи 10, 23.10.2026 15:00–16:00
+    // урок групи 10 за розкладом id=3, 23.10.2026 15:00–16:00
     private LessonDto lessonDto(Integer teacherId) {
         return LessonDto.builder()
+                .scheduleId(3)
                 .subjectId(1)
                 .gangId(gang.getId())
                 .audienceId(1)

@@ -52,6 +52,10 @@ public class LessonService {
     }
 
     public LessonDto create(LessonDto lessonDto) {
+        // урок походить від розкладу
+        if (lessonDto.getScheduleId() == null) {
+            throw new ScheduleConflictException("Урок можна провести тільки з розкладу");
+        }
         // вчителя не вибрали у формі — урок проводить основний вчитель групи
         if (lessonDto.getTeacherId() == null) {
             Gang gang = gangService.findByIdEntity(lessonDto.getGangId());
@@ -63,6 +67,12 @@ public class LessonService {
             throw new ScheduleConflictException("Оберіть вчителя уроку");
         }
         validate(lessonDto);
+        // один слот розкладу = не більше одного уроку на дату, інакше з учнів спишуть двічі
+        // (в БД є ще й обмеження UNIQUE (schedule_id, lesson_date) — на випадок подвійного кліку)
+        if (lessonRepository.existsByScheduleIdAndDate(lessonDto.getScheduleId(), lessonDto.getDate())) {
+            throw new ScheduleConflictException(
+                    String.format("Урок за цим розкладом на %s уже проведено", lessonDto.getDate()));
+        }
 
         return Optional.of(lessonDto).map(lessonMapper::mapDtoToEntityForCreate).map(lessonRepository::saveAndFlush)
                 .map(lessonMapper::mapEntityToDto).orElseThrow();
@@ -74,9 +84,16 @@ public class LessonService {
     }
 
     public LessonDto update(Integer id, LessonDto lessonDto) {
-        validate(lessonDto);
+        Lesson lesson = findByIdEntity(id);
+        requireDate(lessonDto);
+        // дату змінили — на нову дату з цього ж слоту розкладу не повинно бути іншого уроку (сам урок не рахуємо)
+        if (lesson.getSchedule() != null && lessonRepository.existsByScheduleIdAndDateAndIdNot(
+                lesson.getSchedule().getId(), lessonDto.getDate(), id)) {
+            throw new ScheduleConflictException(
+                    String.format("Урок за цим розкладом на %s уже проведено", lessonDto.getDate()));
+        }
 
-        return lessonRepository.findById(id).map(entity -> lessonMapper.mapDtoToEntityForUpdate(lessonDto, entity))
+        return Optional.of(lesson).map(entity -> lessonMapper.mapDtoToEntityForUpdate(lessonDto, entity))
                 .map(lessonRepository::saveAndFlush).map(lessonMapper::mapEntityToDto)
                 .orElseThrow(() -> new RuntimeException("smth wrong when update"));
     }
@@ -84,11 +101,15 @@ public class LessonService {
     // Перевірка введених даних уроку. Конфлікти (зайнятий вчитель, кабінет, група) перевіряються
     // на етапі розкладу — урок походить від розкладу, тут їх не перевіряємо.
     private void validate(LessonDto d) {
-        if (d.getDate() == null) {
-            throw new ScheduleConflictException("Вкажіть дату уроку");
-        }
+        requireDate(d);
         if (d.getStartTime() == null || d.getEndTime() == null || !d.getStartTime().isBefore(d.getEndTime())) {
             throw new ScheduleConflictException("Час завершення уроку має бути пізніше за час початку");
+        }
+    }
+
+    private void requireDate(LessonDto d) {
+        if (d.getDate() == null) {
+            throw new ScheduleConflictException("Вкажіть дату уроку");
         }
     }
 
