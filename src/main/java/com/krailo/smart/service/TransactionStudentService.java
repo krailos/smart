@@ -4,6 +4,7 @@ import com.krailo.smart.dto.LessonDto;
 import com.krailo.smart.dto.PaymentDto;
 import com.krailo.smart.dto.TransactionStudentDto;
 import com.krailo.smart.entity.*;
+import com.krailo.smart.exception.PriceNotFoundException;
 import com.krailo.smart.mapper.TransactionStudentMapper;
 import com.krailo.smart.repository.LessonsStudentsRepository;
 import com.krailo.smart.repository.StudentRepository;
@@ -89,7 +90,10 @@ public class TransactionStudentService {
         return lessonSubject.getPrices().stream()
                 .filter(p -> !p.getDate().isAfter(lessonDto.getDate()))
                 .max(Comparator.comparing(Price::getDate))
-                .orElseGet(null);
+                // orElseGet(null) кидав NullPointerException — тепер зрозуміла помилка для користувача
+                .orElseThrow(() -> new PriceNotFoundException(String.format(
+                        "Для курсу «%s» немає ціни на %s. Додайте ціну курсу і проведіть урок ще раз",
+                        lessonSubject.getName(), lessonDto.getDate())));
     }
 
     private List<TransactionStudent> fillTransactionByLesson(Lesson lesson, List<LessonsStudents> lessonsStudents) {

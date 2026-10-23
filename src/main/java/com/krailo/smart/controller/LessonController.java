@@ -5,10 +5,8 @@ import com.krailo.smart.dto.LessonDto;
 import com.krailo.smart.dto.LessonsStudentsDto;
 import com.krailo.smart.dto.ScheduleDto;
 import com.krailo.smart.dto.StudentDto;
+import com.krailo.smart.exception.PriceNotFoundException;
 import com.krailo.smart.exception.ScheduleConflictException;
-import com.krailo.smart.entity.Lesson;
-import com.krailo.smart.entity.LessonsStudents;
-import com.krailo.smart.repository.LessonsStudentsRepository;
 import com.krailo.smart.service.*;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -26,11 +24,10 @@ import java.util.List;
 public class LessonController {
 
     private final StudentService studentService;
-    private final LessonsStudentsRepository lessonsStudentsRepository;
     private LessonService lessonService;
+    private LessonClosingService lessonClosingService;
     private ScheduleService scheduleService;
     private LessonsStudentsService lessonsStudentsService;
-    private TransactionStudentService transactionStudentService;
     private GangService gangService;
     private TeacherService teacherService;
     private AudienceService audienceService;
@@ -83,31 +80,17 @@ public class LessonController {
 
     @PostMapping("/lessons/create")
     public String closeLesson(@ModelAttribute LessonDto lessonDto, Model model) {
-        LessonDto lessonDtoWithId;
         try {
-            lessonDtoWithId = lessonService.create(lessonDto);
-        } catch (ScheduleConflictException e) {
-            // показуємо ту саму форму з відмітками учнів і текстом помилки
+            // урок + відмітки учнів + списання — одна транзакція (див. LessonClosingService)
+            lessonClosingService.closeLesson(lessonDto);
+        } catch (ScheduleConflictException | PriceNotFoundException e) {
+            // нічого не збережено — показуємо ту саму форму з відмітками учнів і текстом помилки
             fillNames(lessonDto);
             model.addAttribute("lesson", lessonDto);
             model.addAttribute("teachers", teacherService.findAll());
             model.addAttribute("errorMessage", e.getMessage());
             return "lessonNew";
         }
-        List<LessonsStudentsDto> lessonsStudentsDto = lessonDto.getLessonsStudentsDto();
-        // беру з бази урок щоб підтягнуло всю інфо (через кеш першого рівня)
-        Lesson lesson = lessonService.findByIdEntity(lessonDtoWithId.getId());
-        for (LessonsStudentsDto lsdto : lessonsStudentsDto) {
-           LessonsStudents ls =  LessonsStudents.builder()
-                    .lesson(lesson)
-                    .student(studentService.findByIdEntity(lsdto.getStudentId()))
-                    .present(lsdto.isPresent())
-                    .payed(lsdto.isPayed())
-                    .build();
-            System.out.println("---- Test lesoonsStudent created-----");
-            System.out.println(lessonsStudentsRepository.saveAndFlush(ls));
-        }
-        transactionStudentService.createByLesson(lessonDtoWithId);
         return "redirect:/lessons";
     }
 
