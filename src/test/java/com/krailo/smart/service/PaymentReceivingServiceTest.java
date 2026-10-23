@@ -1,0 +1,95 @@
+package com.krailo.smart.service;
+
+import com.krailo.smart.dto.PaymentDto;
+import com.krailo.smart.entity.Student;
+import com.krailo.smart.enumeration.Gender;
+import com.krailo.smart.enumeration.StudentStatus;
+import com.krailo.smart.repository.PaymentRepository;
+import com.krailo.smart.repository.StudentRepository;
+import com.krailo.smart.repository.TransactionStudentRepository;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+
+import java.time.LocalDate;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+
+// Інтеграційний тест: справжні сервіси + база H2, перевіряємо транзакцію прийому оплати.
+// Клас навмисно БЕЗ @Transactional — щоб бачити, що реально збереглось у базі.
+@SpringBootTest
+@ActiveProfiles("test")
+class PaymentReceivingServiceTest {
+
+    @Autowired private PaymentReceivingService paymentReceivingService;
+    @Autowired private PaymentRepository paymentRepository;
+    @Autowired private TransactionStudentRepository transactionStudentRepository;
+    @Autowired private StudentRepository studentRepository;
+    @Autowired private JdbcTemplate jdbcTemplate;
+
+    // "шпигун": працює як справжній сервіс, але в окремому тесті можемо змусити його впасти
+    @MockitoSpyBean private TransactionStudentService transactionStudentService;
+
+    private Student student;
+
+    @BeforeEach
+    void setUp() {
+        student = studentRepository.save(Student.builder()
+                .firstName("Оля").lastName("Петренко")
+                .contactName("мама Оля").phone("0670000000")
+                .gender(Gender.ДІВЧИНА).studentStatus(StudentStatus.УЧЕНЬ)
+                .balance(0)
+                .build());
+    }
+
+    @AfterEach
+    void cleanUp() {
+        for (String table : List.of("transaction_student", "payment", "student")) {
+            jdbcTemplate.update("DELETE FROM " + table);
+        }
+    }
+
+    @Test
+    void shouldSavePaymentAndIncreaseBalance() {
+        // When: учень заплатив 500
+        paymentReceivingService.receivePayment(paymentDto(500));
+
+        // Then: оплата, запис у журналі та новий баланс — разом
+        assertThat(paymentRepository.count()).isEqualTo(1);
+        assertThat(transactionStudentRepository.findAll()).singleElement()
+                .satisfies(t -> {
+                    assertThat(t.getCredit()).isEqualTo(500);
+                    assertThat(t.getBalance()).isEqualTo(500);
+                });
+        assertThat(studentRepository.findById(student.getId()).orElseThrow().getBalance()).isEqualTo(500);
+    }
+
+    @Test
+    void shouldNotSavePayment_WhenBalanceUpdateFails() {
+        // Given: зарахування на баланс падає (імітуємо збій)
+        doThrow(new RuntimeException("збій при зарахуванні"))
+                .when(transactionStudentService).createByPayment(any());
+
+        // When
+        assertThatThrownBy(() -> paymentReceivingService.receivePayment(paymentDto(500)))
+                .hasMessageContaining("збій при зарахуванні");
+
+        // Then: оплата теж не збереглась — немає "оплати без балансу"
+        assertThat(paymentRepository.count()).isZero();
+        assertThat(transactionStudentRepository.count()).isZero();
+        assertThat(studentRepository.findById(student.getId()).orElseThrow().getBalance()).isZero();
+    }
+
+    private PaymentDto paymentDto(int value) {
+        return new PaymentDto(null, null, student.getId(), value, LocalDate.of(2026, 10, 24), "тест");
+    }
+}

@@ -1,9 +1,9 @@
 package com.krailo.smart.controller;
 
 import com.krailo.smart.dto.PaymentDto;
+import com.krailo.smart.service.PaymentReceivingService;
 import com.krailo.smart.service.PaymentService;
 import com.krailo.smart.service.StudentService;
-import com.krailo.smart.service.TransactionStudentService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,7 +16,7 @@ public class PaymentController {
 
     private final PaymentService paymentService;
     private final StudentService studentService;
-    private TransactionStudentService transactionStudentService;
+    private PaymentReceivingService paymentReceivingService;
 
     @GetMapping
     public String findAll(Model model) {
@@ -44,12 +44,9 @@ public class PaymentController {
     @PostMapping("/create")
    // @ResponseStatus(HttpStatus.CREATED)
     public String create ( @ModelAttribute PaymentDto paymentDto) {
-        System.out.println(paymentDto);
-        System.out.println(paymentDto.getStudentId());
-        System.out.println(paymentDto.getStudent());
-        PaymentDto paymentDtoWithId = paymentService.create(paymentDto);
-        transactionStudentService.createByPayment(paymentDtoWithId);
-        return "redirect:/payments";     
+        // оплата + журнал транзакцій + баланс — одна транзакція (див. PaymentReceivingService)
+        paymentReceivingService.receivePayment(paymentDto);
+        return "redirect:/payments";
     }
     
     @PostMapping("/{id}/update")
