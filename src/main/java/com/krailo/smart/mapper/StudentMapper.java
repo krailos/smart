@@ -23,7 +23,7 @@ public class StudentMapper implements Mapper<Student, StudentDto> {
         e.setStudentStatus(d.getStudentStatus());
         e.setBirthDate(d.getBirthDate()); 
         e.setDescription(d.getDescription());
-        e.setBalance(d.getBalance());
+        e.setBalance(0); // новий учень завжди починає з нульовим балансом
         e.setStudentsDiscounts(d.getStudentsDiscounts());       
         e.setPayments(d.getPayments());      
         e.setLessonsStudents(d.getLessonsStudents());       
@@ -68,10 +68,10 @@ public class StudentMapper implements Mapper<Student, StudentDto> {
         e.setStudentStatus(d.getStudentStatus());
         e.setBirthDate(d.getBirthDate()); 
         e.setDescription(d.getDescription());
-        e.setBalance(d.getBalance());
-        e.setStudentsDiscounts(d.getStudentsDiscounts());       
-        e.setPayments(d.getPayments());      
-        e.setLessonsStudents(d.getLessonsStudents());      
+        // баланс НЕ беремо з форми: його змінюють тільки оплати та уроки (TransactionStudentService)
+        e.setStudentsDiscounts(d.getStudentsDiscounts());
+        e.setPayments(d.getPayments());
+        e.setLessonsStudents(d.getLessonsStudents());
         return e;
     }
 

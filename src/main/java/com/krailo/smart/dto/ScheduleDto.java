@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalTime;
 
@@ -22,7 +23,10 @@ public class ScheduleDto {
     private Integer audienceId;
     private String audienceName;
     private WeekDay weekDay;
+    // формат, який розуміє <input type="time"> (інакше Thymeleaf покаже "1:00 PM")
+    @DateTimeFormat(pattern = "HH:mm")
     private LocalTime startTime;
+    @DateTimeFormat(pattern = "HH:mm")
     private LocalTime endTime;
 
 }

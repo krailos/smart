@@ -5,6 +5,7 @@ import com.krailo.smart.dto.GangDto;
 import com.krailo.smart.dto.ScheduleDto;
 import com.krailo.smart.dto.SubjectDto;
 import com.krailo.smart.enumeration.WeekDay;
+import com.krailo.smart.exception.ScheduleConflictException;
 import com.krailo.smart.service.AudienceService;
 import com.krailo.smart.service.GangService;
 import com.krailo.smart.service.ScheduleService;
@@ -41,23 +42,36 @@ public class ScheduleController {
     @GetMapping("/schedule/new")
     public String createForm(Model model) {
         ScheduleDto scheduleDto = ScheduleDto.builder().build();
-        List<AudienceDto> audienceDtoList = audienceService.findAll();
-        List<SubjectDto> subjectDtoList = subjectService.findAll();
-        List<GangDto> gangDtoList = gangService.findAll();
-        WeekDay [] weekDays = WeekDay.values();
         model.addAttribute("schedule",scheduleDto );
-        model.addAttribute("audiences",audienceDtoList );
-        model.addAttribute("subjects",subjectDtoList );
-        model.addAttribute("gangs",gangDtoList );
-        model.addAttribute("weekDays",weekDays );
+        fillFormLists(model);
         return "scheduleNew";
     }
 
     @PostMapping("/create")
     // @ResponseStatus(HttpStatus.CREATED)
-    public String create(@ModelAttribute ScheduleDto scheduleDto) {
-        scheduleService.create(scheduleDto);
+    public String create(@ModelAttribute ScheduleDto scheduleDto, Model model) {
+        try {
+            scheduleService.create(scheduleDto);
+        } catch (ScheduleConflictException e) {
+            // показуємо ту саму форму з уже введеними даними та текстом помилки
+            model.addAttribute("schedule", scheduleDto);
+            model.addAttribute("errorMessage", e.getMessage());
+            fillFormLists(model);
+            return "scheduleNew";
+        }
         return "redirect:/schedules";
+    }
+
+    // списки для випадаючих меню форми розкладу
+    private void fillFormLists(Model model) {
+        List<AudienceDto> audienceDtoList = audienceService.findAll();
+        List<SubjectDto> subjectDtoList = subjectService.findAll();
+        List<GangDto> gangDtoList = gangService.findAll();
+        WeekDay [] weekDays = WeekDay.values();
+        model.addAttribute("audiences",audienceDtoList );
+        model.addAttribute("subjects",subjectDtoList );
+        model.addAttribute("gangs",gangDtoList );
+        model.addAttribute("weekDays",weekDays );
     }
 
     @PostMapping("/{id}/update")

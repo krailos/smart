@@ -8,8 +8,8 @@ import java.util.List;
 
 
 @Data
-@EqualsAndHashCode(exclude = "gangs")
-@ToString(exclude = "gangs")
+@EqualsAndHashCode(exclude = {"gangs", "schedules", "lessons"})
+@ToString(exclude = {"gangs", "schedules", "lessons"})
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -33,6 +33,10 @@ public class Teacher {
     private String description;
     @OneToMany (mappedBy = "teacher", fetch = FetchType.LAZY)
     private List<Gang> gangs;
+    @OneToMany (mappedBy = "teacher", fetch = FetchType.LAZY)
+    private List<Schedule> schedules;
+    @OneToMany (mappedBy = "teacher", fetch = FetchType.LAZY)
+    private List<Lesson> lessons;
 
   
 

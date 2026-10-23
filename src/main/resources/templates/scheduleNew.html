@@ -55,6 +55,10 @@
                 <form th:action="@{/schedules/create}" th:object="${schedule}" method="post">
                     <div class="card-body p-4 p-sm-5">
 
+                        <!-- Помилка конфлікту розкладу (кабінет / вчитель / група / учні зайняті) -->
+                        <div th:if="${errorMessage}" class="alert alert-danger mb-4" role="alert"
+                             th:text="${errorMessage}"></div>
+
                         <!-- 1. Вибір уроку / предмета -->
                         <div class="mb-4">
                             <label for="lesson" class="form-label fw-semibold text-secondary mb-2">Оберіть урок / предмет</label>

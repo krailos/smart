@@ -27,7 +27,7 @@ public class StudentDto {
     private StudentStatus studentStatus;
     private LocalDate birthDate;
     private String description;
-    private double balance;
+    private Double balance; // Double, а не double: у формах учня цього поля немає, приходить null
     private List<StudentsDiscounts> studentsDiscounts;
     private List<Payment> payments;
     private List<LessonsStudents> lessonsStudents;

@@ -27,6 +27,9 @@ public class Lesson {
     @JoinColumn(name = "gang_id")
     private Gang gang;
     @ManyToOne
+    @JoinColumn(name = "teacher_id")
+    private Teacher teacher;
+    @ManyToOne
     @JoinColumn(name = "audience_id")
     private Audience audience;
     @Column(name = "lesson_date")

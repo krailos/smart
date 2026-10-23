@@ -5,6 +5,8 @@ import com.krailo.smart.entity.Audience;
 import com.krailo.smart.entity.Gang;
 import com.krailo.smart.entity.Schedule;
 import com.krailo.smart.entity.Subject;
+import com.krailo.smart.repository.GangRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -12,12 +14,16 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class ScheduleMapper implements Mapper<Schedule, ScheduleDto> {
 
+    private GangRepository gangRepository;
 
     @Override
     public Schedule mapDtoToEntityForCreate(ScheduleDto d) {
         Schedule e = new Schedule();
         e.setAudience(Audience.builder().id(d.getAudienceId()).build());
-        e.setGang(Gang.builder().id(d.getGangId()).build());
+        // вчитель розкладу = вчитель групи, тому беремо групу з бази повністю
+        Gang gang = findGang(d.getGangId());
+        e.setGang(gang);
+        e.setTeacher(gang.getTeacher());
         e.setSubject(Subject.builder().id(d.getSubjectId()).build());
         e.setWeekDay(d.getWeekDay());
         e.setStartTime(d.getStartTime());
@@ -44,12 +50,19 @@ public class ScheduleMapper implements Mapper<Schedule, ScheduleDto> {
     @Override
     public Schedule mapDtoToEntityForUpdate(ScheduleDto d, Schedule e) {
         e.setAudience(Audience.builder().id(d.getAudienceId()).build());
-        e.setGang(Gang.builder().id(d.getGangId()).build());
+        Gang gang = findGang(d.getGangId());
+        e.setGang(gang);
+        e.setTeacher(gang.getTeacher());
         e.setSubject(Subject.builder().id(d.getSubjectId()).build());
         e.setWeekDay(d.getWeekDay());
         e.setStartTime(d.getStartTime());
         e.setEndTime(d.getEndTime());
         return e;
+    }
+
+    private Gang findGang(Integer gangId) {
+        return gangRepository.findById(gangId)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Gang whith id= %d not exist", gangId)));
     }
 
 }

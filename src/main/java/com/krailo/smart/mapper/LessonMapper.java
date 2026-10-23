@@ -46,7 +46,10 @@ public class LessonMapper implements Mapper<Lesson, LessonDto> {
     public Lesson mapDtoToEntityForCreate(LessonDto d) {
        Lesson e = new Lesson();
         e.setSubject(Subject.builder().id(d.getSubjectId()).build());
-        e.setGang(Gang.builder().id(d.getGangId()).build());
+        // вчитель уроку = вчитель групи
+        Gang gang = gangService.findByIdEntity(d.getGangId());
+        e.setGang(gang);
+        e.setTeacher(gang.getTeacher());
         e.setAudience(Audience.builder().id(d.getAudienceId()).build());
         e.setDate(d.getDate());
         e.setStartTime(d.getStartTime());
@@ -58,7 +61,9 @@ public class LessonMapper implements Mapper<Lesson, LessonDto> {
     @Override
     public Lesson mapDtoToEntityForUpdate(LessonDto d, Lesson e) {
         e.setSubject(Subject.builder().id(d.getSubjectId()).build());
-        e.setGang(Gang.builder().id(d.getGangId()).build());
+        Gang gang = gangService.findByIdEntity(d.getGangId());
+        e.setGang(gang);
+        e.setTeacher(gang.getTeacher());
         e.setAudience(Audience.builder().id(d.getAudienceId()).build());
         e.setDate(d.getDate());
         e.setStartTime(d.getStartTime());
