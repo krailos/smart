@@ -1,144 +1,133 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-<meta charset="UTF-8" />
-<title>account</title>
-<link
-	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-	rel="stylesheet"
-	integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
-	crossorigin="anonymous" />
-<script
-	src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-	integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
-	crossorigin="anonymous"></script>
-</head>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Звіт: нарахування та платежі')}"></head>
 <body>
-	<nav class="navbar navbar-expand-lg" style="background-color: #edeff1"
-		data-bs-theme="light">
-		<div class="container">
-			<a class="navbar-brand" href="/">Smartum</a>
-			<button class="navbar-toggler" type="button"
-				data-bs-toggle="collapse" data-bs-target="#navbarNav"
-				aria-controls="navbarNav" aria-expanded="false"
-				aria-label="Toggle navigation">
-				<span class="navbar-toggler-icon"></span>
-			</button>
-			<div class="collapse navbar-collapse" id="navbarNav">
-				<ul class="navbar-nav">
-					<li class="nav-item"><a class="nav-link active"
-						aria-current="page" href="/reports">Звіти</a></li>
-				</ul>
-			</div>
-		</div>
-	</nav>
-	<div class="container">
-		<div>
-			<div class="text-center fs-6 text-uppercase fw-semibold">Звіт по нарахуванням та платежам</div>
-			<div  class="col-md-6"> 
-			
-				<table class="table table-light">
-	                    <thead>
-	                        <tr>
-	                           <th scope="col">Студент</th>   
-	                           <th scope="col">Період</th>   
-	                        </tr>
-	                    </thead>
-	                    <tbody >
-	                        <tr>                        
-	                            <td th:text="|${bill.student.lastName} ${bill.student.firstName} (${bill.student.contactName} - ${bill.student.phone})|"></td>
-	                            <td th:text="|з ${bill.startDate} по ${bill.endDate}|"></td>
-	                                       
-	                        </tr>
-	                    </tbody>
-	            </table>
-			</div>
-			
-			    <table class="table table-light">
-	                <thead>
-	                    <tr>
-	                        <th scope="col">#</th>
-	                        <th scope="col">Дата</th>
-	                        <th scope="col">Курс</th>                
-	                        <th scope="col">Група</th>               
-	                        <th scope="col">Присутній</th>                                               
-	                        <th scope="col">Платний</th>                                               
-	                        <th scope="col">Ціна</th>                                               
-	                        <th scope="col">Вид знижки</th>                                               
-	                        <th scope="col">Знижка</th>                                               
-	                        <th scope="col">Вартість</th>                  
-	                    </tr>
-	                </thead>
-	                <tbody class="table-group-divider">
-	                    <tr th:each="item, index : ${items}">
-	                        <td th:text="${index.count}"></td>
-	                        <td th:text="${item.date}"></td>
-	                        <td th:text="${item.subject.name}"></td>
-	                        <td th:text="${item.gang.name}"></td>
-	                        <td th:if="${item.lessonStudent.present}">Так</td>    
-	                        <td th:unless="${item.lessonStudent.present}">Ні</td>    
-	                        <td th:if="${item.lessonStudent.payed}">Так</td>    
-	                        <td th:unless="${item.lessonStudent.payed}">Ні</td>    
-	                        <td th:text="${item.price.value}"></td>    
-	                        <td th:text="${item.discount.name}"></td>    
-	                        <td th:text="${item.discount.value}"></td>    
-	                        <td th:text="${item.itemSum}"></td>   
-	                    </tr>
-	                    <tr class="fw-bold">	                   
-	                       <td></td>	                   
-	                       <td>Всього </td>	
-	                       <td></td> 
-	                       <td></td>  
-	                       <td></td> 
-	                       <td></td>    
-	                       <td></td>   
-	                       <td></td>  
-	                       <td></td>              
-                           <td th:text="${bill.totalItemSum}"></td>             
-	                    </tr>
-	                </tbody>
-            </table>
-            
-              <table class="table table-light">
+<div class="app">
+    <th:block th:replace="~{fragments/layout :: sidebar('reports')}"></th:block>
+
+    <main class="app-main">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title" th:text="|${bill.student.lastName} ${bill.student.firstName}|">Учень</h1>
+                <div class="page-subtitle">
+                    <a th:href="@{/reports}">Звіти</a> / нарахування та платежі ·
+                    <span th:text="|${#temporals.format(bill.startDate, 'dd.MM.yyyy')} – ${#temporals.format(bill.endDate, 'dd.MM.yyyy')}|"></span>
+                    · <span th:text="|${bill.student.contactName} ${bill.student.phone}|"></span>
+                </div>
+            </div>
+            <div class="page-actions">
+                <a th:href="@{/reports/account/form}" class="btn btn-light"><i class="bi bi-arrow-repeat"></i> Інший період</a>
+                <button type="button" class="btn btn-light" onclick="window.print()"><i class="bi bi-printer"></i> Друк</button>
+            </div>
+        </div>
+
+        <!-- підсумки: усе за вибраний період -->
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <div class="card"><div class="card-body">
+                    <div class="text-muted small">Нараховано за уроки</div>
+                    <div class="fs-4 fw-bold" th:text="${bill.totalItemSum} + ' грн'"></div>
+                </div></div>
+            </div>
+            <div class="col-md-4">
+                <div class="card"><div class="card-body">
+                    <div class="text-muted small">Сплачено</div>
+                    <div class="fs-4 fw-bold text-success" th:text="${bill.totalPaymentSum} + ' грн'"></div>
+                </div></div>
+            </div>
+            <div class="col-md-4">
+                <div class="card"><div class="card-body">
+                    <div class="text-muted small">Баланс за період</div>
+                    <div class="fs-4 fw-bold" th:classappend="${bill.balance < 0} ? 'text-danger' : 'text-success'"
+                         th:text="${bill.balance} + ' грн'"></div>
+                </div></div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header bg-transparent py-3 fw-semibold">Уроки</div>
+            <div class="table-responsive">
+                <table class="table table-app">
                     <thead>
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">Дата</th>
-                            <th scope="col">Платіж</th>                
-                            <th scope="col">Опис</th>               
-                            <th scope="col">Сума</th>                                                                                       
-                        </tr>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Дата</th>
+                        <th scope="col">Курс</th>
+                        <th scope="col">Група</th>
+                        <th scope="col">Присутній</th>
+                        <th scope="col">Платний</th>
+                        <th scope="col" class="text-end">Ціна</th>
+                        <th scope="col">Знижка</th>
+                        <th scope="col" class="text-end">До сплати</th>
+                    </tr>
                     </thead>
-                    <tbody class="table-group-divider">
-                        <tr th:each="payment, index : ${payments}">
-                            <td th:text="${index.count}"></td>
-                            <td th:text="${payment.date}"></td>
-                            <td th:text="|${payment.student.lastName} ${payment.student.firstName}| "> </td>
-                            <td th:text="${payment.description}"></td>
-                            <td th:text="${payment.value}"></td>
-                            
-                        </tr>
-                        <tr class="fw-bold">                       
-                           <td></td>                       
-                           <td>Всього платежі </td>  
-                           <td></td>           
-                           <td></td>           
-                           <td th:text="${bill.totalPaymentSum}"></td>             
-                        </tr>
-                         <tr class="fw-bold">                       
-                           <td></td>                       
-                           <td>Баланс </td>  
-                           <td></td>           
-                           <td></td>           
-                           <td th:text="${bill.balance}"></td>             
-                        </tr>
+                    <tbody>
+                    <tr th:each="item, index : ${items}">
+                        <td class="text-muted" th:text="${index.count}"></td>
+                        <td class="text-nowrap" th:text="${#temporals.format(item.date, 'dd.MM.yyyy')}"></td>
+                        <td th:text="${item.subject.name}"></td>
+                        <td th:text="${item.gang.name}"></td>
+                        <td>
+                            <span th:if="${item.lessonStudent.present}" class="badge text-bg-success">так</span>
+                            <span th:unless="${item.lessonStudent.present}" class="badge text-bg-secondary">ні</span>
+                        </td>
+                        <td>
+                            <span th:if="${item.lessonStudent.payed}" class="badge text-bg-success">так</span>
+                            <span th:unless="${item.lessonStudent.payed}" class="badge text-bg-secondary">ні</span>
+                        </td>
+                        <td class="text-end text-nowrap" th:text="${item.price != null} ? ${item.price.value} + ' грн' : '—'"></td>
+                        <!-- знижки може не бути (discount = null) -->
+                        <td th:text="${item.discount != null} ? |${item.discount.name} (${item.discount.value} %)| : '—'"></td>
+                        <td class="text-end fw-semibold text-nowrap" th:text="${item.itemSum} + ' грн'"></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(items)}">
+                        <td colspan="9" class="empty-state">За цей період уроків немає</td>
+                    </tr>
                     </tbody>
-            </table>
-                
-                
-                  
-                
-		</div>
-	</div>
+                    <tfoot>
+                    <tr class="fw-bold">
+                        <td colspan="8" class="text-end">Разом нараховано</td>
+                        <td class="text-end text-nowrap" th:text="${bill.totalItemSum} + ' грн'"></td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-transparent py-3 fw-semibold">Платежі</div>
+            <div class="table-responsive">
+                <table class="table table-app">
+                    <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Дата</th>
+                        <th scope="col">Примітка</th>
+                        <th scope="col" class="text-end">Сума</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="payment, index : ${payments}">
+                        <td class="text-muted" th:text="${index.count}"></td>
+                        <td class="text-nowrap" th:text="${#temporals.format(payment.date, 'dd.MM.yyyy')}"></td>
+                        <td class="text-muted small" th:text="${payment.description}"></td>
+                        <td class="text-end fw-semibold text-nowrap" th:classappend="${payment.value < 0} ? 'text-danger' : 'text-success'"
+                            th:text="${payment.value} + ' грн'"></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(payments)}">
+                        <td colspan="4" class="empty-state">За цей період платежів немає</td>
+                    </tr>
+                    </tbody>
+                    <tfoot>
+                    <tr class="fw-bold">
+                        <td colspan="3" class="text-end">Разом сплачено</td>
+                        <td class="text-end text-nowrap" th:text="${bill.totalPaymentSum} + ' грн'"></td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
 </body>
 </html>

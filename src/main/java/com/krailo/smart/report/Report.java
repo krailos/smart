@@ -30,7 +30,10 @@ public class Report {
         bill.setStartDate(startDate);
         bill.setEndDate(endDate);
         bill.setItems(createItems(student, startDate, endDate));
-        bill.setPayments(paymentService.findAllByStudentEntity(student));
+        // платежі — за той самий період, що й нарахування (межі включно), інакше баланс звіту некоректний
+        bill.setPayments(paymentService.findAllByStudentEntity(student).stream()
+                .filter(p -> !p.getDate().isBefore(startDate) && !p.getDate().isAfter(endDate))
+                .toList());
         bill.calculateTotalItemSum();
         bill.calculateTotalPaymentSum();
         bill.calculeateBalance();

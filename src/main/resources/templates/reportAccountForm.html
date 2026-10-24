@@ -1,63 +1,50 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-<meta charset="UTF-8" />
-<title>report-account-form</title>
-<link
-	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-	rel="stylesheet"
-	integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
-	crossorigin="anonymous" />
-<script
-	src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-	integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
-	crossorigin="anonymous"></script>
-</head>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Звіт: нарахування та платежі')}"></head>
 <body>
-	<nav class="navbar navbar-expand-lg" style="background-color: #edeff1"
-		data-bs-theme="light">
-		<div class="container">
-			<a class="navbar-brand" href="/">Smartum</a>
-			<button class="navbar-toggler" type="button"
-				data-bs-toggle="collapse" data-bs-target="#navbarNav"
-				aria-controls="navbarNav" aria-expanded="false"
-				aria-label="Toggle navigation">
-				<span class="navbar-toggler-icon"></span>
-			</button>
-			<div class="collapse navbar-collapse" id="navbarNav">
-				<ul class="navbar-nav">
-					<li class="nav-item"><a class="nav-link active"
-						aria-current="page" href="/reports">Звіти</a></li>
-				</ul>
-			</div>
-		</div>
-	</nav>
-	<div class="container">
-		<div>
-			<div class="text-center fs-6 text-uppercase fw-semibold">Звіт по витратам та платежам</div>
-	
-			<form th:action="@{/reports/account}" method="get">
-				<div class="text-bg-light mb-3">
-				    
-				    <label for="dateStart" class="form-label"> Дата початку періоду
-				        <input class="form-control" id="dateStart" type="date" name="dateStart"/>
-                    </label>   
-                     <label for="dateEnd" class="form-label"> Дата кінця періоду
-                        <input class="form-control" id="dateEnd" type="date" name="dateEnd"/>
-                    </label> 
-                                
-				    <select name="studentId" class="form-select" aria-label="Default select example">
-	                        <option selected>Виберіть студента</option>
-	                        <option 
-		                         th:each="student : ${students}"
-		                         th:text="|${student.LastName} ${student.firstName}  (${student.contactName} - ${student.phone} )|"    
-		                         th:value="${student.id}" > name</option>                       
-                    </select>
+<div class="app">
+    <th:block th:replace="~{fragments/layout :: sidebar('reports')}"></th:block>
 
-				</div>
-				<button type="submit" class="btn btn-primary">Виконати</button>
-			</form>
-		</div>
-	</div>
+    <main class="app-main">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Нарахування та платежі</h1>
+                <div class="page-subtitle"><a th:href="@{/reports}">Звіти</a> / параметри звіту</div>
+            </div>
+        </div>
+
+        <div class="card form-card">
+            <div class="card-body p-4">
+                <form th:action="@{/reports/account}" method="get">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="studentId" class="form-label">Учень</label>
+                            <!-- value="" + required: без учня й дат браузер форму не відправить (інакше — помилка 500) -->
+                            <select id="studentId" name="studentId" class="form-select" required>
+                                <option value="">-- Оберіть учня --</option>
+                                <option th:each="student : ${students}"
+                                        th:text="|${student.lastName} ${student.firstName} (${student.contactName} - ${student.phone})|"
+                                        th:value="${student.id}">name</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="dateStart" class="form-label">З</label>
+                            <input class="form-control" id="dateStart" type="date" name="dateStart" required/>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="dateEnd" class="form-label">По</label>
+                            <input class="form-control" id="dateEnd" type="date" name="dateEnd" required/>
+                        </div>
+
+                        <div class="col-12 form-actions">
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-receipt"></i> Сформувати звіт</button>
+                            <a th:href="@{/reports}" class="btn btn-light">Скасувати</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
 </body>
 </html>
