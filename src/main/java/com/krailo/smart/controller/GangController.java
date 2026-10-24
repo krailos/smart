@@ -4,7 +4,6 @@ import com.krailo.smart.dto.GangDto;
 import com.krailo.smart.dto.GangsStudentsDto;
 import com.krailo.smart.dto.StudentDto;
 import com.krailo.smart.entity.Gang;
-import com.krailo.smart.entity.GangsStudents;
 import com.krailo.smart.entity.Student;
 import com.krailo.smart.entity.Teacher;
 import com.krailo.smart.exception.BusinessException;
@@ -73,8 +72,9 @@ public class GangController {
     @GetMapping("/{id}/byStudent")
     public String findAllByStudent(@PathVariable("id") Integer studentId, Model model){
         Student student = studentService.findByIdEntity(studentId);
-        List<GangsStudents> gangsStudents = student.getGangsStudents();
-        List<Gang> gangs = gangsStudents.stream().map(GangsStudents::getGang)
+        // у шаблон — GangDto, як і в інших методах (gangs.html читає subjectNme, teacherLastName)
+        List<GangDto> gangs = student.getGangsStudents().stream()
+                        .map(gs -> gangService.findById(gs.getGang().getId()))
                         .toList();
         model.addAttribute("gangs", gangs);
         return "gangs";

@@ -1,76 +1,68 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8"/>
-    <title>gang</title>
-    <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-            rel="stylesheet"
-            integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
-            crossorigin="anonymous"/>
-    <script
-            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
-            crossorigin="anonymous"></script>
-</head>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Група')}"></head>
 <body>
-<nav class="navbar navbar-expand-lg" style="background-color: #edeff1"
-     data-bs-theme="light">
-    <div class="container">
-        <a class="navbar-brand" href="/">Smartum</a>
-        <button class="navbar-toggler" type="button"
-                data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false"
-                aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav">
-                <li class="nav-item"><a class="nav-link active"
-                                        aria-current="page" href="/gangs">Групи</a>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
-<div class="container">
-    <div>
-        <div class="text-center fs-6 text-uppercase fw-semibold">нова група</div>
-        <form th:object="${gang}" th:action="@{/gangs/{id}/update ( id=${gang.id}) }" method="post">
-            <div class="mb-3">
-                <label for="gang name" class="form-label"> Назва групи
-                    <input class="form-control" id="gang name" type="text"
-                           name="name" th:value="*{name}"/>
-                </label>
+<div class="app">
+    <th:block th:replace="~{fragments/layout :: sidebar('gangs')}"></th:block>
 
-                <select class="form-select form-label" aria-label="Default select example" name="subjectId">
-                    <option value="">-- Оберіть курс --</option>
-                    <option th:each="subject : ${subjects}"
-                            th:value="${subject.id}"
-                            th:text="${subject.name}"
-                            th:selected="${subject.name == gang.subject.getName() }">
-
-                    </option>
-                </select>
-
-                <select class="form-select form-label" aria-label="Default select example" name="teacherId">
-                    <option value="">-- Оберіть викладача --</option>
-                    <option th:each="teacher : ${teachers}"
-                            th:value="${teacher.id}"
-                            th:text="${teacher.getLastName()}"
-                            th:selected="${teacher.getLastName() == gang.teacher.getLastName()}">
-                    </option>
-                </select>
-
-
-                <label for="gang discription" class="form-label"> Опис групи
-                    <input class="form-control" id="gang discription" type="text"
-                           name="description" th:value="*{description}"/>
-                </label>
+    <main class="app-main">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title" th:text="${gang.name}">Група</h1>
+                <div class="page-subtitle"><a th:href="@{/gangs}">Групи</a> / редагування</div>
             </div>
-            <button type="submit" class="btn btn-primary">Виконати</button>
-        </form>
-    </div>
+            <div class="page-actions">
+                <a th:href="@{/gangs/{id}/bystudents(id=${gang.id})}" class="btn btn-light">
+                    <i class="bi bi-person-video2"></i> Учні групи</a>
+            </div>
+        </div>
+
+        <div class="card form-card">
+            <div class="card-body p-4">
+                <form th:object="${gang}" th:action="@{/gangs/{id}/update ( id=${gang.id}) }" method="post">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label for="name" class="form-label">Назва групи</label>
+                            <input class="form-control" id="name" type="text" name="name" th:value="*{name}"/>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="subjectId" class="form-label">Курс</label>
+                            <!-- порівнюємо за id: у GangDto є subjectId / teacherId -->
+                            <select class="form-select" id="subjectId" name="subjectId">
+                                <option value="">-- Оберіть курс --</option>
+                                <option th:each="subject : ${subjects}"
+                                        th:value="${subject.id}"
+                                        th:text="${subject.name}"
+                                        th:selected="${subject.id == gang.subjectId}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="teacherId" class="form-label">Вчитель</label>
+                            <select class="form-select" id="teacherId" name="teacherId">
+                                <option value="">-- Оберіть вчителя --</option>
+                                <option th:each="teacher : ${teachers}"
+                                        th:value="${teacher.id}"
+                                        th:text="${teacher.lastName + ' ' + teacher.firstName}"
+                                        th:selected="${teacher.id == gang.teacherId}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label for="description" class="form-label">Опис групи</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"
+                                      th:text="*{description}"></textarea>
+                        </div>
+
+                        <div class="col-12 form-actions">
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Зберегти</button>
+                            <a th:href="@{/gangs}" class="btn btn-light">Скасувати</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
 </div>
 </body>
 </html>
