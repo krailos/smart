@@ -1,92 +1,88 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-<meta charset="UTF-8" />
-<title>subjects</title>
-<link
-	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-	rel="stylesheet"
-	integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
-	crossorigin="anonymous" />
-<script
-	src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-	integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
-	crossorigin="anonymous"></script>
-</head>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Курси')}"></head>
 <body>
-	<nav class="navbar navbar-expand-lg" style="background-color: #edeff1"
-		data-bs-theme="light">
-		<div class="container">
-			<a class="navbar-brand" href="/">Smartum</a>
-			<button class="navbar-toggler" type="button"
-				data-bs-toggle="collapse" data-bs-target="#navbarNav"
-				aria-controls="navbarNav" aria-expanded="false"
-				aria-label="Toggle navigation">
-				<span class="navbar-toggler-icon"></span>
-			</button>
-			<div class="collapse navbar-collapse" id="navbarNav">
-				<ul class="navbar-nav">
-					<li class="nav-item"><a th:href="@{/subjects/subject/new}">
-							<button class="btn btn-success">Додати курс</button>
-					</a></li>
-					<!--li class="nav-item">
-					   <a class="nav-link active"
-                        aria-current="page" href="/prices">Вартість курсів</a>
-                    </li-->
-					<!-- перемикач: активні / архів -->
-					<li class="nav-item ms-2"><a class="btn btn-outline-secondary"
-						th:href="${archived} ? @{/subjects} : @{/subjects(archived=true)}"
-						th:text="${archived} ? 'Активні курси' : 'Архів'"></a></li>
-				</ul>
-			</div>
-		</div>
-	</nav>
-	<div class="container my-4">
-		<div th:if="${archived}" class="text-center text-uppercase fs-5 fw-bolder">КУРСИ — АРХІВ</div>
-		<div class="row">
-			<!-- результат архівування / відновлення, помилка "ціна на цю дату вже є" (flash-повідомлення) -->
-			<div th:if="${successMessage}" class="alert alert-success" role="alert" th:text="${successMessage}"></div>
-			<div th:if="${errorMessage}" class="alert alert-danger" role="alert" th:text="${errorMessage}"></div>
-			<table class="table table-striped">
-				<thead>
-					<tr>
-						<th scope="col">#</th>
-						<th scope="col">Курс</th>
-						<th scope="col">Вартість</th>
-						<th scope="col">Опис</th>
-						<th scope="col">Редагувати вартість</th>
-						<th scope="col">Редагувати</th>
-						<th scope="col">Архів</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr th:each="subject, index : ${subjects}">
-						<td th:text="${index.count}"></td>
-						<td th:text="${subject.name}"></td>
-						<td th:if="${subject.pricesDto.size()} > 0" th:text="${subject.pricesDto[0].value}"></td>
-						<td th:unless="${subject.pricesDto.size()} > 0" th:text="${нема}"></td>
-						<td th:text="${subject.description}"></td>
-						<td><a th:href="@{prices/{subjectId}/bysubject(subjectId=${subject.id})}">
-                                <button class="btn btn-primary">Змінити вартість</button>
-                        </a></td>
-						<td><a th:href="@{subjects/{id}(id=${subject.id})}">
-								<button class="btn btn-primary">Редагувати</button>
-						</a></td>
+<div class="app">
+    <th:block th:replace="~{fragments/layout :: sidebar('subjects')}"></th:block>
 
-						<td>
-							<!-- архівування замість видалення: уроки, ціни й оплати в історії лишаються -->
-							<form th:unless="${archived}" th:action="@{/subjects/{id}/archive( id=${subject.id})}"
-								method="post" onsubmit="return confirm('Перемістити курс в архів?');">
-								<button class="btn btn-outline-danger">В архів</button>
-							</form>
-							<form th:if="${archived}" th:action="@{/subjects/{id}/restore( id=${subject.id})}" method="post">
-								<button class="btn btn-outline-success">Відновити</button>
-							</form>
-						</td>
-					</tr>
-				</tbody>
-			</table>
-		</div>
-	</div>
+    <main class="app-main">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">
+                    Курси
+                    <span th:if="${archived}" class="badge text-bg-secondary align-middle fs-6 fw-semibold">Архів</span>
+                </h1>
+                <div class="page-subtitle" th:text="'Усього: ' + ${subjects.size()}"></div>
+            </div>
+            <div class="page-actions">
+                <!-- перемикач: активні / архів -->
+                <div class="btn-group" role="group">
+                    <a th:href="@{/subjects}" class="btn"
+                       th:classappend="${archived} ? 'btn-outline-secondary' : 'btn-secondary'">Активні</a>
+                    <a th:href="@{/subjects(archived=true)}" class="btn"
+                       th:classappend="${archived} ? 'btn-secondary' : 'btn-outline-secondary'"><i class="bi bi-archive"></i> Архів</a>
+                </div>
+                <a th:href="@{/prices}" class="btn btn-light"><i class="bi bi-tags"></i> Усі ціни</a>
+                <a th:href="@{/subjects/subject/new}" class="btn btn-primary">
+                    <i class="bi bi-plus-lg"></i> Додати курс
+                </a>
+            </div>
+        </div>
+
+        <!-- результат архівування / відновлення, помилка "ціна на цю дату вже є" (flash-повідомлення) -->
+        <th:block th:replace="~{fragments/layout :: alerts}"></th:block>
+
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table table-hover table-app">
+                    <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Курс</th>
+                        <th scope="col">Вартість уроку</th>
+                        <th scope="col">Опис</th>
+                        <th scope="col" class="col-actions">Дії</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="subject, index : ${subjects}">
+                        <td class="text-muted" th:text="${index.count}"></td>
+                        <td class="fw-medium" th:text="${subject.name}"></td>
+                        <!-- ціни відсортовані від найновішої (SubjectService), тому [0] — поточна -->
+                        <td>
+                            <span th:if="${subject.pricesDto.size() > 0}" class="badge rounded-pill text-bg-light border fw-semibold fs-6"
+                                  th:text="${subject.pricesDto[0].value} + ' грн'"></span>
+                            <span th:unless="${subject.pricesDto.size() > 0}" class="text-muted">—</span>
+                        </td>
+                        <td class="text-muted small" th:text="${subject.description}"></td>
+                        <td class="col-actions">
+                            <a th:href="@{/prices/{subjectId}/bysubject(subjectId=${subject.id})}" class="btn btn-light btn-icon" title="Ціни курсу">
+                                <i class="bi bi-tags"></i>
+                            </a>
+                            <a th:href="@{/subjects/{id}(id=${subject.id})}" class="btn btn-light btn-icon" title="Редагувати">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <!-- архівування замість видалення: уроки, ціни й оплати в історії лишаються -->
+                            <form th:unless="${archived}" th:action="@{/subjects/{id}/archive( id=${subject.id})}"
+                                  method="post" onsubmit="return confirm('Перемістити курс в архів?');">
+                                <button class="btn btn-light btn-icon text-danger" title="В архів"><i class="bi bi-archive"></i></button>
+                            </form>
+                            <form th:if="${archived}" th:action="@{/subjects/{id}/restore( id=${subject.id})}" method="post">
+                                <button class="btn btn-light btn-icon text-success" title="Відновити"><i class="bi bi-arrow-counterclockwise"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(subjects)}">
+                        <td colspan="5" class="empty-state">
+                            <i class="bi bi-book"></i>
+                            <span th:text="${archived} ? 'В архіві немає курсів' : 'Ще немає жодного курсу'"></span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
 </body>
 </html>

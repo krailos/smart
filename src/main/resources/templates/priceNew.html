@@ -1,57 +1,49 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8"/>
-    <title>price-new</title>
-    <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-            rel="stylesheet"
-            integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
-            crossorigin="anonymous"/>
-    <script
-            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
-            crossorigin="anonymous"></script>
-</head>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Нова ціна')}"></head>
 <body>
-<nav class="navbar navbar-expand-lg" style="background-color: #edeff1"
-     data-bs-theme="light">
-    <div class="container">
-        <a class="navbar-brand" href="/">Smartum</a>
-        <button class="navbar-toggler" type="button"
-                data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false"
-                aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav">
-                <li class="nav-item"><a class="nav-link active"
-                                        aria-current="page" href="/subjects">Курси</a></li>
-            </ul>
-        </div>
-    </div>
-</nav>
-<div class="container">
-    <div>
-        <div class="text-center fs-6 text-uppercase fw-semibold">Нова вартість курсу</div>
-        <form th:action="@{/prices/create}" method="post" th:object="${price}">
-            <div class="mb-3">
-                <input type="hidden" th:field="*{subjectId}" />
-                <label for="subName" class="form-label"> Курс
-                    <input class="form-control bg-light" id="subName" type="text"
-                           th:name="subjectName"  th:value="*{subjectName}" readonly/>
-                </label>
-                <label for="value" class="form-label"> Вартість за урок
-                    <input class="form-control" id="value" type="text" th:name="value" value=""/>
-                </label>
-                <label for="date" class="form-label"> Дата
-                    <input class="form-control" id="date" type="date" th:name="date" value=""/>
-                </label>
+<div class="app">
+    <th:block th:replace="~{fragments/layout :: sidebar('subjects')}"></th:block>
+
+    <main class="app-main">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Нова ціна</h1>
+                <div class="page-subtitle">
+                    <a th:href="@{/subjects}">Курси</a> /
+                    <a th:href="@{/prices/{id}/bysubject(id=${price.subjectId})}" th:text="${price.subjectName}">курс</a> / нова ціна
+                </div>
             </div>
-            <button type="submit" class="btn btn-primary">Виконати</button>
-        </form>
-    </div>
+        </div>
+
+        <div class="card form-card">
+            <div class="card-body p-4">
+                <form th:action="@{/prices/create}" method="post" th:object="${price}">
+                    <input type="hidden" th:field="*{subjectId}"/>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label for="subName" class="form-label">Курс</label>
+                            <input class="form-control bg-light" id="subName" type="text"
+                                   th:name="subjectName" th:value="*{subjectName}" readonly/>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="value" class="form-label">Вартість уроку, грн</label>
+                            <input class="form-control" id="value" type="number" min="0" step="1" th:name="value" value=""/>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="date" class="form-label">Діє з</label>
+                            <input class="form-control" id="date" type="date" th:name="date" value=""/>
+                        </div>
+
+                        <div class="col-12 form-actions">
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Зберегти</button>
+                            <a th:href="@{/prices/{id}/bysubject(id=${price.subjectId})}" class="btn btn-light">Скасувати</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
 </div>
 </body>
 </html>
