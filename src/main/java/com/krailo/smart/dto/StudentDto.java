@@ -8,6 +8,7 @@ import com.krailo.smart.enumeration.Gender;
 import com.krailo.smart.enumeration.StudentStatus;
 import lombok.Value;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class StudentDto {
     private StudentStatus studentStatus;
     private LocalDate birthDate;
     private String description;
-    private Double balance; // Double, а не double: у формах учня цього поля немає, приходить null
+    private BigDecimal balance; // може бути null: у формах учня цього поля немає
     private List<StudentsDiscounts> studentsDiscounts;
     private List<Payment> payments;
     private List<LessonsStudents> lessonsStudents;

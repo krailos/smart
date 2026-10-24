@@ -53,12 +53,12 @@ public class PaymentService {
             throw new PaymentException("Сторно не можна сторнувати");
         }
         if (paymentRepository.existsByStornoOfId(original.getId())) {
-            throw new PaymentException(String.format("Оплату від %s на %d грн уже сторновано",
+            throw new PaymentException(String.format("Оплату від %s на %s грн уже сторновано",
                     original.getDate(), original.getValue()));
         }
         Payment storno = Payment.builder()
                 .student(original.getStudent())
-                .value(-original.getValue())
+                .value(original.getValue().negate())
                 .date(LocalDate.now())
                 .description(String.format("Сторно оплати від %s", original.getDate()))
                 .stornoOf(original)

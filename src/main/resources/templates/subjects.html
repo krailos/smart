@@ -51,7 +51,7 @@
                         <!-- ціни відсортовані від найновішої (SubjectService), тому [0] — поточна -->
                         <td>
                             <span th:if="${subject.pricesDto.size() > 0}" class="badge rounded-pill text-bg-light border fw-semibold fs-6"
-                                  th:text="${subject.pricesDto[0].value} + ' грн'"></span>
+                                  th:text="${#numbers.formatDecimal(subject.pricesDto[0].value, 1, 'WHITESPACE', 2, 'POINT')} + ' грн'"></span>
                             <span th:unless="${subject.pricesDto.size() > 0}" class="text-muted">—</span>
                         </td>
                         <td class="text-muted small" th:text="${subject.description}"></td>

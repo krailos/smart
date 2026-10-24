@@ -1,10 +1,8 @@
 package com.krailo.smart.controller;
 
 import com.krailo.smart.dto.AudienceDto;
-import com.krailo.smart.entity.Payment;
 import com.krailo.smart.entity.Student;
 import com.krailo.smart.report.Bill;
-import com.krailo.smart.report.ItemBill;
 import com.krailo.smart.report.Report;
 import com.krailo.smart.service.LessonService;
 import com.krailo.smart.service.StudentService;
@@ -14,7 +12,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Controller
 @RequestMapping("/reports")
@@ -38,11 +35,7 @@ public class ReportController {
                               @RequestParam("dateEnd") LocalDate dateEnd,  @RequestParam("studentId") String studentId, Model model) {
         Student student = studentService.findByIdEntity(Integer.valueOf(studentId));
         Bill bill = report.createBill(student, dateStart, dateEnd);
-        List<ItemBill> itemBills = bill.getItems();
-        List<Payment> payments = bill.getPayments();
         model.addAttribute("bill", bill);
-        model.addAttribute("items", itemBills);
-        model.addAttribute("payments", payments);
         return "reportAccount";
 
     }

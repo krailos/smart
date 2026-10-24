@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Builder
@@ -24,11 +25,11 @@ public class TransactionStudentDto {
     private String studentFirstName;
     boolean studentPresent;
     boolean lessonPayed;
-    private int subjectFulPrice;
+    private BigDecimal subjectFulPrice;
     private int discountPercentage;
-    private double discountSum;
-    private double debit;
-    private double credit;
-    private double balance;
+    private BigDecimal discountSum;
+    private BigDecimal debit;
+    private BigDecimal credit;
+    private BigDecimal balance;
 
 }

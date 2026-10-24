@@ -49,16 +49,16 @@
                                       th:text="${ts.lessonPayed} ? 'платний' : 'безкоштовний'"></span>
                             </th:block>
                         </td>
-                        <td class="text-end text-nowrap" th:text="${ts.lessonId != null} ? ${ts.subjectFulPrice} + ' грн'"></td>
-                        <td class="text-end text-nowrap" th:text="${ts.discountSum != 0} ? ${#numbers.formatDecimal(ts.discountSum, 1, 0)} + ' грн'"></td>
+                        <td class="text-end text-nowrap" th:text="${ts.lessonId != null} ? ${#numbers.formatDecimal(ts.subjectFulPrice, 1, 'WHITESPACE', 2, 'POINT')} + ' грн'"></td>
+                        <td class="text-end text-nowrap" th:text="${ts.discountSum != 0} ? ${#numbers.formatDecimal(ts.discountSum, 1, 'WHITESPACE', 2, 'POINT')} + ' грн'"></td>
                         <!-- credit: для уроку — списання (баланс -= credit), для оплати — зарахування (баланс += credit);
                              показуємо, як операція змінила баланс: мінус — списали, плюс — зарахували (сторно — навпаки) -->
                         <td class="text-end text-nowrap fw-semibold"
                             th:with="effect=${ts.lessonId != null ? -ts.credit : ts.credit}"
                             th:classappend="${effect < 0} ? 'text-danger' : 'text-success'"
-                            th:text="${(effect > 0 ? '+' : '') + #numbers.formatDecimal(effect, 1, 0)} + ' грн'"></td>
+                            th:text="${(effect > 0 ? '+' : '') + #numbers.formatDecimal(effect, 1, 'WHITESPACE', 2, 'POINT')} + ' грн'"></td>
                         <td class="text-end text-nowrap fw-semibold" th:classappend="${ts.balance < 0} ? 'text-danger'"
-                            th:text="${#numbers.formatDecimal(ts.balance, 1, 0)} + ' грн'"></td>
+                            th:text="${#numbers.formatDecimal(ts.balance, 1, 'WHITESPACE', 2, 'POINT')} + ' грн'"></td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(transactionsStudents)}">
                         <td colspan="9" class="empty-state">Транзакцій немає</td>

@@ -41,7 +41,7 @@
                         <!-- сторно (мінусова сума) — червоним -->
                         <td class="text-end fw-semibold text-nowrap"
                             th:classappend="${payment.value < 0} ? 'text-danger' : 'text-success'"
-                            th:text="${(payment.value > 0 ? '+' : '') + payment.value + ' грн'}"></td>
+                            th:text="${(payment.value > 0 ? '+' : '') + #numbers.formatDecimal(payment.value, 1, 'WHITESPACE', 2, 'POINT') + ' грн'}"></td>
                         <td class="text-muted small" th:text="${payment.description}"></td>
                         <td>
                             <span th:if="${payment.storned}" class="badge text-bg-secondary">Сторновано</span>

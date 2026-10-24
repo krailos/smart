@@ -41,7 +41,7 @@
                         </div>
                         <div class="col-md-4">
                             <label for="value" class="form-label">Сума, грн</label>
-                            <input class="form-control" id="value" type="number" min="1" step="1" name="value" required
+                            <input class="form-control" id="value" type="number" min="0.01" step="0.01" name="value" required
                                    th:value="${param.value != null} ? ${param.value.toString()}"/>
                         </div>
                         <div class="col-md-8">

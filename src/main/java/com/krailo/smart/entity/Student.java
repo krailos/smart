@@ -5,6 +5,7 @@ import com.krailo.smart.enumeration.StudentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +41,9 @@ public class Student {
     // на відміну від @SoftDelete, Hibernate його НЕ ховає — тому уроки й оплати й далі бачать ім'я
     @Column(name = "is_deleted")
     private boolean archived;
-    private double balance;
+    @Builder.Default
+    @Column(precision = 10, scale = 2)
+    private BigDecimal balance = BigDecimal.ZERO;
     @Builder.Default
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
     private List<StudentsDiscounts> studentsDiscounts = new ArrayList<>();

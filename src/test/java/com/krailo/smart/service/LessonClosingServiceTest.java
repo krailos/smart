@@ -17,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -45,6 +46,8 @@ class LessonClosingServiceTest {
     @Autowired private TeacherRepository teacherRepository;
     @Autowired private GangRepository gangRepository;
     @Autowired private ScheduleRepository scheduleRepository;
+    @Autowired private DiscountRepository discountRepository;
+    @Autowired private StudentsDiscountsRepository studentsDiscountsRepository;
     @Autowired private JdbcTemplate jdbcTemplate;
 
     private Subject subject;
@@ -66,7 +69,7 @@ class LessonClosingServiceTest {
                 .firstName("Оля").lastName("Петренко")
                 .contactName("мама Оля").phone("0670000000")
                 .gender(Gender.ДІВЧИНА).studentStatus(StudentStatus.УЧЕНЬ)
-                .balance(0)
+                .balance(BigDecimal.ZERO)
                 .build());
     }
 
@@ -74,7 +77,7 @@ class LessonClosingServiceTest {
     void cleanUp() {
         // тест без @Transactional — прибираємо за собою вручну (від залежних таблиць до основних)
         for (String table : List.of("transaction_student", "lessons_students", "lesson", "schedule",
-                "price", "gang", "student", "teacher", "subject", "audience")) {
+                "price", "students_discounts", "discount", "gang", "student", "teacher", "subject", "audience")) {
             jdbcTemplate.update("DELETE FROM " + table);
         }
     }
@@ -98,7 +101,7 @@ class LessonClosingServiceTest {
     @Test
     void shouldSaveLessonStudentsAndCharge_WhenPriceExists() {
         // Given: ціна курсу 100 діє з 01.09
-        priceRepository.save(Price.builder().subject(subject).value(100).date(LocalDate.of(2026, 9, 1)).build());
+        priceRepository.save(Price.builder().subject(subject).value(new BigDecimal("100")).date(LocalDate.of(2026, 9, 1)).build());
 
         // When
         lessonClosingService.closeLesson(lessonDto());
@@ -108,15 +111,35 @@ class LessonClosingServiceTest {
                 .satisfies(l -> assertThat(l.getSchedule().getId()).isEqualTo(schedule.getId()));
         assertThat(lessonsStudentsRepository.count()).isEqualTo(1);
         assertThat(transactionStudentRepository.count()).isEqualTo(1);
-        assertThat(studentRepository.findById(student.getId()).orElseThrow().getBalance()).isEqualTo(-100);
+        assertThat(balance()).isEqualByComparingTo("-100");
+    }
+
+    @Test
+    void shouldRoundDiscountToKopiyka_HalfUp() {
+        // Given: ціна 149.50, у учня знижка 7 % на цей курс
+        priceRepository.save(Price.builder().subject(subject).value(new BigDecimal("149.50")).date(LocalDate.of(2026, 9, 1)).build());
+        Discount discount = discountRepository.save(Discount.builder().name("Сімейна").value(7).date(LocalDate.of(2026, 9, 1)).build());
+        studentsDiscountsRepository.save(StudentsDiscounts.builder()
+                .student(student).subject(subject).discount(discount).date(LocalDate.of(2026, 9, 1)).build());
+
+        // When
+        lessonClosingService.closeLesson(lessonDto());
+
+        // Then: 149.50 × 7 % = 10.465 -> 10.47 (шкільне округлення), списано 149.50 - 10.47 = 139.03
+        assertThat(transactionStudentRepository.findAll()).singleElement()
+                .satisfies(t -> {
+                    assertThat(t.getDiscountSum()).isEqualByComparingTo("10.47");
+                    assertThat(t.getCredit()).isEqualByComparingTo("139.03");
+                });
+        assertThat(balance()).isEqualByComparingTo("-139.03");
     }
 
     @Test
     void shouldReturnMoneyAndAllowClosingAgain_WhenLessonStorned() {
         // Given: ціна 100; урок проведено (з учня списано 100)
-        priceRepository.save(Price.builder().subject(subject).value(100).date(LocalDate.of(2026, 9, 1)).build());
+        priceRepository.save(Price.builder().subject(subject).value(new BigDecimal("100")).date(LocalDate.of(2026, 9, 1)).build());
         LessonDto held = lessonClosingService.closeLesson(lessonDto());
-        assertThat(balance()).isEqualTo(-100);
+        assertThat(balance()).isEqualByComparingTo("-100");
 
         // When: виявилась помилка у формі — сторнуємо урок
         lessonClosingService.stornoLesson(held.getId());
@@ -131,13 +154,13 @@ class LessonClosingServiceTest {
         // і цей урок можна провести заново на ту саму дату
         lessonClosingService.closeLesson(lessonDto());
         assertThat(lessonRepository.count()).isEqualTo(2);
-        assertThat(balance()).isEqualTo(-100);
+        assertThat(balance()).isEqualByComparingTo("-100");
     }
 
     @Test
     void shouldNotStornoLessonTwice() {
         // Given
-        priceRepository.save(Price.builder().subject(subject).value(100).date(LocalDate.of(2026, 9, 1)).build());
+        priceRepository.save(Price.builder().subject(subject).value(new BigDecimal("100")).date(LocalDate.of(2026, 9, 1)).build());
         LessonDto held = lessonClosingService.closeLesson(lessonDto());
         lessonClosingService.stornoLesson(held.getId());
 
@@ -148,7 +171,7 @@ class LessonClosingServiceTest {
         assertThat(balance()).isZero();
     }
 
-    private double balance() {
+    private BigDecimal balance() {
         return studentRepository.findById(student.getId()).orElseThrow().getBalance();
     }
 

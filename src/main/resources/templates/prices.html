@@ -41,7 +41,7 @@
                         <td class="text-muted" th:text="${index.count}"></td>
                         <td th:if="${subject == null}" class="fw-medium" th:text="${price.subjectName}"></td>
                         <td th:text="${price.date != null} ? ${#temporals.format(price.date, 'dd.MM.yyyy')}"></td>
-                        <td class="fw-semibold" th:text="${price.value} + ' грн'"></td>
+                        <td class="fw-semibold" th:text="${#numbers.formatDecimal(price.value, 1, 'WHITESPACE', 2, 'POINT')} + ' грн'"></td>
                         <td class="col-actions">
                             <a th:href="@{/prices/{id}(id=${price.id})}" class="btn btn-light btn-icon" title="Редагувати">
                                 <i class="bi bi-pencil"></i>

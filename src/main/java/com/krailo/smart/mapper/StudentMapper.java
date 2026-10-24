@@ -4,6 +4,8 @@ import com.krailo.smart.dto.StudentDto;
 import com.krailo.smart.entity.Student;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+
 
 @Component
 public class StudentMapper implements Mapper<Student, StudentDto> {
@@ -23,7 +25,7 @@ public class StudentMapper implements Mapper<Student, StudentDto> {
         e.setStudentStatus(d.getStudentStatus());
         e.setBirthDate(d.getBirthDate()); 
         e.setDescription(d.getDescription());
-        e.setBalance(0); // новий учень завжди починає з нульовим балансом
+        e.setBalance(BigDecimal.ZERO); // новий учень завжди починає з нульовим балансом
         e.setStudentsDiscounts(d.getStudentsDiscounts());       
         e.setPayments(d.getPayments());      
         e.setLessonsStudents(d.getLessonsStudents());       

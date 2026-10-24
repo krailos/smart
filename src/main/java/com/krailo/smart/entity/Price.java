@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.SoftDelete;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
@@ -22,8 +23,8 @@ public class Price {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String name;
-    @Column(name = "price_value")
-    private int value;
+    @Column(name = "price_value", precision = 10, scale = 2)
+    private BigDecimal value;
     @Column(name = "price_date")
     private LocalDate date;
     @ManyToOne()

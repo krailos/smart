@@ -3,6 +3,7 @@ package com.krailo.smart.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 
@@ -22,8 +23,8 @@ public class Payment {
     @ManyToOne
     @JoinColumn(name = "student_id")
     private Student student;
-    @Column(name = "payment_value")
-    private int value;
+    @Column(name = "payment_value", precision = 10, scale = 2)
+    private BigDecimal value;
     @Column(name = "payment_date")
     private LocalDate date;
     private String description;

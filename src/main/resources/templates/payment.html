@@ -28,7 +28,7 @@
                     <div class="col-md-3">
                         <div class="form-label text-muted">Сума</div>
                         <div class="fs-5 fw-semibold" th:classappend="${payment.value < 0} ? 'text-danger' : 'text-success'"
-                             th:text="${payment.value + ' грн'}"></div>
+                             th:text="${#numbers.formatDecimal(payment.value, 1, 'WHITESPACE', 2, 'POINT') + ' грн'}"></div>
                     </div>
                     <div class="col-md-3">
                         <div class="form-label text-muted">Дата</div>

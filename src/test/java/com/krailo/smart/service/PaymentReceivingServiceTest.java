@@ -17,6 +17,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -48,7 +49,7 @@ class PaymentReceivingServiceTest {
                 .firstName("Оля").lastName("Петренко")
                 .contactName("мама Оля").phone("0670000000")
                 .gender(Gender.ДІВЧИНА).studentStatus(StudentStatus.УЧЕНЬ)
-                .balance(0)
+                .balance(BigDecimal.ZERO)
                 .build());
     }
 
@@ -71,10 +72,10 @@ class PaymentReceivingServiceTest {
         assertThat(paymentRepository.count()).isEqualTo(1);
         assertThat(transactionStudentRepository.findAll()).singleElement()
                 .satisfies(t -> {
-                    assertThat(t.getCredit()).isEqualTo(500);
-                    assertThat(t.getBalance()).isEqualTo(500);
+                    assertThat(t.getCredit()).isEqualByComparingTo("500");
+                    assertThat(t.getBalance()).isEqualByComparingTo("500");
                 });
-        assertThat(studentRepository.findById(student.getId()).orElseThrow().getBalance()).isEqualTo(500);
+        assertThat(studentRepository.findById(student.getId()).orElseThrow().getBalance()).isEqualByComparingTo("500");
     }
 
     @Test
@@ -114,7 +115,7 @@ class PaymentReceivingServiceTest {
 
         // Then: оригінал лишився, з'явилось сторно -500, яке посилається на оригінал; баланс повернувся до 0
         assertThat(paymentRepository.count()).isEqualTo(2);
-        assertThat(storno.getValue()).isEqualTo(-500);
+        assertThat(storno.getValue()).isEqualByComparingTo("-500");
         assertThat(storno.getStornoOfId()).isEqualTo(original.getId());
         assertThat(paymentRepository.existsByStornoOfId(original.getId())).isTrue();
         assertThat(transactionStudentRepository.count()).isEqualTo(2);
@@ -140,6 +141,6 @@ class PaymentReceivingServiceTest {
     }
 
     private PaymentDto paymentDto(int value) {
-        return new PaymentDto(null, null, student.getId(), value, LocalDate.of(2026, 10, 24), "тест", null, null);
+        return new PaymentDto(null, null, student.getId(), BigDecimal.valueOf(value), LocalDate.of(2026, 10, 24), "тест", null, null);
     }
 }

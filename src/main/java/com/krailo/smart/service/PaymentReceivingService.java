@@ -22,7 +22,8 @@ public class PaymentReceivingService {
     // оплата теж не збережеться (не буде оплати, яка "не потрапила" в баланс).
     public PaymentDto receivePayment(PaymentDto paymentDto) {
         // від'ємні суми — тільки через сторнування (щоб було видно, яку оплату виправили)
-        if (paymentDto.getValue() <= 0) {
+        // null — поле суми у формі лишили порожнім
+        if (paymentDto.getValue() == null || paymentDto.getValue().signum() <= 0) {
             throw new PaymentException("Сума оплати має бути більшою за нуль");
         }
         // 1. оплата

@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 
 @Data
 @Builder
@@ -27,17 +29,26 @@ public class TransactionStudent {
     @ManyToOne
     @JoinColumn(name = "student_id")
     private Student student;
-    @Column(name = "subject_full_price")
-    private int subjectFulPrice;
+    @Builder.Default
+    @Column(name = "subject_full_price", precision = 10, scale = 2)
+    private BigDecimal subjectFulPrice = BigDecimal.ZERO;
     @Column(name = "discount_percentage")
     private int discountPercentage;
     @Column(name = "is_student_present")
     private boolean studentPresent;
     @Column(name = "is_lesson_payed")
     private boolean lessonPayed;
-    private double discountSum;
-    private double debit;
-    private double credit;
-    private double balance;
+    @Builder.Default
+    @Column(precision = 10, scale = 2)
+    private BigDecimal discountSum = BigDecimal.ZERO;
+    @Builder.Default
+    @Column(precision = 10, scale = 2)
+    private BigDecimal debit = BigDecimal.ZERO;
+    @Builder.Default
+    @Column(precision = 10, scale = 2)
+    private BigDecimal credit = BigDecimal.ZERO;
+    @Builder.Default
+    @Column(precision = 10, scale = 2)
+    private BigDecimal balance = BigDecimal.ZERO;
 
 }

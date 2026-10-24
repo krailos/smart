@@ -1,48 +1,33 @@
 package com.krailo.smart.report;
 
-import com.krailo.smart.entity.*;
+import com.krailo.smart.entity.TransactionStudent;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
+// Рядок виписки учня: одна транзакція з журналу (урок або оплата) і баланс учня ПІСЛЯ неї.
+// Нічого не перераховує: ціна, знижка й сума — ті, що реально записали при проведенні уроку чи оплати.
 @Data
 @AllArgsConstructor
-@Component
 public class ItemBill {
 
-    private Student student;
-    private Discount discount;
-    private Lesson lesson;
-    private Subject subject;
-    private Price price;
-    private LocalDate date;
-    private Gang gang;
-    private LessonsStudents lessonStudent;
-    private int itemSum;
+    private TransactionStudent transaction;
+    private BigDecimal balance;
 
-    public ItemBill() {
-
-    }
-    
-    public void setItemSum () {
-        this.itemSum = calculateItemSum();
+    public boolean isPayment() {
+        return transaction.getPayment() != null;
     }
 
-    private int calculateItemSum() {
-        if (lessonStudent.isPresent() == false) {
-            return this.itemSum = 0;
-        }
-        if (lessonStudent.isPayed() == false) {
-            return this.itemSum = 0;
-        }
-        if (discount == null) {
-            return price.getValue();
-        } else {
-            itemSum = price.getValue();
-            return itemSum - itemSum * discount.getValue() / 100;
-        }
+    // дата операції: для оплати — дата оплати, для уроку — дата уроку
+    public LocalDate getDate() {
+        return isPayment() ? transaction.getPayment().getDate() : transaction.getLesson().getDate();
     }
 
+    // як рядок змінює баланс: оплата додає credit, урок віднімає
+    // (у сторно credit від'ємний, тому знаки самі стають протилежними)
+    public BigDecimal getAmount() {
+        return isPayment() ? transaction.getCredit() : transaction.getCredit().negate();
+    }
 }

@@ -16,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -161,11 +162,11 @@ class ArchiveTest {
     @Test
     void shouldRejectDuplicateActivePrice_AndHideDeletedPrice() {
         // Given: ціна курсу на 01.09
-        priceRepository.save(Price.builder().subject(subject).value(100).date(LocalDate.of(2026, 9, 1)).build());
+        priceRepository.save(Price.builder().subject(subject).value(new BigDecimal("100")).date(LocalDate.of(2026, 9, 1)).build());
 
         // друга активна ціна на ту саму дату — заборонена (перевірка в сервісі замість UNIQUE)
         assertThatThrownBy(() -> priceService.create(PriceDto.builder()
-                .subjectId(subject.getId()).value(150).date(LocalDate.of(2026, 9, 1)).build()))
+                .subjectId(subject.getId()).value(new BigDecimal("150")).date(LocalDate.of(2026, 9, 1)).build()))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("уже є");
 

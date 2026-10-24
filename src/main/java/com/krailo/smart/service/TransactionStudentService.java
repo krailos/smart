@@ -14,6 +14,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -43,9 +45,8 @@ public class TransactionStudentService {
         entityManager.clear();
         Payment payment = paymentService.findByIdEntity(paymentDto.getId());
         Student student = studentService.findByIdEntity(paymentDto.getStudentId());
-        double credit = paymentDto.getValue();
-        double balancePrev = student.getBalance();
-        double balance = balancePrev + credit;
+        BigDecimal credit = paymentDto.getValue();
+        BigDecimal balance = student.getBalance().add(credit);
         TransactionStudent transactionStudent = TransactionStudent.builder()
                 .payment(payment)
                 .student(student)
@@ -129,9 +130,12 @@ public class TransactionStudentService {
     private void calculateSaveTransactionByLesson(Price subjectPrice, List<TransactionStudent> transactionStudentList) {
         for (TransactionStudent ts : transactionStudentList) {
             int discountPercentage = ts.getDiscountPercentage();
-            int priceValue = subjectPrice.getValue();
-            double discountSum = priceValue * discountPercentage / 100.0;
-            double credit = priceValue - discountSum;
+            BigDecimal priceValue = subjectPrice.getValue();
+            // знижка в гривнях, округлена до копійки за шкільним правилом (10.465 -> 10.47)
+            BigDecimal discountSum = priceValue
+                    .multiply(BigDecimal.valueOf(discountPercentage))
+                    .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+            BigDecimal credit = priceValue.subtract(discountSum);
             if (!ts.isStudentPresent() || !ts.isLessonPayed()) {
                 transactionStudentRepository.saveAndFlush(ts);
             } else {
@@ -140,8 +144,7 @@ public class TransactionStudentService {
                 ts.setDiscountSum(discountSum);
                 ts.setCredit(credit);
                 Student student = ts.getStudent();
-                double balanceUpdate = student.getBalance();
-                balanceUpdate = balanceUpdate - credit;
+                BigDecimal balanceUpdate = student.getBalance().subtract(credit);
                 ts.setBalance(balanceUpdate);
                 transactionStudentRepository.saveAndFlush(ts);
                 // зберігаю студента в бд з новим балансом
@@ -155,11 +158,11 @@ public class TransactionStudentService {
     // Для уроку credit — це сума, яку СПИСАЛИ (баланс -= credit), тому сторно: credit = -списане, баланс += списане.
     public void createStornoByLesson(Lesson lesson) {
         for (TransactionStudent charge : transactionStudentRepository.findAllByLesson(lesson)) {
-            if (charge.getCredit() == 0) {
+            if (charge.getCredit().signum() == 0) {
                 continue; // учень був відсутній або урок безоплатний — списання не було
             }
             Student student = charge.getStudent();
-            double balanceUpdate = student.getBalance() + charge.getCredit();
+            BigDecimal balanceUpdate = student.getBalance().add(charge.getCredit());
             TransactionStudent storno = TransactionStudent.builder()
                     .lesson(lesson)
                     .student(student)
@@ -167,8 +170,8 @@ public class TransactionStudentService {
                     .lessonPayed(charge.isLessonPayed())
                     .subjectFulPrice(charge.getSubjectFulPrice())
                     .discountPercentage(charge.getDiscountPercentage())
-                    .discountSum(-charge.getDiscountSum())
-                    .credit(-charge.getCredit())
+                    .discountSum(charge.getDiscountSum().negate())
+                    .credit(charge.getCredit().negate())
                     .balance(balanceUpdate)
                     .build();
             transactionStudentRepository.saveAndFlush(storno);
