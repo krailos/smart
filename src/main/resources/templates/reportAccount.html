@@ -56,12 +56,14 @@
         <!-- виписка: усі операції з журналу транзакцій за датою, баланс після кожної -->
         <div class="card">
             <div class="table-responsive">
-                <table class="table table-app">
+                <table class="table table-app table-compact">
                     <thead>
                     <tr>
                         <th scope="col">#</th>
                         <th scope="col">Дата</th>
                         <th scope="col">Операція</th>
+                        <th scope="col">Група</th>
+                        <th scope="col">Статус</th>
                         <th scope="col" class="text-end">Ціна</th>
                         <th scope="col">Знижка</th>
                         <th scope="col" class="text-end">Списано</th>
@@ -73,28 +75,35 @@
                     <tr class="text-muted">
                         <td></td>
                         <td class="text-nowrap" th:text="${#temporals.format(bill.startDate, 'dd.MM.yyyy')}"></td>
-                        <td colspan="5">Баланс на початок періоду</td>
+                        <td colspan="7">Баланс на початок періоду</td>
                         <td class="text-end text-nowrap fw-semibold" th:classappend="${bill.openingBalance < 0} ? 'text-danger'"
                             th:text="${#numbers.formatDecimal(bill.openingBalance, 1, 'WHITESPACE', 2, 'POINT')} + ' грн'"></td>
                     </tr>
                     <tr th:each="item, index : ${bill.items}" th:with="ts=${item.transaction}">
                         <td class="text-muted" th:text="${index.count}"></td>
                         <td class="text-nowrap" th:text="${#temporals.format(item.date, 'dd.MM.yyyy')}"></td>
-                        <!-- урок: курс, група, присутність; оплата: примітка. Сторно позначене окремо -->
-                        <td th:if="${!item.payment}">
+                        <!-- операція: урок (курс) або оплата (примітка); сторно позначене тут -->
+                        <td th:if="${!item.payment}" class="text-nowrap">
                             <i class="bi bi-journal-check text-muted"></i>
                             <span th:text="|Урок · ${ts.lesson.subject.name}|"></span>
-                            <span class="text-muted" th:if="${ts.lesson.gang != null}" th:text="| · гр. ${ts.lesson.gang.name}|"></span>
                             <span th:if="${ts.credit < 0}" class="badge text-bg-danger">сторно</span>
-                            <span class="badge" th:classappend="${ts.studentPresent} ? 'text-bg-success' : 'text-bg-secondary'"
-                                  th:text="${ts.studentPresent} ? 'присутній' : 'відсутній'"></span>
-                            <span class="badge" th:classappend="${ts.lessonPayed} ? 'text-bg-success' : 'text-bg-secondary'"
-                                  th:text="${ts.lessonPayed} ? 'платний' : 'безкоштовний'"></span>
                         </td>
                         <td th:if="${item.payment}">
-                            <i class="bi bi-cash-coin text-muted"></i> Оплата
-                            <span th:if="${ts.payment.stornoOf != null}" class="badge text-bg-danger">сторно</span>
-                            <span class="text-muted small" th:text="${ts.payment.description}"></span>
+                            <span class="text-nowrap">
+                                <i class="bi bi-cash-coin text-muted"></i> Оплата
+                                <span th:if="${ts.payment.stornoOf != null}" class="badge text-bg-danger">сторно</span>
+                            </span>
+                            <span class="d-block text-muted small" th:text="${ts.payment.description}"></span>
+                        </td>
+                        <!-- група і статус — тільки для уроку; в оплати клітинки порожні -->
+                        <td class="text-nowrap" th:text="${!item.payment and ts.lesson.gang != null} ? ${ts.lesson.gang.name}"></td>
+                        <td class="text-nowrap">
+                            <th:block th:if="${!item.payment}">
+                                <span class="badge" th:classappend="${ts.studentPresent} ? 'text-bg-success' : 'text-bg-secondary'"
+                                      th:text="${ts.studentPresent} ? 'присутній' : 'відсутній'"></span>
+                                <span class="badge" th:classappend="${ts.lessonPayed} ? 'text-bg-success' : 'text-bg-secondary'"
+                                      th:text="${ts.lessonPayed} ? 'платний' : 'безкоштовний'"></span>
+                            </th:block>
                         </td>
                         <!-- ціна і знижка — ті, що записали при проведенні уроку; тільки якщо було списання -->
                         <td class="text-end text-nowrap"
@@ -110,12 +119,12 @@
                             th:text="${#numbers.formatDecimal(item.balance, 1, 'WHITESPACE', 2, 'POINT')} + ' грн'"></td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(bill.items)}">
-                        <td colspan="8" class="empty-state">За цей період операцій немає</td>
+                        <td colspan="10" class="empty-state">За цей період операцій немає</td>
                     </tr>
                     </tbody>
                     <tfoot>
                     <tr class="fw-bold">
-                        <td colspan="5" class="text-end">Разом за період</td>
+                        <td colspan="7" class="text-end">Разом за період</td>
                         <td class="text-end text-nowrap"
                             th:text="${#numbers.formatDecimal(bill.totalCharged, 1, 'WHITESPACE', 2, 'POINT')} + ' грн'"></td>
                         <td class="text-end text-nowrap text-success"
@@ -125,7 +134,7 @@
                     <tr class="fw-bold">
                         <td></td>
                         <td class="text-nowrap" th:text="${#temporals.format(bill.endDate, 'dd.MM.yyyy')}"></td>
-                        <td colspan="5">Баланс на кінець періоду</td>
+                        <td colspan="7">Баланс на кінець періоду</td>
                         <td class="text-end text-nowrap" th:classappend="${bill.closingBalance < 0} ? 'text-danger' : 'text-success'"
                             th:text="${#numbers.formatDecimal(bill.closingBalance, 1, 'WHITESPACE', 2, 'POINT')} + ' грн'"></td>
                     </tr>

@@ -179,6 +179,12 @@ body {
 .table-app tbody tr:last-child td { border-bottom: 0; }
 .table-app tfoot td { padding: 12px 16px; border-top: 1px solid var(--app-border); border-bottom: 0; }
 
+/* щільна таблиця для широких звітів (виписка учня — 10 колонок): менші відступи і шрифт */
+.table-app.table-compact { font-size: .875rem; }
+.table-app.table-compact thead th,
+.table-app.table-compact tbody td,
+.table-app.table-compact tfoot td { padding: 10px 8px; }
+
 /* колонка з кнопками дій — притиснута праворуч */
 .col-actions {
     text-align: right;
