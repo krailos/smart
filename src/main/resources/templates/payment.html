@@ -1,66 +1,56 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-<meta charset="UTF-8" />
-<title>payment-new</title>
-<link
-	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-	rel="stylesheet"
-	integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
-	crossorigin="anonymous" />
-<script
-	src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-	integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
-	crossorigin="anonymous"></script>
-</head>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Платіж')}"></head>
 <body>
-	<nav class="navbar navbar-expand-lg" style="background-color: #edeff1"
-		data-bs-theme="light">
-		<div class="container">
-			<a class="navbar-brand" href="/">Smartum</a>
-			<button class="navbar-toggler" type="button"
-				data-bs-toggle="collapse" data-bs-target="#navbarNav"
-				aria-controls="navbarNav" aria-expanded="false"
-				aria-label="Toggle navigation">
-				<span class="navbar-toggler-icon"></span>
-			</button>
-			<div class="collapse navbar-collapse" id="navbarNav">
-				<ul class="navbar-nav">
-					<li class="nav-item"><a class="nav-link active"
-						aria-current="page" href="/payments">Платежі</a></li>
-				</ul>
-			</div>
-		</div>
-	</nav>
-	<div class="container">
-		<div>
-			<div class="text-center fs-6 text-uppercase fw-semibold">Платіж</div>
-			<!-- оплати не редагуються: тільки перегляд; помилку виправляють сторнуванням -->
-			<div class="text-bg-light mb-3">
-			    <label for="date" class="form-label"> Дата
-			        <input class="form-control" id="date" type="date" th:value="${payment.date}" disabled/>
-                </label>
-				<label for="student" class="form-label"> Учень
-				   <input class="form-control" id="student" type="text" disabled
-				   th:value="|${payment.student.lastName} ${payment.student.firstName}|"/>
-				</label>
-				<label for="value" class="form-label"> Сума
-				   <input class="form-control" id="value" type="text" th:value="${payment.value}" disabled/>
-				</label>
-				<label for="description" class="form-label"> Примітка
-				       <input class="form-control" id="description" type="text" th:value="${payment.description}" disabled/>
-				</label>
-			</div>
+<div class="app">
+    <th:block th:replace="~{fragments/layout :: sidebar('payments')}"></th:block>
 
-			<form th:if="${payment.stornoOfId == null and !payment.storned}"
-				th:action="@{/payments/{id}/storno (id=${payment.id})}" method="post"
-				onsubmit="return confirm('Сторнувати цю оплату? Буде створено запис з мінусовою сумою, баланс учня зменшиться.');">
-				<button type="submit" class="btn btn-warning">Сторнувати</button>
-			</form>
-			<span th:if="${payment.storned}" class="badge text-bg-secondary">Оплату сторновано</span>
-			<span th:if="${payment.stornoOfId != null}" class="badge text-bg-danger">Це сторно іншої оплати</span>
-			<a th:href="@{/payments}" class="btn btn-outline-secondary ms-2">До списку</a>
-		</div>
-	</div>
+    <main class="app-main">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">
+                    Платіж
+                    <span th:if="${payment.storned}" class="badge text-bg-secondary align-middle fs-6">Сторновано</span>
+                    <span th:if="${payment.stornoOfId != null}" class="badge text-bg-danger align-middle fs-6">Сторно іншої оплати</span>
+                </h1>
+                <div class="page-subtitle"><a th:href="@{/payments}">Платежі</a> / перегляд</div>
+            </div>
+        </div>
+
+        <!-- оплати не редагуються: тільки перегляд; помилку виправляють сторнуванням -->
+        <div class="card form-card">
+            <div class="card-body p-4">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="form-label text-muted">Учень</div>
+                        <div class="fs-5 fw-semibold" th:text="|${payment.student.lastName} ${payment.student.firstName}|"></div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-label text-muted">Сума</div>
+                        <div class="fs-5 fw-semibold" th:classappend="${payment.value < 0} ? 'text-danger' : 'text-success'"
+                             th:text="${payment.value + ' грн'}"></div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-label text-muted">Дата</div>
+                        <div class="fs-5" th:text="${payment.date != null} ? ${#temporals.format(payment.date, 'dd.MM.yyyy')}"></div>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-label text-muted">Примітка</div>
+                        <div th:text="${#strings.isEmpty(payment.description)} ? '—' : ${payment.description}"></div>
+                    </div>
+
+                    <div class="col-12 form-actions">
+                        <form th:if="${payment.stornoOfId == null and !payment.storned}"
+                              th:action="@{/payments/{id}/storno (id=${payment.id})}" method="post"
+                              onsubmit="return confirm('Сторнувати цю оплату? Буде створено запис з мінусовою сумою, баланс учня зменшиться.');">
+                            <button type="submit" class="btn btn-warning"><i class="bi bi-arrow-return-left"></i> Сторнувати</button>
+                        </form>
+                        <a th:href="@{/payments}" class="btn btn-light">До списку</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
 </body>
 </html>

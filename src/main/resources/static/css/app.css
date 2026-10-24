@@ -197,6 +197,10 @@ body {
     border-radius: 8px;
 }
 
+/* сторнований запис (урок, оплата): лишається в історії, але приглушений */
+.row-storned td { color: #9ca3af; }
+.row-storned td.fw-medium { text-decoration: line-through; }
+
 .empty-state {
     text-align: center;
     color: var(--app-text-muted);
@@ -208,6 +212,7 @@ body {
 
 .form-card { max-width: 900px; }
 .form-label { font-weight: 500; font-size: .9rem; color: #374151; }
+.form-check-input:checked { background-color: var(--app-primary); border-color: var(--app-primary); }
 .form-actions {
     display: flex;
     gap: 8px;

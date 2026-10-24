@@ -1,70 +1,64 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-<meta charset="UTF-8" />
-<title>payment-new</title>
-<link
-	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-	rel="stylesheet"
-	integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
-	crossorigin="anonymous" />
-<script
-	src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-	integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
-	crossorigin="anonymous"></script>
-</head>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Нова оплата')}"></head>
 <body>
-	<nav class="navbar navbar-expand-lg" style="background-color: #edeff1"
-		data-bs-theme="light">
-		<div class="container">
-			<a class="navbar-brand" href="/">Smartum</a>
-			<button class="navbar-toggler" type="button"
-				data-bs-toggle="collapse" data-bs-target="#navbarNav"
-				aria-controls="navbarNav" aria-expanded="false"
-				aria-label="Toggle navigation">
-				<span class="navbar-toggler-icon"></span>
-			</button>
-			<div class="collapse navbar-collapse" id="navbarNav">
-				<ul class="navbar-nav">
-					<li class="nav-item"><a class="nav-link active"
-						aria-current="page" href="/payments">Платежі</a></li>
-				</ul>
-			</div>
-		</div>
-	</nav>
-	<div class="container">
-		<div>
-			<div class="text-center fs-6 text-uppercase fw-semibold">Новий платіж</div>
-			<!-- Помилка: сума не більша за нуль тощо -->
-			<div th:if="${errorMessage}" class="alert alert-danger mt-3" role="alert" th:text="${errorMessage}"></div>
-			<form th:action="@{/payments/create}" method="post">
-				<div class="text-bg-light mb-3">
-				    <label for="date" class="form-label"> Дата
-				        <input class="form-control" id="date" type="date" name="date"
-                        th:value="${#dates.format(#dates.createToday(), 'yyyy-MM-dd')}"/>
-                    </label>              
-				    <select name="studentId" class="form-select" aria-label="Default select example">
-	                        <option selected>Виберіть студента</option>
-	                        <option th:if="${studentChoosen==null}"  th:each="student : ${students}"
-	                         th:text="|${student.LastName} ${student.firstName}  (${student.contactName} - ${student.phone} )|"
-	                         th:value="${student.id}" > name</option>
-	                        <option th:unless="${subjectChoosen==null}"  th:each="student : ${students}"
-	                         th:text="|${student.LastName} ${student.firstName} ${student.secondName}|"
-	                         th:value="${student.id}"
-	                         th:selected="${studentChoosen.id == subject.id}" > name</option>                       
-                    </select>
-					<label for="value" class="form-label"> Сума 
-					   <input class="form-control" id="value" type="text" name="value"/>
-					</label> 
-					<label for="description" class="form-label"> Примітка
-					       <input class="form-control" id="description" type="text" name="description" />
-					</label>
-					
+<div class="app">
+    <th:block th:replace="~{fragments/layout :: sidebar('payments')}"></th:block>
 
-				</div>
-				<button type="submit" class="btn btn-primary">Виконати</button>
-			</form>
-		</div>
-	</div>
+    <main class="app-main">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Прийняти оплату</h1>
+                <div class="page-subtitle"><a th:href="@{/payments}">Платежі</a> / нова оплата</div>
+            </div>
+        </div>
+
+        <!-- Помилка: сума не більша за нуль тощо -->
+        <div th:if="${errorMessage}" class="alert alert-danger d-flex align-items-center gap-2" role="alert">
+            <i class="bi bi-exclamation-triangle"></i><span th:text="${errorMessage}"></span>
+        </div>
+
+        <div class="card form-card">
+            <div class="card-body p-4">
+                <!-- після помилки поля заповнюються тим, що вже ввели (${param...} — значення з відправленої форми) -->
+                <form th:action="@{/payments/create}" method="post">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label for="studentId" class="form-label">Учень</label>
+                            <!-- value="" + required: без вибраного учня браузер форму не відправить -->
+                            <select id="studentId" name="studentId" class="form-select" required>
+                                <option value="">-- Оберіть учня --</option>
+                                <option th:each="student : ${students}"
+                                        th:text="|${student.lastName} ${student.firstName} (${student.contactName} - ${student.phone})|"
+                                        th:value="${student.id}"
+                                        th:selected="${param.studentId != null and param.studentId.toString() == student.id.toString()}">name</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="date" class="form-label">Дата</label>
+                            <input class="form-control" id="date" type="date" name="date"
+                                   th:value="${param.date != null} ? ${param.date.toString()} : ${#dates.format(#dates.createToday(), 'yyyy-MM-dd')}"/>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="value" class="form-label">Сума, грн</label>
+                            <input class="form-control" id="value" type="number" min="1" step="1" name="value" required
+                                   th:value="${param.value != null} ? ${param.value.toString()}"/>
+                        </div>
+                        <div class="col-md-8">
+                            <label for="description" class="form-label">Примітка</label>
+                            <input class="form-control" id="description" type="text" name="description"
+                                   th:value="${param.description != null} ? ${param.description.toString()}"/>
+                        </div>
+
+                        <div class="col-12 form-actions">
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Прийняти оплату</button>
+                            <a th:href="@{/payments}" class="btn btn-light">Скасувати</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
 </body>
 </html>

@@ -1,167 +1,92 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Новий розклад уроку</title>
-    <!-- Bootstrap 5 CSS -->
-    <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-            rel="stylesheet"
-            integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
-            crossorigin="anonymous" />
-    <script
-            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
-            crossorigin="anonymous"></script>
-    <style>
-        body {
-            background-color: #f3f4f6; /* М'який світло-сірий фон */
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-        }
-        .large-form-card {
-            border: none;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
-        }
-        .input-group-text {
-            background-color: #ffffff !important;
-        }
-    </style>
-</head>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Нове заняття')}"></head>
 <body>
+<div class="app">
+    <th:block th:replace="~{fragments/layout :: sidebar('schedules')}"></th:block>
 
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-10 col-lg-8 col-xl-7">
+    <main class="app-main">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Нове заняття в розкладі</h1>
+                <div class="page-subtitle"><a th:href="@{/schedules}">Розклад</a> / нове</div>
+            </div>
+        </div>
 
-            <!-- картка форми -->
-            <div class="card large-form-card bg-white">
+        <!-- Помилка конфлікту розкладу (кабінет / вчитель / група / учні зайняті) -->
+        <div th:if="${errorMessage}" class="alert alert-danger d-flex align-items-center gap-2" role="alert">
+            <i class="bi bi-exclamation-triangle"></i><span th:text="${errorMessage}"></span>
+        </div>
 
-                <!-- Шапка картки -->
-                <div class="card-header border-0 bg-light p-4 p-sm-5 d-flex align-items-center gap-4">
-                    <!--div class="bg-primary bg-gradient text-white rounded-3 p-3 d-flex align-items-center justify-content-center shadow-sm" style="width: 56px; height: 56px;">
-                        <i class="bi bi-calendar-event-fill fs-3"></i>
-                    </div-->
-                    <div>
-                        <h2 class="fw-bold h3 text-dark m-0">Новий розклад уроку</h2>
-                        <!--p class="text-muted m-0 mt-1">Заповніть деталі заняття для збереження у системі</p-->
-                    </div>
-                </div>
-
-                <!-- Форма без валідації -->
+        <div class="card form-card">
+            <div class="card-body p-4">
                 <form th:action="@{/schedules/create}" th:object="${schedule}" method="post">
-                    <div class="card-body p-4 p-sm-5">
-
-                        <!-- Помилка конфлікту розкладу (кабінет / вчитель / група / учні зайняті) -->
-                        <div th:if="${errorMessage}" class="alert alert-danger mb-4" role="alert"
-                             th:text="${errorMessage}"></div>
-
-                        <!-- 1. Вибір уроку / предмета -->
-                        <div class="mb-4">
-                            <label for="lesson" class="form-label fw-semibold text-secondary mb-2">Оберіть урок / предмет</label>
-                            <div class="input-group input-group-lg">
-                                <!--span class="input-group-text border-end-0 text-muted"><i class="bi bi-book"></i></span-->
-                                <select id="lesson" th:field="*{subjectId}" class="form-select border-start-0 fs-6">
-                                    <option value="">-- предмет --</option>
-                                    <option th:each="subject : ${subjects}"
-                                            th:value="${subject.id}"
-                                            th:text="${subject.name}"></option>
-                                </select>
-                            </div>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label for="lesson" class="form-label">Курс</label>
+                            <select id="lesson" th:field="*{subjectId}" class="form-select">
+                                <option value="">-- курс --</option>
+                                <option th:each="subject : ${subjects}"
+                                        th:value="${subject.id}"
+                                        th:text="${subject.name}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="gang" class="form-label">Група</label>
+                            <select id="gang" th:field="*{gangId}" class="form-select">
+                                <option value="">-- група --</option>
+                                <option th:each="gang : ${gangs}"
+                                        th:value="${gang.id}"
+                                        th:text="${gang.name}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <!-- якщо не вибрано — сервіс підставить основного вчителя групи -->
+                            <label for="teacher" class="form-label">Вчитель</label>
+                            <select id="teacher" th:field="*{teacherId}" class="form-select">
+                                <option value="">-- основний вчитель групи --</option>
+                                <option th:each="teacher : ${teachers}"
+                                        th:value="${teacher.id}"
+                                        th:text="${teacher.lastName + ' ' + teacher.firstName}"></option>
+                            </select>
                         </div>
 
-                        <!-- 1. Вибір групи -->
-                        <div class="mb-4">
-                            <label for="gang" class="form-label fw-semibold text-secondary mb-2">Оберіть групу</label>
-                            <div class="input-group input-group-lg">
-                                <!--pan class="input-group-text border-end-0 text-muted"><i class="bi bi-book"></i></span-->
-                                <select id="gang" th:field="*{gangId}" class="form-select border-start-0 fs-6">
-                                    <option value="">-- група --</option>
-                                    <option th:each="gang : ${gangs}"
-                                            th:value="${gang.id}"
-                                            th:text="${gang.name}"></option>
-                                </select>
-                            </div>
+                        <div class="col-md-4">
+                            <label for="weekday" class="form-label">День</label>
+                            <select id="weekday" th:field="*{weekDay}" class="form-select">
+                                <option value="">-- день --</option>
+                                <option th:each="weekday : ${weekDays}"
+                                        th:value="${weekday}"
+                                        th:text="${weekday}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="startTime" class="form-label">Початок</label>
+                            <input type="time" id="startTime" th:field="*{startTime}" class="form-control">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="endTime" class="form-label">Кінець</label>
+                            <input type="time" id="endTime" th:field="*{endTime}" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="audienceDto" class="form-label">Аудиторія</label>
+                            <select id="audienceDto" th:field="*{audienceId}" class="form-select">
+                                <option value="">-- аудиторія --</option>
+                                <option th:each="audience : ${audiences}"
+                                        th:value="${audience.id}"
+                                        th:text="${audience.name}"></option>
+                            </select>
                         </div>
 
-                        <!-- Вибір вчителя (якщо не вибрано — буде основний вчитель групи) -->
-                        <div class="mb-4">
-                            <label for="teacher" class="form-label fw-semibold text-secondary mb-2">Оберіть вчителя</label>
-                            <div class="input-group input-group-lg">
-                                <select id="teacher" th:field="*{teacherId}" class="form-select border-start-0 fs-6">
-                                    <option value="">-- основний вчитель групи --</option>
-                                    <option th:each="teacher : ${teachers}"
-                                            th:value="${teacher.id}"
-                                            th:text="${teacher.lastName + ' ' + teacher.firstName}"></option>
-                                </select>
-                            </div>
+                        <div class="col-12 form-actions">
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Зберегти в розклад</button>
+                            <a th:href="@{/schedules}" class="btn btn-light">Скасувати</a>
                         </div>
-
-                        <!-- 2. День та Час в один рядок -->
-                        <div class="row g-4 mb-4">
-                            <!-- Поле Дати -->
-                            <div class="col-md-5">
-                                <label for="weekday" class="form-label fw-semibold text-secondary mb-2">Оберіть день проведення</label>
-                                <div class="input-group input-group-lg">
-                                    <!--span class="input-group-text border-end-0 text-muted"><i class="bi bi-calendar3"></i></span-->
-                                    <select id="weekday" th:field="*{weekDay}" class="form-select border-start-0 fs-6">
-                                        <option value="">-- день проведення--</option>
-                                        <option th:each="weekday : ${weekDays}"
-                                                th:value="${weekday}"
-                                                th:text="${weekday}"></option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- Поле Часу -->
-                            <div class="col-md-3">
-                                <label for="startTime" class="form-label fw-semibold text-secondary mb-2">Час початку</label>
-                                <div class="input-group input-group-lg">
-                                    <!--span class="input-group-text border-end-0 text-muted"><i class="bi bi-clock"></i></span-->
-                                    <input type="time" id="startTime" th:field="*{startTime}" class="form-control border-start-0 fs-6">
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <label for="endTime" class="form-label fw-semibold text-secondary mb-2">Час завершення</label>
-                                <div class="input-group input-group-lg">
-                                    <input type="time" id="endTime" th:field="*{endTime}" class="form-control border-start-0 fs-6">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 3. Локація / Аудиторія -->
-                        <div class="mb-3">
-                            <label for="audienceDto" class="form-label fw-semibold text-secondary mb-2">Оберіть аудиторію</label>
-                            <div class="input-group input-group-lg">
-                                <span class="input-group-text border-end-0 text-muted"><i class="bi bi-book"></i></span>
-                                <select id="audienceDto" th:field="*{audienceId}" class="form-select border-start-0 fs-6">
-                                    <option value="">-- аудиторія --</option>
-                                    <option th:each="audience : ${audiences}"
-                                            th:value="${audience.id}"
-                                            th:text="${audience.name}"></option>
-                                </select>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <!-- Підвал картки з кнопками -->
-                    <div class="card-footer border-0 bg-light p-4 px-sm-5 d-flex flex-column flex-sm-row justify-content-sm-end gap-3">
-                        <a th:href="@{/schedules}" class="btn btn-outline-secondary btn-lg fs-6 order-2 order-sm-1 px-4">Скасувати</a>
-                        <button type="submit" class="btn btn-primary btn-lg fs-6 d-inline-flex align-items-center justify-content-center gap-2 order-1 order-sm-2 px-5 shadow-sm">
-                            <i class="bi bi-cloud-arrow-up-fill"></i> Зберегти у розклад
-                        </button>
                     </div>
                 </form>
-
             </div>
-
         </div>
-    </div>
+    </main>
 </div>
-
 </body>
 </html>

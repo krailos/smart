@@ -1,142 +1,109 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Редагування уроку</title>
-    <!-- Bootstrap 5 CSS -->
-    <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-            rel="stylesheet"
-            integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
-            crossorigin="anonymous" />
-    <script
-            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
-            crossorigin="anonymous"></script>
-    <style>
-        body {
-            background-color: #f3f4f6; /* М'який світло-сірий фон */
-            min-height: 100vh;
-        }
-        .large-form-card {
-            border: none;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
-        }
-    </style>
-</head>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Редагування уроку')}"></head>
 <body>
+<div class="app">
+    <th:block th:replace="~{fragments/layout :: sidebar('lessons')}"></th:block>
 
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-10 col-lg-8 col-xl-7">
-
-            <!-- картка форми -->
-            <div class="card large-form-card bg-white">
-
-                <!-- Шапка картки: курс і група (не редагуються) -->
-                <div class="card-header border-0 bg-light p-4 p-sm-5">
-                    <h2 class="fw-bold h3 text-dark m-0">Редагування уроку</h2>
-                    <p class="text-muted m-0 mt-1">
-                        <span th:text="${lesson.subjectName}"></span> ·
-                        група <span th:text="${lesson.gangName}"></span>
-                    </p>
+    <main class="app-main">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Редагування уроку</h1>
+                <!-- курс і група не редагуються -->
+                <div class="page-subtitle">
+                    <a th:href="@{/lessons}">Уроки</a> /
+                    <span th:text="${lesson.subjectName}"></span> · група <span th:text="${lesson.gangName}"></span>
                 </div>
+            </div>
+        </div>
 
-                <form th:action="@{/lessons/{id}/update(id=${lesson.id})}" th:object="${lesson}" method="post">
-                    <!-- курс і група не змінюються, але потрібні для збереження -->
-                    <input type="hidden" th:field="*{subjectId}"/>
-                    <input type="hidden" th:field="*{gangId}"/>
+        <!-- Помилка: на цю дату вже є урок з цього розкладу, не вказана дата -->
+        <div th:if="${errorMessage}" class="alert alert-danger d-flex align-items-center gap-2" role="alert">
+            <i class="bi bi-exclamation-triangle"></i><span th:text="${errorMessage}"></span>
+        </div>
 
-                    <div class="card-body p-4 p-sm-5">
+        <form th:action="@{/lessons/{id}/update(id=${lesson.id})}" th:object="${lesson}" method="post">
+            <!-- курс і група не змінюються, але потрібні для збереження -->
+            <input type="hidden" th:field="*{subjectId}"/>
+            <input type="hidden" th:field="*{gangId}"/>
 
-                        <!-- Помилка: на цю дату вже є урок з цього розкладу, не вказана дата -->
-                        <div th:if="${errorMessage}" class="alert alert-danger mb-4" role="alert"
-                             th:text="${errorMessage}"></div>
-
-                        <!-- 1. Вчитель (хто фактично провів урок) і аудиторія -->
-                        <div class="row g-4 mb-4">
-                            <div class="col-md-6">
-                                <label for="teacher" class="form-label fw-semibold text-secondary mb-2">Вчитель (провів урок)</label>
-                                <select id="teacher" th:field="*{teacherId}" class="form-select form-select-lg fs-6">
-                                    <option th:each="teacher : ${teachers}"
-                                            th:value="${teacher.id}"
-                                            th:text="${teacher.lastName + ' ' + teacher.firstName}"></option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="audience" class="form-label fw-semibold text-secondary mb-2">Аудиторія</label>
-                                <select id="audience" th:field="*{audienceId}" class="form-select form-select-lg fs-6">
-                                    <option th:each="audience : ${audiences}"
-                                            th:value="${audience.id}"
-                                            th:text="${audience.name}"></option>
-                                </select>
-                            </div>
+            <div class="card form-card mb-3">
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="teacher" class="form-label">Вчитель (провів урок)</label>
+                            <select id="teacher" th:field="*{teacherId}" class="form-select">
+                                <option th:each="teacher : ${teachers}"
+                                        th:value="${teacher.id}"
+                                        th:text="${teacher.lastName + ' ' + teacher.firstName}"></option>
+                            </select>
                         </div>
-
-                        <!-- 2. Дата (можна змінити) та час (тільки перегляд — час задає розклад) -->
-                        <div class="row g-4 mb-4">
-                            <div class="col-md-5">
-                                <label for="date" class="form-label fw-semibold text-secondary mb-2">Дата</label>
-                                <input type="date" id="date" th:field="*{date}" class="form-control form-control-lg fs-6">
-                            </div>
-                            <div class="col-md-3">
-                                <label for="startTime" class="form-label fw-semibold text-secondary mb-2">Початок</label>
-                                <input type="time" id="startTime" th:value="*{startTime}" class="form-control form-control-lg fs-6" disabled>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="endTime" class="form-label fw-semibold text-secondary mb-2">Завершення</label>
-                                <input type="time" id="endTime" th:value="*{endTime}" class="form-control form-control-lg fs-6" disabled>
-                            </div>
+                        <div class="col-md-6">
+                            <label for="audience" class="form-label">Аудиторія</label>
+                            <select id="audience" th:field="*{audienceId}" class="form-select">
+                                <option th:each="audience : ${audiences}"
+                                        th:value="${audience.id}"
+                                        th:text="${audience.name}"></option>
+                            </select>
                         </div>
-
-                        <!-- 3. Учні (тільки перегляд: від присутності й оплати залежить баланс) -->
-                        <div class="fw-semibold text-secondary mb-2">Учні на уроці</div>
-                        <table class="table table-sm align-middle mb-1">
-                            <thead class="table-light">
-                            <tr>
-                                <th scope="col">#</th>
-                                <th scope="col">Прізвище</th>
-                                <th scope="col">Імя</th>
-                                <th scope="col" class="text-center">Присутній</th>
-                                <th scope="col" class="text-center">Платний урок</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr th:each="ls, index : ${lesson.lessonsStudentsDto}">
-                                <td th:text="${index.count}"></td>
-                                <td th:text="${ls.studentLastName}"></td>
-                                <td th:text="${ls.studentFirstName}"></td>
-                                <td class="text-center">
-                                    <span th:if="${ls.present}" class="badge text-bg-success">так</span>
-                                    <span th:unless="${ls.present}" class="badge text-bg-secondary">ні</span>
-                                </td>
-                                <td class="text-center">
-                                    <span th:if="${ls.payed}" class="badge text-bg-success">так</span>
-                                    <span th:unless="${ls.payed}" class="badge text-bg-secondary">ні</span>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                        <p class="text-muted small m-0">
-                            Відмітки присутності та оплати тут не змінюються — від них залежить баланс учнів.
-                        </p>
-
+                        <!-- дату можна змінити; час — тільки перегляд (його задає розклад) -->
+                        <div class="col-md-4">
+                            <label for="date" class="form-label">Дата</label>
+                            <input type="date" id="date" th:field="*{date}" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="startTime" class="form-label">Початок</label>
+                            <input type="time" id="startTime" th:value="*{startTime}" class="form-control" disabled>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="endTime" class="form-label">Кінець</label>
+                            <input type="time" id="endTime" th:value="*{endTime}" class="form-control" disabled>
+                        </div>
                     </div>
-
-                    <!-- Підвал картки з кнопками -->
-                    <div class="card-footer border-0 bg-light p-4 px-sm-5 d-flex flex-column flex-sm-row justify-content-sm-end gap-3">
-                        <a th:href="@{/lessons}" class="btn btn-outline-secondary btn-lg fs-6 px-4">Скасувати</a>
-                        <button type="submit" class="btn btn-primary btn-lg fs-6 px-5 shadow-sm">Зберегти зміни</button>
-                    </div>
-                </form>
-
+                </div>
             </div>
 
-        </div>
-    </div>
-</div>
+            <!-- Учні (тільки перегляд: від присутності й оплати залежить баланс) -->
+            <div class="card form-card mb-3">
+                <div class="card-header bg-transparent py-3 fw-semibold">Учні на уроці</div>
+                <div class="table-responsive">
+                    <table class="table table-app">
+                        <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Учень</th>
+                            <th scope="col" class="text-center">Присутній</th>
+                            <th scope="col" class="text-center">Платний урок</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="ls, index : ${lesson.lessonsStudentsDto}">
+                            <td class="text-muted" th:text="${index.count}"></td>
+                            <td class="fw-medium" th:text="${ls.studentLastName + ' ' + ls.studentFirstName}"></td>
+                            <td class="text-center">
+                                <span th:if="${ls.present}" class="badge text-bg-success">так</span>
+                                <span th:unless="${ls.present}" class="badge text-bg-secondary">ні</span>
+                            </td>
+                            <td class="text-center">
+                                <span th:if="${ls.payed}" class="badge text-bg-success">так</span>
+                                <span th:unless="${ls.payed}" class="badge text-bg-secondary">ні</span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer bg-transparent text-muted small">
+                    <i class="bi bi-info-circle"></i> Відмітки присутності та оплати тут не змінюються — від них залежить баланс учнів.
+                    Помилку виправляють сторнуванням уроку.
+                </div>
+            </div>
 
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Зберегти</button>
+                <a th:href="@{/lessons}" class="btn btn-light">Скасувати</a>
+            </div>
+        </form>
+    </main>
+</div>
 </body>
 </html>

@@ -1,139 +1,148 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8"/>
-    <title>lesson-new</title>
-    <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-            rel="stylesheet"
-            integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
-            crossorigin="anonymous"/>
-    <script
-            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
-            crossorigin="anonymous">
-    </script>
-</head>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Проведення уроку')}"></head>
 <body>
-<nav class="navbar navbar-expand-lg" style="background-color: #edeff1" data-bs-theme="light">
-    <div class="container">
-        <a class="navbar-brand" href="/">Smartum</a>
-        <button
-                class="navbar-toggler"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#navbarNav"
-                aria-controls="navbarNav"
-                aria-expanded="false"
-                aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="/schedules">Розклад</a>
-                </li>
-            </ul>
+<div class="app">
+    <th:block th:replace="~{fragments/layout :: sidebar('lessons')}"></th:block>
+
+    <main class="app-main">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Проведення уроку</h1>
+                <div class="page-subtitle">
+                    <a th:href="@{/schedules}">Розклад</a> /
+                    <span th:text="${lesson.subjectName}"></span> · група <span th:text="${lesson.gangName}"></span>
+                </div>
+            </div>
         </div>
-    </div>
-</nav>
-<div class="container">
-    <div>
-        <div class="text-center fs-6 text-uppercase fw-semibold"></div>
+
+        <!-- Помилка: урок за цим розкладом на цю дату вже проведено, не вказана дата, кінець раніше за початок -->
+        <div th:if="${errorMessage}" class="alert alert-danger d-flex align-items-center gap-2" role="alert">
+            <i class="bi bi-exclamation-triangle"></i><span th:text="${errorMessage}"></span>
+        </div>
 
         <form th:action="@{/lessons/create}" method="post" th:object="${lesson}">
-            <div class="mb-3">
+            <!-- з якого слоту розкладу проводиться урок (захист від повторного проведення) -->
+            <input type="hidden" th:field="*{scheduleId}"/>
 
-                <!-- Помилка: урок за цим розкладом на цю дату вже проведено, не вказана дата, кінець раніше за початок -->
-                <div th:if="${errorMessage}" class="alert alert-danger mt-3" role="alert"
-                     th:text="${errorMessage}"></div>
+            <div class="card form-card mb-3">
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <!-- курс, група, аудиторія — з розкладу, не змінюються (id передаємо прихованими полями) -->
+                        <div class="col-md-4">
+                            <label for="subject" class="form-label">Курс</label>
+                            <input disabled class="form-control bg-light" id="subject" type="text" th:field="*{subjectName}"/>
+                            <input type="hidden" th:field="*{subjectId}"/>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="gang" class="form-label">Група</label>
+                            <input disabled class="form-control bg-light" id="gang" type="text" th:field="*{gangName}"/>
+                            <input type="hidden" th:field="*{gangId}"/>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="aud" class="form-label">Аудиторія</label>
+                            <input disabled class="form-control bg-light" id="aud" type="text" th:field="*{audienceName}"/>
+                            <input type="hidden" th:field="*{audienceId}"/>
+                        </div>
 
-                <!-- з якого слоту розкладу проводиться урок (захист від повторного проведення) -->
-                <input type="hidden" th:field="*{scheduleId}"/>
-
-                <label for="aud" class="form-label"> Аудиторія
-                    <input disabled class="form-control" id="aud" type="text" th:field="*{audienceName}"/>
-                    <input id="audId" type="hidden" class="form-control" th:field="*{audienceId}"/>
-                </label>
-                <label for="subject" class="form-label"> Курс
-                    <input disabled class="form-control" id="subject" type="text" th:field="*{subjectName}"/>
-                    <input type="hidden" class="form-control" name="subjectId" th:field="*{subjectId}"/>
-                </label>
-                <label for="gang" class="form-label"> Група
-                    <input disabled class="form-control" id="gang" type="text" th:field="*{gangName}"/>
-                    <input type="hidden" class="form-control" name="gangId" th:field="*{gangId}"/>
-                </label>
-                <!-- Хто фактично проводить урок: за замовчуванням вчитель з розкладу, можна вибрати заміну -->
-                <label for="teacher" class="form-label"> Вчитель
-                    <select id="teacher" class="form-select" th:field="*{teacherId}">
-                        <option th:each="teacher : ${teachers}"
-                                th:value="${teacher.id}"
-                                th:text="${teacher.lastName + ' ' + teacher.firstName}"></option>
-                    </select>
-                </label>
-                <label for="date" class="form-label">Дата
-                    <input class="form-control" id="date" type="date" name="date"
-                           th:value="${lesson.date != null} ? ${lesson.date} : ${#dates.format(#dates.createToday(), 'yyyy-MM-dd')}"/>
-                </label>
-                <label for="start" class="form-label">
-                    Початок уроку
-                    <input class="form-control" id="start" type="time" name="startTime" th:value="${lesson.startTime}"/>
-                </label>
-                <label for="end" class="form-label">
-                    Кінець уроку
-                    <input class="form-control" id="end" type="time" name="endTime" th:value="${lesson.endTime}"/>
-                </label>
-
-                <div class="text-center fs-5 text-uppercase fw-light font-monospace">
-                    виберіть присутніх учнів
+                        <!-- Хто фактично проводить урок: за замовчуванням вчитель з розкладу, можна вибрати заміну -->
+                        <div class="col-md-4">
+                            <label for="teacher" class="form-label">Вчитель</label>
+                            <select id="teacher" class="form-select" th:field="*{teacherId}">
+                                <option th:each="teacher : ${teachers}"
+                                        th:value="${teacher.id}"
+                                        th:text="${teacher.lastName + ' ' + teacher.firstName}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="date" class="form-label">Дата</label>
+                            <input class="form-control" id="date" type="date" name="date"
+                                   th:value="${lesson.date != null} ? ${lesson.date} : ${#dates.format(#dates.createToday(), 'yyyy-MM-dd')}"/>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="start" class="form-label">Початок</label>
+                            <input class="form-control" id="start" type="time" name="startTime" th:value="${lesson.startTime}"/>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="end" class="form-label">Кінець</label>
+                            <input class="form-control" id="end" type="time" name="endTime" th:value="${lesson.endTime}"/>
+                        </div>
+                    </div>
                 </div>
+            </div>
 
-                <div>
-                    <table class="table table-light">
+            <div class="card form-card mb-3">
+                <div class="card-header bg-transparent py-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+                    <span class="fw-semibold">Учні групи: відмітьте присутніх</span>
+                    <!-- кнопки-перемикачі: вмикають усі (або вимикають, якщо всі вже ввімкнені) -->
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-light btn-sm" data-check-all="js-present">
+                            <i class="bi bi-check2-all"></i> Усі присутні
+                        </button>
+                        <button type="button" class="btn btn-light btn-sm" data-check-all="js-payed">
+                            <i class="bi bi-cash"></i> Усім платний
+                        </button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover table-app">
                         <thead>
                         <tr>
                             <th scope="col">#</th>
-                            <th scope="col">Прізвище</th>
-                            <th scope="col">Імя</th>
-                            <th scope="col">Присутні на уроці</th>
-                            <th scope="col">Платний урок</th>
+                            <th scope="col">Учень</th>
+                            <th scope="col" class="text-center">Присутній</th>
+                            <th scope="col" class="text-center">Платний урок</th>
                         </tr>
                         </thead>
-                        <tbody class="table-group-divider">
-                        <tr th:each="ls, index : *{lessonsStudentsDto}" th:field="*{lessonsStudentsDto}">
-                            <td th:text="${index.count}"></td>
-                            <td>
-                                <input class="form-control" type="hidden"
-                                       th:value="${ls.studentId}"
-                                       th:field="*{lessonsStudentsDto[__${index.index}__].studentId}"
-                                       th:text="${ls.studentLastName}">
+                        <tbody>
+                        <tr th:each="ls, index : *{lessonsStudentsDto}">
+                            <td class="text-muted" th:text="${index.count}"></td>
+                            <td class="fw-medium">
+                                <!-- id учня йде у форму прихованим полем, ім'я — просто текст -->
+                                <input type="hidden" th:field="*{lessonsStudentsDto[__${index.index}__].studentId}"/>
+                                <span th:text="${ls.studentLastName + ' ' + ls.studentFirstName}"></span>
                             </td>
-                            <td th:text="${ls.studentFirstName}"></td>
-                            <td>
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" role=switch
-                                           value="true"
+                            <td class="text-center">
+                                <div class="form-check form-switch d-inline-block">
+                                    <input class="form-check-input js-present" type="checkbox" role="switch" value="true"
                                            th:field="*{lessonsStudentsDto[__${index.index}__].present}">
                                 </div>
                             </td>
-
-                            <td>
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" role=switch
-                                           value="true"
+                            <td class="text-center">
+                                <div class="form-check form-switch d-inline-block">
+                                    <input class="form-check-input js-payed" type="checkbox" role="switch" value="true"
                                            th:field="*{lessonsStudentsDto[__${index.index}__].payed}">
                                 </div>
                             </td>
-
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(lesson.lessonsStudentsDto)}">
+                            <td colspan="4" class="empty-state">
+                                <i class="bi bi-person-video2"></i>
+                                У групі немає учнів
+                            </td>
                         </tr>
                         </tbody>
                     </table>
                 </div>
-
             </div>
-            <button type="submit" class="btn btn-primary">Провести урок</button>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-success"><i class="bi bi-check-lg"></i> Провести урок</button>
+                <a th:href="@{/schedules}" class="btn btn-light">Скасувати</a>
+            </div>
         </form>
-    </div>
+    </main>
 </div>
+
+<script>
+    // «Усі присутні» / «Усім платний»: якщо хоч один вимкнений — вмикаємо всі, інакше вимикаємо всі
+    document.querySelectorAll('[data-check-all]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            var boxes = document.querySelectorAll('input.' + button.dataset.checkAll);
+            var allChecked = Array.prototype.every.call(boxes, function (box) { return box.checked; });
+            boxes.forEach(function (box) { box.checked = !allChecked; });
+        });
+    });
+</script>
 </body>
 </html>
