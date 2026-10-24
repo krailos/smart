@@ -1,91 +1,77 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-  <head>
-    <meta charset="UTF-8" />
-    <title>audiences</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
-      crossorigin="anonymous" />
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
-      crossorigin="anonymous"></script>
-  </head>
-  <body>
-    <nav
-      class="navbar navbar-expand-lg"
-      style="background-color: #edeff1"
-      data-bs-theme="light">
-      <div class="container">
-        <a class="navbar-brand" href="/">Smartum</a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-          aria-controls="navbarNav"
-          aria-expanded="false"
-          aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav">
-            <li class="nav-item">
-               <a th:href="@{/audiences/audience/new}">
-                  <button class="btn btn-success">Додати аудиторію</button>
-                </a>
-            </li>
-            <!-- перемикач: активні / архів -->
-            <li class="nav-item ms-2"><a class="btn btn-outline-secondary"
-                th:href="${archived} ? @{/audiences} : @{/audiences(archived=true)}"
-                th:text="${archived} ? 'Активні аудиторії' : 'Архів'"></a></li>
-          </ul>
-        </div>
-      </div>
-    </nav>
-    <div class="container my-4">
-      <div th:if="${archived}" class="text-center text-uppercase fs-5 fw-bolder">АУДИТОРІЇ — АРХІВ</div>
-      <div class="row">
-        <!-- результат архівування / відновлення (flash-повідомлення після редиректу) -->
-        <div th:if="${successMessage}" class="alert alert-success" role="alert" th:text="${successMessage}"></div>
-        <div th:if="${errorMessage}" class="alert alert-danger" role="alert" th:text="${errorMessage}"></div>
-        <table class="table table-striped">
-          <thead>
-            <tr>
-              <th scope="col">#</th>
-              <th scope="col">Аудиторія</th>
-              <th scope="col">Опис</th>
-              <th scope="col">Редагувати</th>
-              <th scope="col">Архів</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr th:each="audience, index : ${audiences}">
-              <td th:text="${index.count}"></td>
-              <td th:text="${audience.name}"></td>
-              <td th:text="${audience.description}"></td>
-              <td>
-                <a th:href="@{'audiences/' + ${audience.id}}">
-                  <button class="btn btn-primary">Редагувати</button>
-                </a>
-              </td>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Аудиторії')}"></head>
+<body>
+<div class="app">
+    <th:block th:replace="~{fragments/layout :: sidebar('audiences')}"></th:block>
 
-              <td>
-                  <!-- архівування замість видалення: проведені уроки аудиторію пам'ятають -->
-                  <form th:unless="${archived}" th:action="@{/audiences/{id}/archive( id=${audience.id})}"
-                        method="post" onsubmit="return confirm('Перемістити аудиторію в архів?');">
-                  <button class="btn btn-outline-danger">В архів</button>
-                  </form>
-                  <form th:if="${archived}" th:action="@{/audiences/{id}/restore( id=${audience.id})}" method="post">
-                  <button class="btn btn-outline-success">Відновити</button>
-                  </form>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </body>
+    <main class="app-main">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">
+                    Аудиторії
+                    <span th:if="${archived}" class="badge text-bg-secondary align-middle fs-6 fw-semibold">Архів</span>
+                </h1>
+                <div class="page-subtitle" th:text="'Усього: ' + ${audiences.size()}"></div>
+            </div>
+            <div class="page-actions">
+                <!-- перемикач: активні / архів -->
+                <div class="btn-group" role="group">
+                    <a th:href="@{/audiences}" class="btn"
+                       th:classappend="${archived} ? 'btn-outline-secondary' : 'btn-secondary'">Активні</a>
+                    <a th:href="@{/audiences(archived=true)}" class="btn"
+                       th:classappend="${archived} ? 'btn-secondary' : 'btn-outline-secondary'"><i class="bi bi-archive"></i> Архів</a>
+                </div>
+                <a th:href="@{/audiences/audience/new}" class="btn btn-primary">
+                    <i class="bi bi-plus-lg"></i> Додати аудиторію
+                </a>
+            </div>
+        </div>
+
+        <!-- результат архівування / відновлення (flash-повідомлення після редиректу) -->
+        <th:block th:replace="~{fragments/layout :: alerts}"></th:block>
+
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table table-hover table-app">
+                    <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Аудиторія</th>
+                        <th scope="col">Опис</th>
+                        <th scope="col" class="col-actions">Дії</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="audience, index : ${audiences}">
+                        <td class="text-muted" th:text="${index.count}"></td>
+                        <td class="fw-medium" th:text="${audience.name}"></td>
+                        <td class="text-muted small" th:text="${audience.description}"></td>
+                        <td class="col-actions">
+                            <a th:href="@{/audiences/{id}(id=${audience.id})}" class="btn btn-light btn-icon" title="Редагувати">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <!-- архівування замість видалення: проведені уроки аудиторію пам'ятають -->
+                            <form th:unless="${archived}" th:action="@{/audiences/{id}/archive( id=${audience.id})}"
+                                  method="post" onsubmit="return confirm('Перемістити аудиторію в архів?');">
+                                <button class="btn btn-light btn-icon text-danger" title="В архів"><i class="bi bi-archive"></i></button>
+                            </form>
+                            <form th:if="${archived}" th:action="@{/audiences/{id}/restore( id=${audience.id})}" method="post">
+                                <button class="btn btn-light btn-icon text-success" title="Відновити"><i class="bi bi-arrow-counterclockwise"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(audiences)}">
+                        <td colspan="4" class="empty-state">
+                            <i class="bi bi-door-open"></i>
+                            <span th:text="${archived} ? 'В архіві немає аудиторій' : 'Ще немає жодної аудиторії'"></span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
 </html>
