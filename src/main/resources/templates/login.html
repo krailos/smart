@@ -1,47 +1,35 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Login</title>
-    <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-            rel="stylesheet"
-            integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
-            crossorigin="anonymous"/>
-    <script
-            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
-            crossorigin="anonymous"></script>
-</head>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<!-- head зі спільного фрагмента; /css/app.css дозволено без логіну (SecurityConfiguration) -->
+<head th:replace="~{fragments/layout :: head('Вхід')}"></head>
 <body>
+<div class="login-page">
+    <div class="card login-card">
+        <div class="card-body p-4 p-sm-5">
+            <div class="app-brand justify-content-center mb-1"><i class="bi bi-mortarboard-fill"></i> Smartum</div>
+            <p class="text-center text-muted small mb-4">Перегінське · вхід у систему</p>
 
-<div  class="d-flex justify-content-center">
+            <div th:if="${param.error}" class="alert alert-danger d-flex align-items-center gap-2 py-2" role="alert">
+                <i class="bi bi-exclamation-triangle"></i> Неправильне ім'я або пароль
+            </div>
+            <div th:if="${param.logout}" class="alert alert-success d-flex align-items-center gap-2 py-2" role="alert">
+                <i class="bi bi-check-circle"></i> Ви вийшли з системи
+            </div>
 
-    <form class="mt-5"  action="/login" method="post">
-        <p class="text-center">SMARTUM PEREHINSKE</p>
-        <p class="text-center">вхід в систему</p>
-        <div class="mb-3" style="color: red" th:if="${param.error}">
-            не правильне ім'я або пароль
+            <!-- th:action: якщо колись увімкнемо CSRF, Thymeleaf сам додасть токен у форму -->
+            <form th:action="@{/login}" method="post">
+                <div class="mb-3">
+                    <label class="form-label" for="username">Ім'я</label>
+                    <input class="form-control" id="username" type="text" name="username" autocomplete="username" required autofocus>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label" for="password">Пароль</label>
+                    <input class="form-control" id="password" type="password" name="password" autocomplete="current-password" required>
+                </div>
+                <button class="btn btn-primary w-100" type="submit">Увійти</button>
+            </form>
         </div>
-        <div class="mb-3">
-            <label class="form-label" for="username">Ім'я:
-                <input class="form-control" id="username" type="text" name="username">
-
-            </label>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label" for="password">Пароль:
-                <input class="form-control" id="password" type="password" name="password">
-
-            </label>
-        </div>
-        <button class="btn btn-primary" type="submit">login</button>
-
-    </form>
+    </div>
 </div>
-
 </body>
 </html>
-
-

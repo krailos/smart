@@ -14,6 +14,8 @@ public class SecurityConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(CsrfConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
+                        // статичні файли (стилі, іконка, логотип) — без логіну, щоб сторінка входу мала оформлення
+                        .requestMatchers("/css/**", "/favicon.ico", "/smartum.jpg").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(login -> login
                         .loginPage("/login")
