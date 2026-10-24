@@ -7,6 +7,7 @@ import com.krailo.smart.entity.Gang;
 import com.krailo.smart.entity.Student;
 import com.krailo.smart.entity.Teacher;
 import com.krailo.smart.exception.BusinessException;
+import com.krailo.smart.exception.ScheduleConflictException;
 import com.krailo.smart.service.GangService;
 import com.krailo.smart.service.StudentService;
 import com.krailo.smart.service.SubjectService;
@@ -56,9 +57,41 @@ public class GangController {
         for (GangsStudentsDto gs : gangDto.getGangsStudentsDto()) {
             students.add(studentService.findById(gs.getStudentId()));
         }
+        // для форми "Додати учня": активні учні, яких ще немає в групі
+        List<Integer> inGang = students.stream().map(StudentDto::getId).toList();
+        List<StudentDto> candidates = studentService.findAll().stream()
+                .filter(s -> !inGang.contains(s.getId()))
+                .toList();
           model.addAttribute("gang", gangDto);
           model.addAttribute("students", students);
+          model.addAttribute("candidates", candidates);
         return "gangEditStudents";
+    }
+
+    @PostMapping("/{id}/students/add")
+    // required = false: без вибраного учня (форму надіслали в обхід браузера) — повідомлення від сервісу, а не 500
+    public String addStudent(@PathVariable("id") Integer id, @RequestParam(value = "studentId", required = false) Integer studentId,
+                             RedirectAttributes redirectAttributes) {
+        try {
+            gangService.addStudent(id, studentId);
+            redirectAttributes.addFlashAttribute("successMessage", "Учня додано в групу");
+        } catch (BusinessException | ScheduleConflictException e) {
+            // в архіві, уже в групі, зайнятий в цей час в іншій групі
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/gangs/" + id + "/bystudents";
+    }
+
+    @PostMapping("/{id}/students/{studentId}/remove")
+    public String removeStudent(@PathVariable("id") Integer id, @PathVariable("studentId") Integer studentId,
+                                RedirectAttributes redirectAttributes) {
+        try {
+            gangService.removeStudent(id, studentId);
+            redirectAttributes.addFlashAttribute("successMessage", "Учня прибрано з групи");
+        } catch (BusinessException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/gangs/" + id + "/bystudents";
     }
 
     @GetMapping("/{id}/byTeacher")

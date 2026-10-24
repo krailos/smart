@@ -94,8 +94,7 @@ public class ScheduleService {
 
         // Перевіряємо конфлікти для кожного ресурсу
         for (Schedule existing : overlappingSchedules) {
-            String when = String.format("%s %s–%s, група «%s»", existing.getWeekDay(),
-                    existing.getStartTime(), existing.getEndTime(), existing.getGang().getName());
+            String when = when(existing);
 
             if (Objects.equals(existing.getAudience().getId(), d.getAudienceId())) {
                 throw new ScheduleConflictException("Кабінет уже зайнятий: " + when);
@@ -116,6 +115,28 @@ public class ScheduleService {
                 throw new ScheduleConflictException("Учні вже мають заняття (" + String.join(", ", busyStudents) + "): " + when);
             }
         }
+    }
+
+    // Перевірка при додаванні учня в групу: учень не може бути на двох заняттях одночасно.
+    // Кидає ScheduleConflictException, якщо якийсь слот цієї групи перетинається зі слотом іншої групи учня.
+    public void checkStudentFree(Student student, Gang gang) {
+        for (Schedule slot : scheduleRepository.findAllByGangId(gang.getId())) {
+            List<Schedule> overlapping = scheduleRepository.findOverlappingSchedules(
+                    slot.getWeekDay(), slot.getStartTime(), slot.getEndTime(), slot.getId());
+            for (Schedule existing : overlapping) {
+                boolean studentInThatGang = students(existing.getGang()).stream()
+                        .anyMatch(s -> Objects.equals(s.getId(), student.getId()));
+                if (studentInThatGang) {
+                    throw new ScheduleConflictException(student.getLastName() + " вже має заняття: " + when(existing));
+                }
+            }
+        }
+    }
+
+    // "ВІВТОРОК 10:00–11:00, група «Англ-1»" — для повідомлень про конфлікт
+    private String when(Schedule schedule) {
+        return String.format("%s %s–%s, група «%s»", schedule.getWeekDay(),
+                schedule.getStartTime(), schedule.getEndTime(), schedule.getGang().getName());
     }
 
     private List<Student> students(Gang gang) {

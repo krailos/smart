@@ -37,4 +37,7 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
 
     boolean existsByGangId(Integer gangId);
 
+    // усі слоти групи — перевірка, чи вільний учень, якого додають у групу
+    List<Schedule> findAllByGangId(Integer gangId);
+
 }

@@ -20,6 +20,35 @@
             </div>
         </div>
 
+        <!-- результат додавання / прибирання учня; конфлікт розкладу (flash-повідомлення) -->
+        <th:block th:replace="~{fragments/layout :: alerts}"></th:block>
+
+        <!-- додати учня: у списку тільки активні учні, яких ще немає в групі;
+             сервер додатково перевіряє, чи учень не зайнятий у цей час в іншій групі -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <form th:action="@{/gangs/{id}/students/add(id=${gang.id})}" method="post" class="row g-2 align-items-end">
+                    <div class="col-md-6">
+                        <label for="studentId" class="form-label">Додати учня</label>
+                        <!-- required + порожній перший пункт: без вибору учня браузер форму не відправить -->
+                        <select id="studentId" name="studentId" class="form-select" required>
+                            <option value="" selected disabled>— оберіть учня —</option>
+                            <option th:each="s : ${candidates}" th:value="${s.id}"
+                                    th:text="|${s.lastName} ${s.firstName}|"></option>
+                        </select>
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary" th:disabled="${#lists.isEmpty(candidates)}">
+                            <i class="bi bi-plus-lg"></i> Додати
+                        </button>
+                    </div>
+                    <div class="col-12 small text-muted" th:if="${#lists.isEmpty(candidates)}">
+                        Усі активні учні вже в цій групі
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <div class="card">
             <div class="table-responsive">
                 <table class="table table-hover table-app">
@@ -39,10 +68,18 @@
                         <td th:text="${student.contactName}"></td>
                         <td th:text="${student.phone}"></td>
                         <td class="col-actions">
-                            <!-- додавання / вилучення учня з групи — окрема задача (поки немає в контролері) -->
                             <a th:href="@{/students/{id}(id=${student.id})}" class="btn btn-light btn-icon" title="Редагувати учня">
                                 <i class="bi bi-pencil"></i>
                             </a>
+                            <!-- прибрати = м'яке видалення зв'язку; проведені уроки й оплати не змінюються -->
+                            <form th:action="@{/gangs/{id}/students/{studentId}/remove(id=${gang.id}, studentId=${student.id})}"
+                                  method="post" class="d-inline"
+                                  th:data-name="|${student.lastName} ${student.firstName}|"
+                                  onsubmit="return confirm('Прибрати ' + this.dataset.name + ' з групи?');">
+                                <button class="btn btn-light btn-icon text-danger" title="Прибрати з групи">
+                                    <i class="bi bi-person-dash"></i>
+                                </button>
+                            </form>
                         </td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(students)}">

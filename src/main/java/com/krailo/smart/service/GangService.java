@@ -2,11 +2,15 @@ package com.krailo.smart.service;
 
 import com.krailo.smart.dto.GangDto;
 import com.krailo.smart.entity.Gang;
+import com.krailo.smart.entity.GangsStudents;
+import com.krailo.smart.entity.Student;
 import com.krailo.smart.entity.Teacher;
 import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.mapper.GangMapper;
 import com.krailo.smart.repository.GangRepository;
+import com.krailo.smart.repository.GangsStudentsRepository;
 import com.krailo.smart.repository.ScheduleRepository;
+import com.krailo.smart.repository.StudentRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,6 +27,9 @@ public class GangService {
     private GangRepository gangRepository;
     private GangMapper gangMapper;
     private ScheduleRepository scheduleRepository;
+    private GangsStudentsRepository gangsStudentsRepository;
+    private StudentRepository studentRepository;
+    private ScheduleService scheduleService;
 
     // тільки активні — для списку груп і всіх випадаючих меню у формах
     public List<GangDto> findAll() {
@@ -76,5 +83,34 @@ public class GangService {
         Gang gang = findByIdEntity(id);
         gang.setArchived(false);
         gangRepository.save(gang);
+    }
+
+    // Додати учня в групу. Склад групи впливає тільки на НОВІ уроки — проведені не змінюються.
+    public void addStudent(Integer gangId, Integer studentId) {
+        if (studentId == null) {
+            throw new BusinessException("Оберіть учня");
+        }
+        Gang gang = findByIdEntity(gangId);
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Student whith id= %d not exist", studentId)));
+        if (gang.isArchived()) {
+            throw new BusinessException("Група в архіві — додавати учнів не можна");
+        }
+        if (student.isArchived()) {
+            throw new BusinessException(student.getLastName() + " в архіві — спершу відновіть учня");
+        }
+        if (gangsStudentsRepository.existsByGangIdAndStudentId(gangId, studentId)) {
+            throw new BusinessException(student.getLastName() + " уже в цій групі");
+        }
+        // учень не може бути на двох заняттях одночасно (кидає ScheduleConflictException)
+        scheduleService.checkStudentFree(student, gang);
+        gangsStudentsRepository.save(GangsStudents.builder().gang(gang).student(student).build());
+    }
+
+    // Прибрати учня з групи: м'яке видалення (@SoftDelete) — проведені уроки, оплати, знижки не змінюються
+    public void removeStudent(Integer gangId, Integer studentId) {
+        GangsStudents gangStudent = gangsStudentsRepository.findByGangIdAndStudentId(gangId, studentId)
+                .orElseThrow(() -> new BusinessException("Цього учня вже немає в групі"));
+        gangsStudentsRepository.delete(gangStudent);
     }
 }
