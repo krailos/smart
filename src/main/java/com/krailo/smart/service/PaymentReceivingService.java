@@ -26,6 +26,10 @@ public class PaymentReceivingService {
         if (paymentDto.getValue() == null || paymentDto.getValue().signum() <= 0) {
             throw new PaymentException("Сума оплати має бути більшою за нуль");
         }
+        // більше двох знаків база мовчки округлила б (100.555 -> 100.56); браузер це теж ловить (step), але не завжди
+        if (paymentDto.getValue().stripTrailingZeros().scale() > 2) {
+            throw new PaymentException("Сума оплати — не більше двох знаків після коми");
+        }
         // 1. оплата
         PaymentDto paymentDtoWithId = paymentService.create(paymentDto);
         // 2. запис у журналі транзакцій і новий баланс учня

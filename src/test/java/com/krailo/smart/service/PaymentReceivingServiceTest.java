@@ -106,6 +106,19 @@ class PaymentReceivingServiceTest {
     }
 
     @Test
+    void shouldNotSavePayment_WhenMoreThanTwoDecimals() {
+        // 100.555 база мовчки округлила б до 100.56 — сервіс відмовляє явно
+        PaymentDto tooPrecise = new PaymentDto(null, null, student.getId(), new BigDecimal("100.555"),
+                LocalDate.of(2026, 10, 24), "тест", null, null);
+        assertThatThrownBy(() -> paymentReceivingService.receivePayment(tooPrecise))
+                .isInstanceOf(PaymentException.class)
+                .hasMessageContaining("двох знаків");
+
+        assertThat(paymentRepository.count()).isZero();
+        assertThat(studentRepository.findById(student.getId()).orElseThrow().getBalance()).isZero();
+    }
+
+    @Test
     void shouldStornoPayment_AndReturnBalanceBack() {
         // Given: учень заплатив 500 (помилково)
         PaymentDto original = paymentReceivingService.receivePayment(paymentDto(500));

@@ -177,6 +177,23 @@ class ArchiveTest {
         assertThat(priceRepository.existsBySubjectIdAndDate(subject.getId(), LocalDate.of(2026, 9, 1))).isFalse();
     }
 
+    @Test
+    void shouldRejectInvalidPriceValue() {
+        // порожня, від'ємна, з копійками понад 2 знаки — сервіс не пропускає (форму можна надіслати в обхід браузера)
+        for (BigDecimal bad : new BigDecimal[]{null, new BigDecimal("-1"), new BigDecimal("100.555")}) {
+            assertThatThrownBy(() -> priceService.create(PriceDto.builder()
+                    .subjectId(subject.getId()).value(bad).date(LocalDate.of(2026, 9, 1)).build()))
+                    .isInstanceOf(BusinessException.class);
+        }
+        assertThat(priceRepository.findAll()).isEmpty();
+
+        // зайві нулі — не копійки: 100.500 = 100.5, така ціна приймається
+        priceService.create(PriceDto.builder()
+                .subjectId(subject.getId()).value(new BigDecimal("100.500")).date(LocalDate.of(2026, 9, 1)).build());
+        assertThat(priceRepository.findAll()).singleElement()
+                .satisfies(p -> assertThat(p.getValue()).isEqualByComparingTo("100.5"));
+    }
+
     private Schedule schedule() {
         return Schedule.builder()
                 .audience(audience).subject(subject).gang(gang).teacher(teacher)

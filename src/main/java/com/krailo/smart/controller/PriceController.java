@@ -74,10 +74,15 @@ public class PriceController {
     
     
     @PostMapping("/{id}/update")
-    public String update (@PathVariable("id") Integer id, @ModelAttribute PriceDto price) {
-        System.out.println(price);
-           priceService.update(id, price); 
-        return "redirect:/prices";        
+    public String update (@PathVariable("id") Integer id, @ModelAttribute PriceDto price,
+                          RedirectAttributes redirectAttributes) {
+        try {
+            priceService.update(id, price);
+        } catch (BusinessException e) {
+            // неправильна вартість (порожня, від'ємна, зайві знаки) — показуємо повідомлення на сторінці цін
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/prices";
     }
     
     @PostMapping("/{id}/delete")
