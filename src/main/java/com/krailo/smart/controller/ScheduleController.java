@@ -1,5 +1,6 @@
 package com.krailo.smart.controller;
 
+import com.krailo.smart.calendar.ScheduleCalendar;
 import com.krailo.smart.dto.AudienceDto;
 import com.krailo.smart.dto.GangDto;
 import com.krailo.smart.dto.ScheduleDto;
@@ -16,6 +17,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -30,11 +32,51 @@ ScheduleController {
     private SubjectService subjectService;
     private GangService gangService;
         private TeacherService teacherService;
+    private ScheduleCalendar scheduleCalendar;
 
         @GetMapping
         public String findAll(Model model) {
             model.addAttribute("schedules", scheduleService.findAll());
             return "schedules";
+    }
+
+    // Тижневий календар — додатковий вигляд розкладу. Фільтр (аудиторія / вчитель / група) робить блідими
+    // заняття інших — так видно, коли саме вибране вільне. Параметри навмисно не audienceId/…, щоб не плутати з формою.
+    @GetMapping("/week")
+    public String week(@RequestParam(required = false) Integer audience,
+                       @RequestParam(required = false) Integer teacher,
+                       @RequestParam(required = false) Integer gang, Model model) {
+        model.addAttribute("calendar", scheduleCalendar.build(scheduleService.findAll(), audience, teacher, gang));
+        model.addAttribute("filterAudience", audience);
+        model.addAttribute("filterTeacher", teacher);
+        model.addAttribute("filterGang", gang);
+        // форма у вікні: після конфлікту — те, що вводили (flash "draft"), інакше — порожня з підставленим фільтром
+        if (!model.containsAttribute("draft")) {
+            model.addAttribute("draft", ScheduleDto.builder().audienceId(audience).teacherId(teacher).gangId(gang).build());
+        }
+        fillFormLists(model);
+        return "scheduleWeek";
+    }
+
+    // додавання з календаря: ті самі перевірки конфліктів, але повертаємось на календар (з тим самим фільтром)
+    @PostMapping("/week/create")
+    public String createFromWeek(@ModelAttribute ScheduleDto scheduleDto,
+                                 @RequestParam(required = false) Integer filterAudience,
+                                 @RequestParam(required = false) Integer filterTeacher,
+                                 @RequestParam(required = false) Integer filterGang,
+                                 RedirectAttributes redirectAttributes) {
+        try {
+            scheduleService.create(scheduleDto);
+            redirectAttributes.addFlashAttribute("successMessage", "Заняття додано в розклад");
+        } catch (ScheduleConflictException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            redirectAttributes.addFlashAttribute("draft", scheduleDto);
+            redirectAttributes.addFlashAttribute("openForm", true);
+        }
+        if (filterAudience != null) redirectAttributes.addAttribute("audience", filterAudience);
+        if (filterTeacher != null) redirectAttributes.addAttribute("teacher", filterTeacher);
+        if (filterGang != null) redirectAttributes.addAttribute("gang", filterGang);
+        return "redirect:/schedules/week";
     }
 
     @GetMapping("/{id}")

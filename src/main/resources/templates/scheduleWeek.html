@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Розклад — тиждень')}"></head>
+<body>
+<div class="app">
+    <th:block th:replace="~{fragments/layout :: sidebar('schedules')}"></th:block>
+
+    <main class="app-main">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Розклад</h1>
+                <div class="page-subtitle">Тиждень. Клік на порожню клітинку — додати заняття, на заняття — редагувати</div>
+            </div>
+            <div class="page-actions">
+                <div class="btn-group" role="group" aria-label="Вигляд розкладу">
+                    <a th:href="@{/schedules}" class="btn btn-light"><i class="bi bi-list-ul"></i> Список</a>
+                    <a th:href="@{/schedules/week}" class="btn btn-light active"><i class="bi bi-calendar-week"></i> Тиждень</a>
+                </div>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#slotModal">
+                    <i class="bi bi-plus-lg"></i> Додати в розклад
+                </button>
+            </div>
+        </div>
+
+        <!-- результат додавання / конфлікт розкладу (flash-повідомлення) -->
+        <th:block th:replace="~{fragments/layout :: alerts}"></th:block>
+
+        <!-- фільтр: заняття інших стають блідими — порожнє місце = вибране вільне -->
+        <form th:action="@{/schedules/week}" method="get" class="row g-2 align-items-end mb-3">
+            <div class="col-sm-6 col-lg-3">
+                <label for="fAudience" class="form-label small mb-1">Аудиторія</label>
+                <select id="fAudience" name="audience" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">усі</option>
+                    <option th:each="a : ${audiences}" th:value="${a.id}" th:text="${a.name}"
+                            th:selected="${a.id == filterAudience}"></option>
+                </select>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <label for="fTeacher" class="form-label small mb-1">Вчитель</label>
+                <select id="fTeacher" name="teacher" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">усі</option>
+                    <option th:each="t : ${teachers}" th:value="${t.id}" th:text="${t.lastName + ' ' + t.firstName}"
+                            th:selected="${t.id == filterTeacher}"></option>
+                </select>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <label for="fGang" class="form-label small mb-1">Група</label>
+                <select id="fGang" name="gang" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">усі</option>
+                    <option th:each="g : ${gangs}" th:value="${g.id}" th:text="${g.name}"
+                            th:selected="${g.id == filterGang}"></option>
+                </select>
+            </div>
+            <div class="col-auto" th:if="${filterAudience != null or filterTeacher != null or filterGang != null}">
+                <a th:href="@{/schedules/week}" class="btn btn-sm btn-light"><i class="bi bi-x-lg"></i> Скинути</a>
+            </div>
+        </form>
+
+        <div class="card">
+            <div class="week-scroll">
+                <div class="week" th:style="|--total: ${calendar.totalMinutes}|">
+                    <div class="week-head">
+                        <div></div>
+                        <div class="week-day-head" th:each="day : ${calendar.days}" th:text="${day.label}">Пн</div>
+                    </div>
+                    <div class="week-body">
+                        <div>
+                            <div class="week-time" th:each="row : ${calendar.rows}" th:text="${#temporals.format(row, 'HH:mm')}"></div>
+                        </div>
+                        <div class="week-col" th:each="day : ${calendar.days}">
+                            <!-- порожні клітинки по 30 хв: клік відкриває форму з цим днем і часом -->
+                            <button type="button" class="week-cell" th:each="row : ${calendar.rows}"
+                                    th:data-day="${day.weekDay}" th:data-time="${#temporals.format(row, 'HH:mm')}"
+                                    th:title="|Додати: ${day.label} ${#temporals.format(row, 'HH:mm')}|"></button>
+                            <!-- заняття: позиція у хвилинах (CSS переводить у пікселі), колір — за групою -->
+                            <a class="week-event" th:each="ev : ${day.events}"
+                               th:href="@{/schedules/{id}(id=${ev.schedule.id})}"
+                               th:classappend="|ev-c${ev.schedule.gangId % 6} ${ev.dimmed ? 'is-dimmed' : ''}|"
+                               th:style="|--start: ${ev.startMinute}; --len: ${ev.durationMinutes}; --lane: ${ev.lane}; --lanes: ${ev.lanes}|"
+                               th:title="|${ev.schedule.gangName} · ${ev.schedule.subjectName} · ${#temporals.format(ev.schedule.startTime, 'HH:mm')}–${#temporals.format(ev.schedule.endTime, 'HH:mm')} · ${ev.schedule.audienceName} · ${ev.schedule.teacherName}|">
+                                <div class="fw-semibold" th:text="${ev.schedule.gangName}"></div>
+                                <div th:text="|${#temporals.format(ev.schedule.startTime, 'HH:mm')}–${#temporals.format(ev.schedule.endTime, 'HH:mm')}|"></div>
+                                <div class="text-muted" th:text="${ev.schedule.audienceName}"></div>
+                                <div class="text-muted" th:text="${ev.schedule.teacherName}"></div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- вікно "Додати в розклад": ті самі поля, що й /schedules/schedule/new; перевірки конфліктів — у ScheduleService -->
+<div class="modal fade" id="slotModal" tabindex="-1" aria-labelledby="slotModalLabel" aria-hidden="true"
+     th:data-open="${openForm}">
+    <div class="modal-dialog modal-lg">
+        <form class="modal-content" th:action="@{/schedules/week/create}" th:object="${draft}" method="post">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="slotModalLabel">Додати в розклад</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрити"></button>
+            </div>
+            <div class="modal-body">
+                <!-- щоб після збереження повернутись до того самого фільтра -->
+                <input type="hidden" name="filterAudience" th:value="${filterAudience}"/>
+                <input type="hidden" name="filterTeacher" th:value="${filterTeacher}"/>
+                <input type="hidden" name="filterGang" th:value="${filterGang}"/>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="mGang" class="form-label">Група</label>
+                        <select id="mGang" th:field="*{gangId}" class="form-select" required>
+                            <option value="">-- група --</option>
+                            <option th:each="gang : ${gangs}" th:value="${gang.id}" th:text="${gang.name}"
+                                    th:data-subject="${gang.subjectId}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="mSubject" class="form-label">Курс</label>
+                        <select id="mSubject" th:field="*{subjectId}" class="form-select" required>
+                            <option value="">-- курс --</option>
+                            <option th:each="subject : ${subjects}" th:value="${subject.id}" th:text="${subject.name}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <!-- якщо не вибрано — сервіс підставить основного вчителя групи -->
+                        <label for="mTeacher" class="form-label">Вчитель</label>
+                        <select id="mTeacher" th:field="*{teacherId}" class="form-select">
+                            <option value="">-- основний вчитель групи --</option>
+                            <option th:each="teacher : ${teachers}" th:value="${teacher.id}"
+                                    th:text="${teacher.lastName + ' ' + teacher.firstName}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="mAudience" class="form-label">Аудиторія</label>
+                        <select id="mAudience" th:field="*{audienceId}" class="form-select" required>
+                            <option value="">-- аудиторія --</option>
+                            <option th:each="audience : ${audiences}" th:value="${audience.id}" th:text="${audience.name}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="mWeekDay" class="form-label">День</label>
+                        <select id="mWeekDay" th:field="*{weekDay}" class="form-select" required>
+                            <option value="">-- день --</option>
+                            <option th:each="weekday : ${weekDays}" th:value="${weekday}" th:text="${weekday}"></option>
+                        </select>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <label for="mStart" class="form-label">Початок</label>
+                        <input type="time" id="mStart" th:field="*{startTime}" class="form-control" required>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <label for="mEnd" class="form-label">Кінець</label>
+                        <input type="time" id="mEnd" th:field="*{endTime}" class="form-control" required>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Скасувати</button>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Зберегти в розклад</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const modalEl = document.getElementById('slotModal');
+        const modal = new bootstrap.Modal(modalEl);
+        const gang = document.getElementById('mGang');
+        const subject = document.getElementById('mSubject');
+
+        // клік на порожню клітинку: день і час — з клітинки, кінець — на годину пізніше
+        document.querySelectorAll('.week-cell').forEach(cell => cell.addEventListener('click', () => {
+            document.getElementById('mWeekDay').value = cell.dataset.day;
+            document.getElementById('mStart').value = cell.dataset.time;
+            document.getElementById('mEnd').value = plusHour(cell.dataset.time);
+            modal.show();
+        }));
+
+        // вибрали групу — підставляємо її курс
+        gang.addEventListener('change', () => {
+            const subjectId = gang.selectedOptions[0].dataset.subject;
+            if (subjectId) subject.value = subjectId;
+        });
+
+        // сервер повернув конфлікт — відкриваємо форму знову з уже введеним
+        if (modalEl.dataset.open === 'true') modal.show();
+    });
+
+    // "13:30" -> "14:30" (не пізніше 23:59)
+    function plusHour(time) {
+        const [h, m] = time.split(':').map(Number);
+        const total = Math.min(h * 60 + m + 60, 23 * 60 + 59);
+        return String(Math.floor(total / 60)).padStart(2, '0') + ':' + String(total % 60).padStart(2, '0');
+    }
+</script>
+</body>
+</html>

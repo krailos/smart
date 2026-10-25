@@ -263,3 +263,83 @@ body {
     gap: 8px;
     margin-top: 12px;
 }
+
+/* ===== тижневий календар розкладу (scheduleWeek.html) =====
+   Позиції занять приходять з сервера у ХВИЛИНАХ (--start, --len від початку сітки);
+   --ppm (пікселів на хвилину) — єдиний масштаб сітки. 30 хв = одна клітинка. */
+.week-scroll { overflow-x: auto; }
+.week {
+    --ppm: 1.4px;
+    --time-col: 56px;
+    min-width: calc(var(--time-col) + 7 * 120px);   /* на телефоні — прокрутка вбік усередині картки */
+}
+.week-head, .week-body {
+    display: grid;
+    grid-template-columns: var(--time-col) repeat(7, minmax(120px, 1fr));
+}
+.week-head {
+    border-bottom: 1px solid var(--app-border);
+    background: #f9fafb;
+}
+.week-day-head {
+    padding: 10px 8px;
+    text-align: center;
+    font-weight: 600;
+    font-size: .85rem;
+    color: var(--app-text-muted);
+    border-left: 1px solid var(--app-border);
+}
+.week-time {
+    height: calc(30 * var(--ppm));
+    padding: 2px 8px 0 0;
+    text-align: right;
+    font-size: .72rem;
+    color: var(--app-text-muted);
+}
+.week-time:nth-child(even) { visibility: hidden; }          /* підпис тільки на цілих годинах */
+.week-col {
+    position: relative;
+    height: calc(var(--total) * var(--ppm));
+    border-left: 1px solid var(--app-border);
+}
+.week-cell {
+    display: block;
+    width: 100%;
+    height: calc(30 * var(--ppm));
+    padding: 0;
+    border: 0;
+    border-top: 1px solid var(--app-border);
+    background: transparent;
+    cursor: pointer;
+}
+.week-cell:nth-child(even) { border-top-style: dashed; }   /* пів години — пунктир */
+.week-cell:hover { background: var(--app-primary-soft); }
+.week-cell:hover::after { content: "+"; color: var(--app-primary); font-weight: 600; }
+.week-event {
+    position: absolute;
+    top: calc(var(--start) * var(--ppm) + 1px);
+    height: calc(var(--len) * var(--ppm) - 2px);
+    left: calc(100% / var(--lanes) * var(--lane) + 2px);
+    width: calc(100% / var(--lanes) - 4px);
+    overflow: hidden;
+    padding: 4px 6px;
+    border-radius: 6px;
+    border-left: 4px solid var(--ev-border);
+    background: var(--ev-bg);
+    color: #1f2937;
+    font-size: .75rem;
+    line-height: 1.25;
+    text-decoration: none;
+    z-index: 1;
+}
+/* кожен рядок блоку — без переносу посеред слова; що не влізло — "…" (повністю — у підказці title) */
+.week-event > div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.week-event:hover { color: #1f2937; box-shadow: 0 2px 8px rgba(0, 0, 0, .15); z-index: 2; }
+.week-event.is-dimmed { opacity: .3; }
+/* кольори груп: gangId % 6 */
+.ev-c0 { --ev-bg: #eef0ff; --ev-border: #4f46e5; }
+.ev-c1 { --ev-bg: #e6f6ee; --ev-border: #15803d; }
+.ev-c2 { --ev-bg: #fff4e5; --ev-border: #c2410c; }
+.ev-c3 { --ev-bg: #fde8f1; --ev-border: #be185d; }
+.ev-c4 { --ev-bg: #e5f4fb; --ev-border: #0369a1; }
+.ev-c5 { --ev-bg: #f3ecfd; --ev-border: #7e22ce; }

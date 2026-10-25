@@ -208,6 +208,24 @@ public class ScheduleServiceTest {
     }
 
     @Test
+    void shouldThrowException_WhenRequiredFieldIsEmpty() {
+        // форму надіслали в обхід браузера (без required) — зрозуміле повідомлення, а не 500
+        ScheduleDto noGang = newDto();
+        noGang.setGangId(null);
+        assertThatThrownBy(() -> scheduleService.create(noGang)).hasMessage("Оберіть групу");
+
+        ScheduleDto noAudience = newDto();
+        noAudience.setAudienceId(null);
+        assertThatThrownBy(() -> scheduleService.create(noAudience)).hasMessage("Оберіть аудиторію");
+
+        ScheduleDto noDay = newDto();
+        noDay.setWeekDay(null);
+        assertThatThrownBy(() -> scheduleService.create(noDay)).hasMessage("Оберіть день тижня");
+
+        verify(scheduleRepository, never()).save(any());
+    }
+
+    @Test
     void shouldExcludeItselfFromConflictCheck_WhenUpdating() {
         // Given: редагуємо розклад з id=5 — він не повинен конфліктувати сам із собою
         Schedule entity = Schedule.builder().id(5).build();

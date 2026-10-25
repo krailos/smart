@@ -71,6 +71,19 @@ public class ScheduleService {
     // Якщо вчителя не вибрано — записує в d.teacherId основного вчителя групи.
     // excludeId — id розкладу, який редагуємо (для нового розкладу = 0)
     private void checkConflicts(ScheduleDto d, int excludeId) {
+        // порожні поля (форму надіслали в обхід браузера) — зрозуміле повідомлення замість 500
+        if (d.getGangId() == null) {
+            throw new ScheduleConflictException("Оберіть групу");
+        }
+        if (d.getSubjectId() == null) {
+            throw new ScheduleConflictException("Оберіть курс");
+        }
+        if (d.getAudienceId() == null) {
+            throw new ScheduleConflictException("Оберіть аудиторію");
+        }
+        if (d.getWeekDay() == null) {
+            throw new ScheduleConflictException("Оберіть день тижня");
+        }
         if (d.getStartTime() == null || d.getEndTime() == null || !d.getStartTime().isBefore(d.getEndTime())) {
             throw new ScheduleConflictException("Час завершення має бути пізніше за час початку");
         }

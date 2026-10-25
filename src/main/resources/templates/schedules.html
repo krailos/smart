@@ -12,6 +12,10 @@
                 <div class="page-subtitle">Тижневий розклад занять. Урок проводиться зі слоту розкладу</div>
             </div>
             <div class="page-actions">
+                <div class="btn-group" role="group" aria-label="Вигляд розкладу">
+                    <a th:href="@{/schedules}" class="btn btn-light active"><i class="bi bi-list-ul"></i> Список</a>
+                    <a th:href="@{/schedules/week}" class="btn btn-light"><i class="bi bi-calendar-week"></i> Тиждень</a>
+                </div>
                 <a th:href="@{/lessons}" class="btn btn-light"><i class="bi bi-journal-check"></i> Проведені уроки</a>
                 <a th:href="@{/schedules/schedule/new}" class="btn btn-primary">
                     <i class="bi bi-plus-lg"></i> Додати в розклад
