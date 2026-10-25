@@ -18,11 +18,11 @@ class ScheduleCalendarTest {
     void shouldBuildDefaultGrid_WhenScheduleIsEmpty() {
         WeekCalendar week = calendar.build(List.of(), null, null, null);
 
-        // 08:00–21:00 по 30 хв = 26 клітинок, 7 днів Пн…Нд
+        // 08:00–23:00 по 30 хв = 30 клітинок, 7 днів Пн…Нд
         assertThat(week.getStart()).isEqualTo(LocalTime.of(8, 0));
-        assertThat(week.getEnd()).isEqualTo(LocalTime.of(21, 0));
-        assertThat(week.getTotalMinutes()).isEqualTo(13 * 60);
-        assertThat(week.getRows()).hasSize(26).first().isEqualTo(LocalTime.of(8, 0));
+        assertThat(week.getEnd()).isEqualTo(LocalTime.of(23, 0));
+        assertThat(week.getTotalMinutes()).isEqualTo(15 * 60);
+        assertThat(week.getRows()).hasSize(30).first().isEqualTo(LocalTime.of(8, 0));
         assertThat(week.getDays()).extracting(WeekCalendar.Day::getLabel)
                 .containsExactly("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд");
     }
@@ -31,10 +31,11 @@ class ScheduleCalendarTest {
     void shouldExtendGrid_WhenLessonIsOutsideDefaultHours() {
         WeekCalendar week = calendar.build(List.of(
                 slot(1, WeekDay.ПОНЕДІЛОК, "07:15", "08:00", 1),
-                slot(2, WeekDay.ВІВТОРОК, "20:30", "21:30", 1)), null, null, null);
+                slot(2, WeekDay.ВІВТОРОК, "22:30", "23:15", 1)), null, null, null);
 
         assertThat(week.getStart()).isEqualTo(LocalTime.of(7, 0));
-        assertThat(week.getEnd()).isEqualTo(LocalTime.of(22, 0));
+        // після 23:00 — до кінця доби
+        assertThat(week.getEnd()).isEqualTo(LocalTime.of(23, 59));
     }
 
     @Test

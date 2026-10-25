@@ -73,9 +73,34 @@ ScheduleController {
             redirectAttributes.addFlashAttribute("draft", scheduleDto);
             redirectAttributes.addFlashAttribute("openForm", true);
         }
-        if (filterAudience != null) redirectAttributes.addAttribute("audience", filterAudience);
-        if (filterTeacher != null) redirectAttributes.addAttribute("teacher", filterTeacher);
-        if (filterGang != null) redirectAttributes.addAttribute("gang", filterGang);
+        return backToWeek(redirectAttributes, filterAudience, filterTeacher, filterGang);
+    }
+
+    // редагування з календаря (клік на заняття): ті самі перевірки, повертаємось на календар;
+    // після конфлікту вікно відкривається знову в режимі редагування (draft.id != 0)
+    @PostMapping("/week/{id}/update")
+    public String updateFromWeek(@PathVariable("id") Integer id, @ModelAttribute ScheduleDto scheduleDto,
+                                 @RequestParam(required = false) Integer filterAudience,
+                                 @RequestParam(required = false) Integer filterTeacher,
+                                 @RequestParam(required = false) Integer filterGang,
+                                 RedirectAttributes redirectAttributes) {
+        try {
+            scheduleService.update(id, scheduleDto);
+            redirectAttributes.addFlashAttribute("successMessage", "Заняття змінено");
+        } catch (ScheduleConflictException e) {
+            scheduleDto.setId(id);
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            redirectAttributes.addFlashAttribute("draft", scheduleDto);
+            redirectAttributes.addFlashAttribute("openForm", true);
+        }
+        return backToWeek(redirectAttributes, filterAudience, filterTeacher, filterGang);
+    }
+
+    // назад на календар з тим самим фільтром
+    private String backToWeek(RedirectAttributes redirectAttributes, Integer audience, Integer teacher, Integer gang) {
+        if (audience != null) redirectAttributes.addAttribute("audience", audience);
+        if (teacher != null) redirectAttributes.addAttribute("teacher", teacher);
+        if (gang != null) redirectAttributes.addAttribute("gang", gang);
         return "redirect:/schedules/week";
     }
 

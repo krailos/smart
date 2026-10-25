@@ -16,7 +16,7 @@
                     <a th:href="@{/schedules}" class="btn btn-light"><i class="bi bi-list-ul"></i> Список</a>
                     <a th:href="@{/schedules/week}" class="btn btn-light active"><i class="bi bi-calendar-week"></i> Тиждень</a>
                 </div>
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#slotModal">
+                <button type="button" class="btn btn-primary" id="addSlot">
                     <i class="bi bi-plus-lg"></i> Додати в розклад
                 </button>
             </div>
@@ -72,9 +72,16 @@
                             <button type="button" class="week-cell" th:each="row : ${calendar.rows}"
                                     th:data-day="${day.weekDay}" th:data-time="${#temporals.format(row, 'HH:mm')}"
                                     th:title="|Додати: ${day.label} ${#temporals.format(row, 'HH:mm')}|"></button>
-                            <!-- заняття: позиція у хвилинах (CSS переводить у пікселі), колір — за групою -->
+                            <!-- заняття: позиція у хвилинах (CSS переводить у пікселі), колір — за групою.
+                                 Клік відкриває вікно редагування — дані слоту беруться з data-атрибутів;
+                                 href — запасний шлях (стара сторінка редагування), якщо JavaScript не спрацює -->
                             <a class="week-event" th:each="ev : ${day.events}"
                                th:href="@{/schedules/{id}(id=${ev.schedule.id})}"
+                               th:data-id="${ev.schedule.id}" th:data-gang="${ev.schedule.gangId}"
+                               th:data-subject="${ev.schedule.subjectId}" th:data-teacher="${ev.schedule.teacherId}"
+                               th:data-audience="${ev.schedule.audienceId}" th:data-day="${ev.schedule.weekDay}"
+                               th:data-start="${#temporals.format(ev.schedule.startTime, 'HH:mm')}"
+                               th:data-end="${#temporals.format(ev.schedule.endTime, 'HH:mm')}"
                                th:classappend="|ev-c${ev.schedule.gangId % 6} ${ev.dimmed ? 'is-dimmed' : ''}|"
                                th:style="|--start: ${ev.startMinute}; --len: ${ev.durationMinutes}; --lane: ${ev.lane}; --lanes: ${ev.lanes}|"
                                th:title="|${ev.schedule.gangName} · ${ev.schedule.subjectName} · ${#temporals.format(ev.schedule.startTime, 'HH:mm')}–${#temporals.format(ev.schedule.endTime, 'HH:mm')} · ${ev.schedule.audienceName} · ${ev.schedule.teacherName}|">
@@ -91,13 +98,19 @@
     </main>
 </div>
 
-<!-- вікно "Додати в розклад": ті самі поля, що й /schedules/schedule/new; перевірки конфліктів — у ScheduleService -->
+<!-- одне вікно на два режими: "Додати в розклад" (клік на порожню клітинку) і "Редагувати заняття" (клік на заняття).
+     Режим перемикає JavaScript; після конфлікту сервер одразу малює потрібний режим (draft.id != 0 — редагування).
+     data-default-* — значення з фільтра для нового заняття. Перевірки конфліктів — у ScheduleService -->
 <div class="modal fade" id="slotModal" tabindex="-1" aria-labelledby="slotModalLabel" aria-hidden="true"
-     th:data-open="${openForm}">
+     th:data-open="${openForm}" th:data-default-audience="${filterAudience}"
+     th:data-default-teacher="${filterTeacher}" th:data-default-gang="${filterGang}">
     <div class="modal-dialog modal-lg">
-        <form class="modal-content" th:action="@{/schedules/week/create}" th:object="${draft}" method="post">
+        <form class="modal-content" id="slotForm" th:object="${draft}" method="post"
+              th:action="${draft.id != 0} ? @{/schedules/week/{id}/update(id=${draft.id})} : @{/schedules/week/create}"
+              th:data-create-url="@{/schedules/week/create}" th:data-update-url="@{/schedules/week/}">
             <div class="modal-header">
-                <h2 class="modal-title fs-5" id="slotModalLabel">Додати в розклад</h2>
+                <h2 class="modal-title fs-5" id="slotModalLabel"
+                    th:text="${draft.id != 0} ? 'Редагувати заняття' : 'Додати в розклад'">Додати в розклад</h2>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрити"></button>
             </div>
             <div class="modal-body">
@@ -156,7 +169,9 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-light" data-bs-dismiss="modal">Скасувати</button>
-                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Зберегти в розклад</button>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i>
+                    <span id="slotSubmit" th:text="${draft.id != 0} ? 'Зберегти зміни' : 'Зберегти в розклад'">Зберегти в розклад</span>
+                </button>
             </div>
         </form>
     </div>
@@ -166,24 +181,57 @@
     document.addEventListener('DOMContentLoaded', () => {
         const modalEl = document.getElementById('slotModal');
         const modal = new bootstrap.Modal(modalEl);
-        const gang = document.getElementById('mGang');
-        const subject = document.getElementById('mSubject');
+        const form = document.getElementById('slotForm');
+        const field = id => document.getElementById(id);
+        const defaults = modalEl.dataset;   // значення з фільтра: defaultAudience, defaultTeacher, defaultGang
+
+        // mode: 'create' або 'edit'; values: gang, subject, teacher, audience, day, start, end (+ id для edit)
+        function openForm(mode, values) {
+            const edit = mode === 'edit';
+            form.action = edit ? form.dataset.updateUrl + values.id + '/update' : form.dataset.createUrl;
+            field('slotModalLabel').textContent = edit ? 'Редагувати заняття' : 'Додати в розклад';
+            field('slotSubmit').textContent = edit ? 'Зберегти зміни' : 'Зберегти в розклад';
+            field('mGang').value = values.gang || '';
+            field('mSubject').value = values.subject || subjectOfGang(values.gang) || '';
+            field('mTeacher').value = values.teacher || '';
+            field('mAudience').value = values.audience || '';
+            field('mWeekDay').value = values.day || '';
+            field('mStart').value = values.start || '';
+            field('mEnd').value = values.end || '';
+            modal.show();
+        }
+
+        function subjectOfGang(gangId) {
+            const option = gangId && field('mGang').querySelector('option[value="' + gangId + '"]');
+            return option ? option.dataset.subject : '';
+        }
+
+        function newSlotValues() {
+            return { gang: defaults.defaultGang, teacher: defaults.defaultTeacher, audience: defaults.defaultAudience };
+        }
 
         // клік на порожню клітинку: день і час — з клітинки, кінець — на годину пізніше
         document.querySelectorAll('.week-cell').forEach(cell => cell.addEventListener('click', () => {
-            document.getElementById('mWeekDay').value = cell.dataset.day;
-            document.getElementById('mStart').value = cell.dataset.time;
-            document.getElementById('mEnd').value = plusHour(cell.dataset.time);
-            modal.show();
+            openForm('create', Object.assign(newSlotValues(),
+                { day: cell.dataset.day, start: cell.dataset.time, end: plusHour(cell.dataset.time) }));
+        }));
+
+        // кнопка "Додати в розклад" — порожня форма (з фільтром)
+        field('addSlot').addEventListener('click', () => openForm('create', newSlotValues()));
+
+        // клік на заняття — редагування у вікні замість переходу на іншу сторінку
+        document.querySelectorAll('.week-event').forEach(ev => ev.addEventListener('click', e => {
+            e.preventDefault();
+            openForm('edit', ev.dataset);
         }));
 
         // вибрали групу — підставляємо її курс
-        gang.addEventListener('change', () => {
-            const subjectId = gang.selectedOptions[0].dataset.subject;
-            if (subjectId) subject.value = subjectId;
+        field('mGang').addEventListener('change', () => {
+            const subjectId = subjectOfGang(field('mGang').value);
+            if (subjectId) field('mSubject').value = subjectId;
         });
 
-        // сервер повернув конфлікт — відкриваємо форму знову з уже введеним
+        // сервер повернув конфлікт — відкриваємо вікно знову з уже введеним (режим сервер уже поставив)
         if (modalEl.dataset.open === 'true') modal.show();
     });
 

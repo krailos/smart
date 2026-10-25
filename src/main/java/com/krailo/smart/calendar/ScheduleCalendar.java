@@ -21,7 +21,7 @@ public class ScheduleCalendar {
 
     static final int SLOT_MINUTES = 30;
     private static final LocalTime DEFAULT_START = LocalTime.of(8, 0);
-    private static final LocalTime DEFAULT_END = LocalTime.of(21, 0);
+    private static final LocalTime DEFAULT_END = LocalTime.of(23, 0);
     private static final LocalTime LAST_MINUTE = LocalTime.of(23, 59);
     private static final Map<WeekDay, String> LABELS = Map.of(
             WeekDay.ПОНЕДІЛОК, "Пн", WeekDay.ВІВТОРОК, "Вт", WeekDay.СЕРЕДА, "Ср", WeekDay.ЧЕТВЕР, "Чт",
@@ -30,7 +30,7 @@ public class ScheduleCalendar {
     // Фільтри — null, якщо не вибрані. Заняття, що не відповідає вибраним фільтрам, позначається dimmed:
     // так видно, коли саме ЦЯ аудиторія / вчитель / група вільні, не втрачаючи загальної картини.
     public WeekCalendar build(List<ScheduleDto> schedules, Integer audienceId, Integer teacherId, Integer gangId) {
-        // сітка 08:00–21:00, але розширюється, якщо якесь заняття за її межами
+        // сітка 08:00–23:00, але розширюється, якщо якесь заняття за її межами
         LocalTime start = DEFAULT_START;
         LocalTime end = DEFAULT_END;
         for (ScheduleDto s : schedules) {
