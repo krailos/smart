@@ -57,7 +57,9 @@ public class ScheduleCalendar {
         List<WeekCalendar.Day> days = new ArrayList<>();
         for (WeekDay weekDay : WeekDay.values()) {
             List<ScheduleDto> daySchedules = schedules.stream().filter(s -> s.getWeekDay() == weekDay).toList();
-            days.add(new WeekCalendar.Day(weekDay, LABELS.get(weekDay), layout(daySchedules, start, matches)));
+            List<WeekCalendar.Event> events = layout(daySchedules, start, matches);
+            int maxLanes = events.stream().mapToInt(WeekCalendar.Event::getLanes).max().orElse(1);
+            days.add(new WeekCalendar.Day(weekDay, LABELS.get(weekDay), events, maxLanes));
         }
         return new WeekCalendar(start, end, rows, days);
     }

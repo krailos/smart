@@ -58,13 +58,14 @@
 
         <div class="card">
             <div class="week-scroll">
-                <div class="week" th:style="|--total: ${calendar.totalMinutes}|">
+                <!-- --l1…--l7: найбільше занять одночасно в кожен день (Пн…Нд) — CSS робить колонку ширшою -->
+                <div class="week" th:style="|--total: ${calendar.totalMinutes}; --l1: ${calendar.days[0].maxLanes}; --l2: ${calendar.days[1].maxLanes}; --l3: ${calendar.days[2].maxLanes}; --l4: ${calendar.days[3].maxLanes}; --l5: ${calendar.days[4].maxLanes}; --l6: ${calendar.days[5].maxLanes}; --l7: ${calendar.days[6].maxLanes}|">
                     <div class="week-head">
-                        <div></div>
+                        <div class="week-corner"></div>
                         <div class="week-day-head" th:each="day : ${calendar.days}" th:text="${day.label}">Пн</div>
                     </div>
                     <div class="week-body">
-                        <div>
+                        <div class="week-times">
                             <div class="week-time" th:each="row : ${calendar.rows}" th:text="${#temporals.format(row, 'HH:mm')}"></div>
                         </div>
                         <div class="week-col" th:each="day : ${calendar.days}">

@@ -83,6 +83,23 @@ class ScheduleCalendarTest {
     }
 
     @Test
+    void shouldCountMaxSimultaneousLessonsPerDay() {
+        // вівторок: 7 занять одночасно; середа: два впритул (не одночасно); понеділок порожній
+        List<ScheduleDto> schedules = new java.util.ArrayList<>();
+        for (int i = 1; i <= 7; i++) {
+            schedules.add(slot(i, WeekDay.ВІВТОРОК, "10:00", "11:00", i));
+        }
+        schedules.add(slot(8, WeekDay.СЕРЕДА, "10:00", "11:00", 1));
+        schedules.add(slot(9, WeekDay.СЕРЕДА, "11:00", "12:00", 1));
+
+        WeekCalendar week = calendar.build(schedules, null, null, null);
+
+        assertThat(day(week, WeekDay.ВІВТОРОК).getMaxLanes()).isEqualTo(7);
+        assertThat(day(week, WeekDay.СЕРЕДА).getMaxLanes()).isEqualTo(1);
+        assertThat(day(week, WeekDay.ПОНЕДІЛОК).getMaxLanes()).isEqualTo(1);
+    }
+
+    @Test
     void shouldDimLessonsNotMatchingFilter() {
         List<ScheduleDto> schedules = List.of(
                 slot(1, WeekDay.ПЯТНИЦЯ, "10:00", "11:00", 1),    // аудиторія 1

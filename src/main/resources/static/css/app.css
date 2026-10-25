@@ -271,12 +271,40 @@ body {
 .week {
     --ppm: 1.4px;
     --time-col: 56px;
-    min-width: calc(var(--time-col) + 7 * 120px);   /* на телефоні — прокрутка вбік усередині картки */
+    --day-min: 120px;     /* найвужча колонка дня */
+    --lane-min: 70px;     /* найвужчий блок заняття: колонка, де N занять одночасно, — не вужча за N × 70px */
+    /* сума найменших ширин колонок: вміщається — календар на всю ширину картки (вільне місце ділять дні порівну),
+       ні — прокрутка вбік усередині картки (сторінка не їде).
+       Не width: max-content — тоді браузер робить УСІ колонки 1fr рівними найширшій */
+    min-width: calc(var(--time-col)
+        + max(var(--day-min), calc(var(--l1) * var(--lane-min)))
+        + max(var(--day-min), calc(var(--l2) * var(--lane-min)))
+        + max(var(--day-min), calc(var(--l3) * var(--lane-min)))
+        + max(var(--day-min), calc(var(--l4) * var(--lane-min)))
+        + max(var(--day-min), calc(var(--l5) * var(--lane-min)))
+        + max(var(--day-min), calc(var(--l6) * var(--lane-min)))
+        + max(var(--day-min), calc(var(--l7) * var(--lane-min))));
 }
 .week-head, .week-body {
     display: grid;
-    grid-template-columns: var(--time-col) repeat(7, minmax(120px, 1fr));
+    /* --l1…--l7 — найбільше занять одночасно в Пн…Нд (з сервера, WeekCalendar.Day.maxLanes) */
+    grid-template-columns: var(--time-col)
+        minmax(max(var(--day-min), calc(var(--l1) * var(--lane-min))), 1fr)
+        minmax(max(var(--day-min), calc(var(--l2) * var(--lane-min))), 1fr)
+        minmax(max(var(--day-min), calc(var(--l3) * var(--lane-min))), 1fr)
+        minmax(max(var(--day-min), calc(var(--l4) * var(--lane-min))), 1fr)
+        minmax(max(var(--day-min), calc(var(--l5) * var(--lane-min))), 1fr)
+        minmax(max(var(--day-min), calc(var(--l6) * var(--lane-min))), 1fr)
+        minmax(max(var(--day-min), calc(var(--l7) * var(--lane-min))), 1fr);
 }
+/* колонка часу й кут шапки лишаються на місці при прокрутці вбік */
+.week-corner, .week-times {
+    position: sticky;
+    left: 0;
+    z-index: 3;
+}
+.week-corner { background: #f9fafb; }
+.week-times { background: var(--app-surface); }
 .week-head {
     border-bottom: 1px solid var(--app-border);
     background: #f9fafb;

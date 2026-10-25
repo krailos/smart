@@ -28,6 +28,7 @@ public class WeekCalendar {
         WeekDay weekDay;
         String label;         // "Пн"
         List<Event> events;
+        int maxLanes;         // найбільше занять одночасно в цей день — від цього залежить ширина колонки (CSS)
     }
 
     // Одне заняття: зверху startMinute, висота durationMinutes.
