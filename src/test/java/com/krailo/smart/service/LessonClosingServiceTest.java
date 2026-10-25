@@ -171,12 +171,39 @@ class LessonClosingServiceTest {
         assertThat(balance()).isZero();
     }
 
+    @Test
+    void shouldNotCloseLesson_WhenAbsentStudentIsMarkedPaid() {
+        // Given: ціна є; учень відсутній, але стоїть "платний" — суперечлива відмітка
+        priceRepository.save(Price.builder().subject(subject).value(new BigDecimal("100")).date(LocalDate.of(2026, 9, 1)).build());
+
+        // When & Then: урок не проводиться, у повідомленні — прізвище учня
+        assertThatThrownBy(() -> lessonClosingService.closeLesson(lessonDto(false, true)))
+                .isInstanceOf(LessonException.class)
+                .hasMessageContaining("Відсутній учень не може мати платний урок")
+                .hasMessageContaining("Петренко");
+
+        // нічого не збережено
+        assertThat(lessonRepository.count()).isZero();
+        assertThat(lessonsStudentsRepository.count()).isZero();
+        assertThat(transactionStudentRepository.count()).isZero();
+        assertThat(balance()).isZero();
+
+        // відсутній і безкоштовний — звичайна ситуація, урок проводиться без списання
+        lessonClosingService.closeLesson(lessonDto(false, false));
+        assertThat(lessonRepository.count()).isEqualTo(1);
+        assertThat(balance()).isZero();
+    }
+
     private BigDecimal balance() {
         return studentRepository.findById(student.getId()).orElseThrow().getBalance();
     }
 
     // урок з розкладу: учень присутній, урок платний
     private LessonDto lessonDto() {
+        return lessonDto(true, true);
+    }
+
+    private LessonDto lessonDto(boolean present, boolean payed) {
         return LessonDto.builder()
                 .scheduleId(schedule.getId())
                 .subjectId(subject.getId())
@@ -187,7 +214,7 @@ class LessonClosingServiceTest {
                 .startTime(schedule.getStartTime())
                 .endTime(schedule.getEndTime())
                 .lessonsStudentsDto(List.of(LessonsStudentsDto.builder()
-                        .studentId(student.getId()).present(true).payed(true).build()))
+                        .studentId(student.getId()).present(present).payed(payed).build()))
                 .build();
     }
 }

@@ -25,6 +25,7 @@ public class LessonService {
     private LessonRepository lessonRepository;
     private LessonMapper lessonMapper;
     private GangService gangService;
+    private StudentService studentService;
 
     public List<LessonDto> findAll() {
         return lessonRepository.findAll().stream()
@@ -108,6 +109,15 @@ public class LessonService {
         requireDate(d);
         if (d.getStartTime() == null || d.getEndTime() == null || !d.getStartTime().isBefore(d.getEndTime())) {
             throw new ScheduleConflictException("Час завершення уроку має бути пізніше за час початку");
+        }
+        // відсутній учень не може мати платний урок (учня не було) — суперечлива відмітка, урок не проводимо
+        List<String> absentButPaid = d.getLessonsStudentsDto() == null ? List.of() : d.getLessonsStudentsDto().stream()
+                .filter(ls -> !ls.isPresent() && ls.isPayed())
+                .map(ls -> studentService.findByIdEntity(ls.getStudentId()).getLastName())
+                .toList();
+        if (!absentButPaid.isEmpty()) {
+            throw new LessonException("Відсутній учень не може мати платний урок: " + String.join(", ", absentButPaid)
+                    + ". Позначте учня присутнім або зніміть «Платний»");
         }
     }
 

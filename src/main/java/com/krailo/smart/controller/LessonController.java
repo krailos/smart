@@ -87,7 +87,7 @@ public class LessonController {
         try {
             // урок + відмітки учнів + списання — одна транзакція (див. LessonClosingService)
             lessonClosingService.closeLesson(lessonDto);
-        } catch (ScheduleConflictException | PriceNotFoundException e) {
+        } catch (ScheduleConflictException | PriceNotFoundException | LessonException e) {
             // нічого не збережено — показуємо ту саму форму з відмітками учнів і текстом помилки
             fillNames(lessonDto);
             model.addAttribute("lesson", lessonDto);

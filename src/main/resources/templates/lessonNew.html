@@ -135,12 +135,43 @@
 </div>
 
 <script>
+    // Відсутній учень не може мати платний урок (сервер теж перевіряє — LessonService.validate):
+    // без "Присутній" перемикач "Платний" вимкнений і неактивний; повернули "Присутній" — "Платний" як був до того.
+    // Неактивний перемикач не надсилається, а прихована мітка Spring (_payed) робить його "не платний".
+    function syncPayed(row) {
+        var present = row.querySelector('input.js-present');
+        var payed = row.querySelector('input.js-payed');
+        if (!present || !payed) return;
+        if (present.checked) {
+            if (payed.disabled && payed.dataset.wasPayed !== undefined) {
+                payed.checked = payed.dataset.wasPayed === 'true';
+            }
+            payed.disabled = false;
+            payed.title = '';
+        } else {
+            if (!payed.disabled) payed.dataset.wasPayed = payed.checked;
+            payed.checked = false;
+            payed.disabled = true;
+            payed.title = 'Відсутній учень не може мати платний урок';
+        }
+    }
+
+    var rows = document.querySelectorAll('tbody tr');
+    rows.forEach(function (row) {
+        var present = row.querySelector('input.js-present');
+        if (present) present.addEventListener('change', function () { syncPayed(row); });
+        syncPayed(row);   // одразу — і для форми, що повернулась із помилкою
+    });
+
     // «Усі присутні» / «Усім платний»: якщо хоч один вимкнений — вмикаємо всі, інакше вимикаємо всі
+    // («Усім платний» — тільки присутнім: неактивні перемикачі не чіпаємо)
     document.querySelectorAll('[data-check-all]').forEach(function (button) {
         button.addEventListener('click', function () {
-            var boxes = document.querySelectorAll('input.' + button.dataset.checkAll);
-            var allChecked = Array.prototype.every.call(boxes, function (box) { return box.checked; });
+            var boxes = Array.prototype.filter.call(document.querySelectorAll('input.' + button.dataset.checkAll),
+                function (box) { return !box.disabled; });
+            var allChecked = boxes.every(function (box) { return box.checked; });
             boxes.forEach(function (box) { box.checked = !allChecked; });
+            rows.forEach(syncPayed);
         });
     });
 </script>
