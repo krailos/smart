@@ -9,5 +9,7 @@ public class UserDto {
     private Integer id;
     private String name;
     private String role;
+    // пароль ще тимчасовий (задав адмін, користувач його не змінив)
+    private boolean mustChangePassword;
     private boolean archived;
 }

@@ -107,6 +107,12 @@ body {
     text-transform: uppercase;
     color: #9ca3af;
 }
+/* логін у меню — як є (Geromi і geromi — різні користувачі) */
+.nav-section.text-transform-none {
+    text-transform: none;
+    letter-spacing: normal;
+    font-size: .8rem;
+}
 
 .nav-item-link {
     display: flex;

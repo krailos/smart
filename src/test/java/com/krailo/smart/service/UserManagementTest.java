@@ -75,14 +75,54 @@ class UserManagementTest {
         userService.create("anna", "temp-pass-1", Role.TEACHER);
         Integer id = userRepository.findUserByNameAndArchivedFalse("anna").orElseThrow().getId();
 
-        // When: "забула пароль" — адмін задає новий
-        userService.resetPassword(id, "new-pass-22");
+        userService.changeOwnPassword("anna", "temp-pass-1", "anna-own-pass", "anna-own-pass");
+        assertThat(userService.mustChangePassword("anna")).isFalse();
 
-        // Then
+        // When: "забула пароль" — адмін задає новий
+        userService.resetPassword(id, "new-pass-22", "admin");
+
+        // Then: новий працює, старий ні, і він знову тимчасовий
         assertThat(login("anna", "new-pass-22").isAuthenticated()).isTrue();
-        assertThatThrownBy(() -> login("anna", "temp-pass-1")).isInstanceOf(BadCredentialsException.class);
-        assertThatThrownBy(() -> userService.resetPassword(id, "1234567"))
+        assertThatThrownBy(() -> login("anna", "anna-own-pass")).isInstanceOf(BadCredentialsException.class);
+        assertThat(userService.mustChangePassword("anna")).isTrue();
+        assertThatThrownBy(() -> userService.resetPassword(id, "1234567", "admin"))
                 .isInstanceOf(BusinessException.class).hasMessageContaining("не коротший за 8");
+        // свій пароль так не скинути — тільки через "Змінити мій пароль" (з поточним паролем)
+        assertThatThrownBy(() -> userService.resetPassword(admin.getId(), "new-pass-22", "admin"))
+                .isInstanceOf(BusinessException.class).hasMessageContaining("Змінити мій пароль");
+    }
+
+    @Test
+    void shouldMarkNewUserPasswordAsTemporary_UntilChangedByUser() {
+        // Given: адмін створив користувача — пароль тимчасовий
+        userService.create("anna", "temp-pass-1", Role.TEACHER);
+        assertThat(userService.mustChangePassword("anna")).isTrue();
+
+        // When: анна задає свій
+        userService.changeOwnPassword("anna", "temp-pass-1", "anna-own-pass", "anna-own-pass");
+
+        // Then: позначки немає, входить уже зі своїм паролем
+        assertThat(userService.mustChangePassword("anna")).isFalse();
+        assertThat(login("anna", "anna-own-pass").isAuthenticated()).isTrue();
+        assertThatThrownBy(() -> login("anna", "temp-pass-1")).isInstanceOf(BadCredentialsException.class);
+    }
+
+    @Test
+    void shouldRejectBadOwnPasswordChange() {
+        userService.create("anna", "temp-pass-1", Role.TEACHER);
+
+        assertThatThrownBy(() -> userService.changeOwnPassword("anna", "wrong-pass", "anna-own-pass", "anna-own-pass"))
+                .isInstanceOf(BusinessException.class).hasMessageContaining("Поточний пароль");
+        assertThatThrownBy(() -> userService.changeOwnPassword("anna", "temp-pass-1", "anna-own-pass", "anna-own-pazz"))
+                .isInstanceOf(BusinessException.class).hasMessageContaining("не збігаються");
+        assertThatThrownBy(() -> userService.changeOwnPassword("anna", "temp-pass-1", "short", "short"))
+                .isInstanceOf(BusinessException.class).hasMessageContaining("не коротший за 8");
+        assertThatThrownBy(() -> userService.changeOwnPassword("anna", "temp-pass-1", "temp-pass-1", "temp-pass-1"))
+                .isInstanceOf(BusinessException.class).hasMessageContaining("відрізнятися");
+
+        // нічого не змінилось: пароль той самий і досі тимчасовий
+        assertThat(login("anna", "temp-pass-1").isAuthenticated()).isTrue();
+        assertThat(userService.mustChangePassword("anna")).isTrue();
     }
 
     @Test

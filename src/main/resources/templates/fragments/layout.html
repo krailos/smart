@@ -81,8 +81,17 @@
                     <a th:href="@{/users}" class="nav-item-link" th:classappend="${active == 'users'} ? 'active'">
                         <i class="bi bi-person-gear"></i> Користувачі</a>
 
+                    <!-- хто увійшов + свій пароль -->
+                    <div class="mt-auto pt-3">
+                        <!-- логін як є (великі/малі літери в ньому важливі), без верхнього регістру заголовків меню -->
+                        <div class="nav-section text-transform-none" th:if="${#authentication != null}">
+                            <i class="bi bi-person-circle"></i> <span th:text="${#authentication.name}"></span></div>
+                        <a th:href="@{/account/password}" class="nav-item-link" th:classappend="${active == 'account'} ? 'active'">
+                            <i class="bi bi-key"></i> Змінити мій пароль</a>
+                    </div>
+
                     <!-- вихід — POST-запит, тому форма, а не посилання -->
-                    <form th:action="@{/logout}" method="post" class="mt-auto pt-3">
+                    <form th:action="@{/logout}" method="post">
                         <button class="nav-item-link w-100 border-0 bg-transparent text-start" type="submit">
                             <i class="bi bi-box-arrow-left"></i> Вийти
                         </button>

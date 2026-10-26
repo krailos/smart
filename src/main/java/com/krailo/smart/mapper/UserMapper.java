@@ -14,6 +14,7 @@ public class UserMapper {
                 user.getId(),
                 user.getName(),
                 user.getRole().name(),
+                user.isMustChangePassword(),
                 user.isArchived()
         );
     }

@@ -13,7 +13,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfiguration {
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, LoginSuccessHandler loginSuccessHandler) throws Exception {
         http.csrf(CsrfConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         // статичні файли (стилі, іконка, логотип) — без логіну, щоб сторінка входу мала оформлення
@@ -21,7 +21,8 @@ public class SecurityConfiguration {
                         .anyRequest().authenticated())
                 .formLogin(login -> login
                         .loginPage("/login")
-                        .defaultSuccessUrl("/")
+                        // після входу: тимчасовий пароль — на зміну пароля, інакше на головну (LoginSuccessHandler)
+                        .successHandler(loginSuccessHandler)
                         .permitAll())
                 .logout(logout -> logout
                         .logoutUrl("/logout")

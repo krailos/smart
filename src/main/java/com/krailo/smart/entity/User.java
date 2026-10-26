@@ -24,6 +24,9 @@ public class User {
     private String password;
     @Enumerated(EnumType.STRING)
     private Role role;
+    // пароль тимчасовий (задав адмін) — після входу користувач спершу має його змінити
+    @Column(name = "must_change_password")
+    private boolean mustChangePassword;
     // архів: користувач не може увійти, але лишається в історії
     @Column(name = "is_deleted")
     private boolean archived;

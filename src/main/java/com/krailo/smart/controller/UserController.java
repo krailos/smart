@@ -69,10 +69,11 @@ public class UserController {
 
     @PostMapping("/{id}/password")
     public String resetPassword(@PathVariable("id") Integer id, @RequestParam(required = false) String password,
-                                RedirectAttributes redirectAttributes) {
+                                Principal principal, RedirectAttributes redirectAttributes) {
         try {
-            userService.resetPassword(id, password);
-            redirectAttributes.addFlashAttribute("successMessage", "Пароль змінено. Передайте новий пароль користувачу");
+            userService.resetPassword(id, password, principal.getName());
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Пароль змінено. Передайте його користувачу — при вході він задасть свій");
         } catch (BusinessException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }

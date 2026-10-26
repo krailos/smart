@@ -71,6 +71,7 @@ public class UserService implements UserDetailsService {
                 .name(login)
                 .password(passwordEncoder.encode(password)) // у базу — тільки хеш
                 .role(role)
+                .mustChangePassword(true)   // пароль знає адмін — при першому вході користувач змінить його
                 .build());
     }
 
@@ -88,11 +89,38 @@ public class UserService implements UserDetailsService {
         user.setRole(role);
     }
 
-    // Забули пароль: його не відновити (у базі хеш) — тільки задати новий
-    public void resetPassword(Integer id, String password) {
+    // Забули пароль: його не відновити (у базі хеш) — тільки задати новий, тимчасовий
+    public void resetPassword(Integer id, String password, String currentName) {
         User user = findByIdEntity(id);
+        if (user.getName().equals(currentName)) {
+            throw new BusinessException("Свій пароль змініть на сторінці «Змінити мій пароль»");
+        }
         checkPassword(password);
         user.setPassword(passwordEncoder.encode(password));
+        user.setMustChangePassword(true);
+    }
+
+    // Користувач сам змінює свій пароль: спершу підтверджує поточний (щоб ніхто чужий
+    // не змінив його за незаблокованим комп'ютером), новий — двічі, щоб не помилитись
+    public void changeOwnPassword(String name, String currentPassword, String newPassword, String repeatPassword) {
+        User user = userRepository.findUserByNameAndArchivedFalse(name)
+                .orElseThrow(() -> new EntityNotFoundException("User " + name + " not exist"));
+        if (currentPassword == null || !passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new BusinessException("Поточний пароль введено неправильно");
+        }
+        checkPassword(newPassword);
+        if (!newPassword.equals(repeatPassword)) {
+            throw new BusinessException("Новий пароль і повтор не збігаються");
+        }
+        if (newPassword.equals(currentPassword)) {
+            throw new BusinessException("Новий пароль має відрізнятися від поточного");
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setMustChangePassword(false);
+    }
+
+    public boolean mustChangePassword(String name) {
+        return userRepository.findUserByNameAndArchivedFalse(name).map(User::isMustChangePassword).orElse(false);
     }
 
     public void archive(Integer id, String currentName) {

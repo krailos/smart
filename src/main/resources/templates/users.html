@@ -47,6 +47,8 @@
                         <td class="fw-medium">
                             <i class="bi bi-person-circle text-muted me-1"></i><span th:text="${user.name}"></span>
                             <span th:if="${me}" class="badge text-bg-primary ms-1">це ви</span>
+                            <span th:if="${user.mustChangePassword and !archived}" class="badge text-bg-warning ms-1"
+                                  title="Пароль задав адмін — користувач ще не змінив його на свій">тимчасовий пароль</span>
                         </td>
                         <td>
                             <!-- свою роль змінити не можна — тільки показуємо -->
@@ -62,7 +64,11 @@
                             </form>
                         </td>
                         <td class="col-actions">
-                            <button th:unless="${archived}" type="button" class="btn btn-light btn-icon" title="Новий пароль"
+                            <!-- свій пароль — тільки через "Змінити мій пароль" (там питають поточний) -->
+                            <a th:if="${me}" th:href="@{/account/password}" class="btn btn-light btn-icon" title="Змінити мій пароль">
+                                <i class="bi bi-key"></i>
+                            </a>
+                            <button th:unless="${archived or me}" type="button" class="btn btn-light btn-icon" title="Новий пароль"
                                     data-bs-toggle="modal" data-bs-target="#passwordModal"
                                     th:attr="data-id=${user.id},data-name=${user.name}">
                                 <i class="bi bi-key"></i>
