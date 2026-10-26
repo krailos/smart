@@ -34,3 +34,7 @@ build/
 
 ### Logs ###
 smart.log*
+
+### Секрети (пароль до бази) — тільки на цьому комп'ютері, НЕ в git ###
+### зразок — secrets.example.properties ###
+secrets.properties

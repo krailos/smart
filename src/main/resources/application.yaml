@@ -1,10 +1,17 @@
 spring:
   application:
     name: smart
+  # секрети не зберігаємо в git: пароль до бази — у файлі secrets.properties (поруч з pom.xml, у .gitignore;
+  # зразок — secrets.example.properties) або в змінній середовища DB_PASSWORD (на сервері).
+  # optional: — якщо файлу немає (сервер), не падати: значення прийдуть зі змінних середовища
+  config:
+    import: optional:file:./secrets.properties
   datasource:
-    url: jdbc:postgresql://localhost:5432/school
-    username: admin
-    password: 123
+    # ${НАЗВА:запасне} — взяти НАЗВА зі змінної середовища / secrets.properties, а якщо її немає — запасне
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/school}
+    username: ${DB_USERNAME:admin}
+    # без запасного значення: немає DB_PASSWORD — застосунок не стартує і прямо про це скаже
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
     ddl-auto: none
