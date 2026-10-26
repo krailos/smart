@@ -8,16 +8,27 @@
     <main class="app-main">
         <div class="page-header">
             <div>
-                <h1 class="page-title">Користувачі</h1>
-                <div class="page-subtitle">Хто може входити в систему</div>
+                <h1 class="page-title">
+                    Користувачі
+                    <span th:if="${archived}" class="badge text-bg-secondary align-middle fs-6 fw-semibold">Архів</span>
+                </h1>
+                <div class="page-subtitle" th:text="${archived} ? 'Користувачі в архіві — увійти не можуть' : 'Хто може входити в систему'"></div>
+            </div>
+            <div class="page-actions">
+                <!-- перемикач: активні / архів -->
+                <div class="btn-group" role="group">
+                    <a th:href="@{/users}" class="btn"
+                       th:classappend="${archived} ? 'btn-outline-secondary' : 'btn-secondary'">Активні</a>
+                    <a th:href="@{/users(archived=true)}" class="btn"
+                       th:classappend="${archived} ? 'btn-secondary' : 'btn-outline-secondary'"><i class="bi bi-archive"></i> Архів</a>
+                </div>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
+                    <i class="bi bi-plus-lg"></i> Додати користувача
+                </button>
             </div>
         </div>
 
-        <!-- паролі не показуємо; додавання / редагування / видалення — разом з К6 (безпека: шифрування паролів, ролі) -->
-        <div class="alert alert-light border d-flex align-items-center gap-2" role="alert">
-            <i class="bi bi-info-circle"></i>
-            Керування користувачами (додавання, зміна пароля, ролі) з'явиться разом з оновленням безпеки.
-        </div>
+        <th:block th:replace="~{fragments/layout :: alerts}"></th:block>
 
         <div class="card">
             <div class="table-responsive">
@@ -25,15 +36,52 @@
                     <thead>
                     <tr>
                         <th scope="col">#</th>
-                        <th scope="col">Ім'я</th>
+                        <th scope="col">Логін</th>
                         <th scope="col">Роль</th>
+                        <th scope="col" class="col-actions">Дії</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="user, index : ${users}">
+                    <tr th:each="user, index : ${users}" th:with="me=${user.name == currentUser}">
                         <td class="text-muted" th:text="${index.count}"></td>
-                        <td class="fw-medium"><i class="bi bi-person-circle text-muted me-1"></i><span th:text="${user.name}"></span></td>
-                        <td><span class="badge text-bg-light border fw-semibold" th:text="${user.role}"></span></td>
+                        <td class="fw-medium">
+                            <i class="bi bi-person-circle text-muted me-1"></i><span th:text="${user.name}"></span>
+                            <span th:if="${me}" class="badge text-bg-primary ms-1">це ви</span>
+                        </td>
+                        <td>
+                            <!-- свою роль змінити не можна — тільки показуємо -->
+                            <span th:if="${me or archived}" class="badge text-bg-light border fw-semibold"
+                                  th:text="${user.role == 'ADMIN'} ? 'Адміністратор' : 'Вчитель'"></span>
+                            <form th:unless="${me or archived}" th:action="@{/users/{id}/role(id=${user.id})}" method="post"
+                                  class="d-inline-flex">
+                                <select name="role" class="form-select form-select-sm w-auto" title="Роль"
+                                        onchange="this.form.submit()">
+                                    <option th:each="r : ${roles}" th:value="${r}" th:selected="${r.name() == user.role}"
+                                            th:text="${r.name() == 'ADMIN'} ? 'Адміністратор' : 'Вчитель'"></option>
+                                </select>
+                            </form>
+                        </td>
+                        <td class="col-actions">
+                            <button th:unless="${archived}" type="button" class="btn btn-light btn-icon" title="Новий пароль"
+                                    data-bs-toggle="modal" data-bs-target="#passwordModal"
+                                    th:attr="data-id=${user.id},data-name=${user.name}">
+                                <i class="bi bi-key"></i>
+                            </button>
+                            <form th:unless="${archived or me}" th:action="@{/users/{id}/archive(id=${user.id})}" method="post"
+                                  th:attr="data-name=${user.name}"
+                                  onsubmit="return confirm('Перемістити користувача ' + this.dataset.name + ' в архів? Увійти він більше не зможе.');">
+                                <button class="btn btn-light btn-icon text-danger" title="В архів"><i class="bi bi-archive"></i></button>
+                            </form>
+                            <form th:if="${archived}" th:action="@{/users/{id}/restore(id=${user.id})}" method="post">
+                                <button class="btn btn-light btn-icon text-success" title="Відновити"><i class="bi bi-arrow-counterclockwise"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(users)}">
+                        <td colspan="4" class="empty-state">
+                            <i class="bi bi-people"></i>
+                            <span th:text="${archived} ? 'В архіві немає користувачів' : 'Немає активних користувачів'"></span>
+                        </td>
                     </tr>
                     </tbody>
                 </table>
@@ -41,5 +89,116 @@
         </div>
     </main>
 </div>
+
+<!-- Новий користувач: логін, роль, тимчасовий пароль -->
+<div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true"
+     th:attr="data-open=${openForm}">
+    <div class="modal-dialog">
+        <form class="modal-content" th:action="@{/users/create}" method="post" autocomplete="off">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="createModalLabel">Новий користувач</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрити"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="newName" class="form-label">Логін</label>
+                    <input id="newName" name="name" class="form-control" required maxlength="50"
+                           th:value="${draftName}" autocomplete="off">
+                </div>
+                <div class="mb-3">
+                    <label for="newRole" class="form-label">Роль</label>
+                    <select id="newRole" name="role" class="form-select">
+                        <option th:each="r : ${roles}" th:value="${r}"
+                                th:selected="${draftRole != null ? r == draftRole : r.name() == 'TEACHER'}"
+                                th:text="${r.name() == 'ADMIN'} ? 'Адміністратор' : 'Вчитель'"></option>
+                    </select>
+                </div>
+                <div th:replace="~{:: passwordField('newPassword')}"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Скасувати</button>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Додати</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Новий пароль для користувача (забув пароль) -->
+<div class="modal fade" id="passwordModal" tabindex="-1" aria-labelledby="passwordModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form class="modal-content" id="passwordForm" method="post" autocomplete="off"
+              th:attr="data-action=@{/users/USER_ID/password}">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="passwordModalLabel">Новий пароль: <span id="passwordUser"></span></h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрити"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small">Старий пароль дізнатись неможливо — у базі зберігається лише його хеш.
+                    Задайте новий і передайте його користувачу.</p>
+                <div th:replace="~{:: passwordField('resetPassword')}"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Скасувати</button>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-key"></i> Змінити пароль</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Поле пароля: показати / згенерувати (спільне для обох вікон).
+     Обгортка th:if="false" — щоб сам шаблон не показувався внизу сторінки, а тільки там, куди його вставили -->
+<th:block th:if="false">
+<div th:fragment="passwordField(fieldId)" class="mb-1">
+    <label th:for="${fieldId}" class="form-label">Тимчасовий пароль</label>
+    <div class="input-group">
+        <input th:id="${fieldId}" name="password" type="password" class="form-control js-password" required
+               th:attr="minlength=${minPasswordLength}" autocomplete="new-password">
+        <button type="button" class="btn btn-outline-secondary js-show" title="Показати / сховати"><i class="bi bi-eye"></i></button>
+        <button type="button" class="btn btn-outline-secondary js-generate" title="Згенерувати">
+            <i class="bi bi-shuffle"></i> Згенерувати
+        </button>
+    </div>
+    <div class="form-text" th:text="'Не коротший за ' + ${minPasswordLength} + ' символів'"></div>
+</div>
+</th:block>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // показати / сховати пароль
+        document.querySelectorAll('.js-show').forEach(button => button.addEventListener('click', () => {
+            const input = button.parentElement.querySelector('.js-password');
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }));
+
+        // випадковий пароль з 10 символів (без схожих 0/O, 1/l/I — щоб легко продиктувати)
+        const chars = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        document.querySelectorAll('.js-generate').forEach(button => button.addEventListener('click', () => {
+            const random = crypto.getRandomValues(new Uint32Array(10));
+            const input = button.parentElement.querySelector('.js-password');
+            input.value = Array.from(random, n => chars[n % chars.length]).join('');
+            input.type = 'text';   // щоб адмін бачив і міг переписати / скопіювати
+        }));
+
+        // вікно "новий пароль": підставляємо id і логін користувача, на якого натиснули
+        const passwordModal = document.getElementById('passwordModal');
+        passwordModal.addEventListener('show.bs.modal', event => {
+            const button = event.relatedTarget;
+            const form = document.getElementById('passwordForm');
+            form.action = form.dataset.action.replace('USER_ID', button.dataset.id);
+            document.getElementById('passwordUser').textContent = button.dataset.name;
+        });
+
+        // після закриття вікна пароль стирається
+        document.querySelectorAll('.modal').forEach(modal => modal.addEventListener('hidden.bs.modal', () => {
+            modal.querySelectorAll('.js-password').forEach(input => { input.value = ''; input.type = 'password'; });
+        }));
+
+        // сервер повернув помилку при додаванні — відкриваємо форму знову (логін і роль уже заповнені)
+        const createModal = document.getElementById('createModal');
+        if (createModal.dataset.open === 'create') {
+            new bootstrap.Modal(createModal).show();
+        }
+    });
+</script>
 </body>
 </html>

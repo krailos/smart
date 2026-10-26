@@ -20,8 +20,12 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String name;
+    // тільки хеш ({bcrypt}$2a$10$...), сам пароль ніде не зберігається
     private String password;
     @Enumerated(EnumType.STRING)
     private Role role;
+    // архів: користувач не може увійти, але лишається в історії
+    @Column(name = "is_deleted")
+    private boolean archived;
 
 }
