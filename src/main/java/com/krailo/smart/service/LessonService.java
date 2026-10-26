@@ -28,7 +28,16 @@ public class LessonService {
     private StudentService studentService;
 
     public List<LessonDto> findAll() {
-        return lessonRepository.findAll().stream()
+        return toDtos(lessonRepository.findAll());
+    }
+
+    // уроки вчителя (teacherId null — вчителя не обрано, нічого)
+    public List<LessonDto> findAllOfTeacher(Integer teacherId) {
+        return teacherId == null ? List.of() : toDtos(lessonRepository.findAllOfTeacher(teacherId));
+    }
+
+    private List<LessonDto> toDtos(List<Lesson> lessons) {
+        return lessons.stream()
                 .peek(l -> l.getLessonsStudents()
                         .sort((o1, o2) -> o1.getStudent().getLastName().compareTo(o2.getStudent().getLastName())))
                 .map(lessonMapper::mapEntityToDto).toList();

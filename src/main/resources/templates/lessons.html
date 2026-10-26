@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<html lang="uk" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:replace="~{fragments/layout :: head('Уроки')}"></head>
 <body>
 <div class="app">
@@ -51,6 +51,8 @@
                         </td>
                         <td class="col-actions">
                             <span th:if="${lesson.storned}" class="badge text-bg-secondary">Сторновано</span>
+                            <!-- виправити / сторнувати — тільки адмін; вчитель свої уроки лише переглядає -->
+                            <th:block sec:authorize="hasAuthority('ADMIN')">
                             <a th:unless="${lesson.storned}" th:href="@{/lessons/{id}(id=${lesson.id})}" class="btn btn-light btn-icon" title="Редагувати">
                                 <i class="bi bi-pencil"></i>
                             </a>
@@ -60,6 +62,7 @@
                                   onsubmit="return confirm('Сторнувати урок? Усі списання за цей урок повернуться учням, урок можна буде провести заново.');">
                                 <button class="btn btn-light btn-icon text-warning" title="Сторнувати"><i class="bi bi-arrow-return-left"></i></button>
                             </form>
+                            </th:block>
                         </td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(lessons)}">

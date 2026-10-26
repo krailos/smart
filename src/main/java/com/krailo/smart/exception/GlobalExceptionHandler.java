@@ -3,6 +3,7 @@ package com.krailo.smart.exception;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -30,6 +31,15 @@ public class GlobalExceptionHandler {
         model.addAttribute("error", "Ресурс відсутній");
         model.addAttribute("status", 404);
         return "error/404";
+    }
+
+    // "Заборонено": вчитель відкрив чуже заняття (CurrentUser.requireOwnSchedule).
+    // Без цього обробника AccessDeniedException потрапила б у загальний нижче і стала б "500"
+    @ExceptionHandler(AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public String handleAccessDenied(AccessDeniedException ex) {
+        log.warn("Доступ заборонено: {}", ex.getMessage());
+        return "error/403";
     }
 
     // Обробка інших помилок. stackTrace користувачеві не показуємо — він є в smart.log (log.error нижче)

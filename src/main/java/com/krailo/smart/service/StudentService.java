@@ -1,11 +1,16 @@
 package com.krailo.smart.service;
 
 import com.krailo.smart.dto.StudentDto;
+import com.krailo.smart.dto.TeacherGangDto;
+import com.krailo.smart.entity.Gang;
+import com.krailo.smart.entity.GangsStudents;
+import com.krailo.smart.entity.Schedule;
 import com.krailo.smart.entity.Student;
 import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.exception.ResourceNotFoundException;
 import com.krailo.smart.mapper.StudentMapper;
 import com.krailo.smart.repository.GangsStudentsRepository;
+import com.krailo.smart.repository.ScheduleRepository;
 import com.krailo.smart.repository.StudentRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -27,6 +32,32 @@ public class StudentService {
     private StudentRepository studentRepository;
     private StudentMapper studentMapper;
     private GangsStudentsRepository gangsStudentsRepository;
+    private ScheduleRepository scheduleRepository;
+
+    // "Мої учні" вчителя: групи, де він веде заняття, і їхні учні (активні), за прізвищем.
+    // Учнів, прибраних з групи, Hibernate не бачить сам (@SoftDelete на GangsStudents)
+    @Transactional(readOnly = true)
+    public List<TeacherGangDto> findGangsOfTeacher(Integer teacherId) {
+        if (teacherId == null) {
+            return List.of();
+        }
+        return scheduleRepository.findAllByTeacherId(teacherId).stream()
+                .map(Schedule::getGang)
+                .filter(gang -> !gang.isArchived())
+                .distinct()
+                .sorted(Comparator.comparing(Gang::getName))
+                .map(gang -> new TeacherGangDto(
+                        gang.getName(),
+                        gang.getSubject() == null ? null : gang.getSubject().getName(),
+                        gang.getGangStudents().stream()
+                                .map(GangsStudents::getStudent)
+                                .filter(student -> !student.isArchived())
+                                .sorted(Comparator.comparing(Student::getLastName).thenComparing(Student::getFirstName))
+                                .map(student -> new TeacherGangDto.Student(student.getLastName(), student.getFirstName(),
+                                        student.getContactName(), student.getPhone()))
+                                .toList()))
+                .toList();
+    }
 
 
     // archived = false — список активних учнів, true — архів

@@ -1,5 +1,6 @@
 package com.krailo.smart.controller;
 
+import com.krailo.smart.config.CurrentUser;
 import com.krailo.smart.dto.AudienceDto;
 import com.krailo.smart.dto.GangsStudentsDto;
 import com.krailo.smart.dto.TeacherDto;
@@ -36,12 +37,16 @@ public class LessonController {
     private TeacherService teacherService;
     private AudienceService audienceService;
     private SubjectService subjectService;
+    private CurrentUser currentUser;
 
 
 
     @GetMapping("/lessons")
     public String findAll(Model model) {
-        model.addAttribute("lessons", lessonService.findAll());
+        // адмін — усі уроки, вчитель — свої (провів сам або з його заняття)
+        model.addAttribute("lessons", currentUser.isAdmin()
+                ? lessonService.findAll()
+                : lessonService.findAllOfTeacher(currentUser.teacherId()));
         return "lessons";
     }
 
@@ -49,6 +54,8 @@ public class LessonController {
     public String openLesson(@PathVariable("id") Integer scheduleId, Model model) {
         // отримую розклад
         ScheduleDto scheduleDto = scheduleService.findById(scheduleId);
+        // вчитель проводить урок тільки зі свого заняття (чуже -> 403)
+        currentUser.requireOwnSchedule(scheduleDto.getTeacherId());
         // заповнюю lessonDto даними, щоб передати у форму
         LessonDto lessonDto = LessonDto.builder()
                 .scheduleId(scheduleId) // урок походить від цього слоту розкладу
@@ -84,6 +91,10 @@ public class LessonController {
 
     @PostMapping("/lessons/create")
     public String closeLesson(@ModelAttribute LessonDto lessonDto, Model model) {
+        // ще раз: форму могли підробити, підставивши чуже заняття
+        if (lessonDto.getScheduleId() != null) {
+            currentUser.requireOwnSchedule(scheduleService.findById(lessonDto.getScheduleId()).getTeacherId());
+        }
         try {
             // урок + відмітки учнів + списання — одна транзакція (див. LessonClosingService)
             lessonClosingService.closeLesson(lessonDto);

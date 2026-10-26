@@ -40,4 +40,7 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
     // усі слоти групи — перевірка, чи вільний учень, якого додають у групу
     List<Schedule> findAllByGangId(Integer gangId);
 
+    // заняття, які веде вчитель — його "свій" розклад
+    List<Schedule> findAllByTeacherId(Integer teacherId);
+
 }

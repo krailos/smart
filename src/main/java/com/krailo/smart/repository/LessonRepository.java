@@ -27,5 +27,14 @@ public interface LessonRepository extends JpaRepository<Lesson, Integer> {
     // те саме, але без уроку, який редагуємо (id)
     boolean existsByScheduleIdAndDateAndIdNot(Integer scheduleId, LocalDate date, Integer id);
 
+    // уроки вчителя: які він провів сам + з його занять, які провела заміна.
+    // LEFT JOIN — бо у сторнованого уроку зв'язку з розкладом уже немає, а він теж має бути в списку
+    @Query("""
+            SELECT l FROM Lesson l
+            LEFT JOIN l.schedule s
+            WHERE l.teacher.id = :teacherId OR s.teacher.id = :teacherId
+            """)
+    List<Lesson> findAllOfTeacher(Integer teacherId);
+
 
 }

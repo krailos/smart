@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<html lang="uk" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:replace="~{fragments/layout :: head('Розклад')}"></head>
 <body>
 <div class="app">
@@ -12,12 +12,13 @@
                 <div class="page-subtitle">Тижневий розклад занять. Урок проводиться зі слоту розкладу</div>
             </div>
             <div class="page-actions">
-                <div class="btn-group" role="group" aria-label="Вигляд розкладу">
+                <!-- тижневий календар і додавання в розклад — тільки адмін; вчитель бачить список своїх занять -->
+                <div sec:authorize="hasAuthority('ADMIN')" class="btn-group" role="group" aria-label="Вигляд розкладу">
                     <a th:href="@{/schedules}" class="btn btn-light active"><i class="bi bi-list-ul"></i> Список</a>
                     <a th:href="@{/schedules/week}" class="btn btn-light"><i class="bi bi-calendar-week"></i> Тиждень</a>
                 </div>
                 <a th:href="@{/lessons}" class="btn btn-light"><i class="bi bi-journal-check"></i> Проведені уроки</a>
-                <a th:href="@{/schedules/schedule/new}" class="btn btn-primary">
+                <a sec:authorize="hasAuthority('ADMIN')" th:href="@{/schedules/schedule/new}" class="btn btn-primary">
                     <i class="bi bi-plus-lg"></i> Додати в розклад
                 </a>
             </div>
@@ -53,6 +54,8 @@
                             <form th:action="@{/schedules/{id}/lesson(id=${schedule.id})}" method="post">
                                 <button class="btn btn-success btn-sm me-1"><i class="bi bi-play-fill"></i> Провести урок</button>
                             </form>
+                            <!-- змінювати розклад — тільки адмін -->
+                            <th:block sec:authorize="hasAuthority('ADMIN')">
                             <a th:href="@{/schedules/{id}(id=${schedule.id})}" class="btn btn-light btn-icon" title="Редагувати">
                                 <i class="bi bi-pencil"></i>
                             </a>
@@ -61,6 +64,7 @@
                                   onsubmit="return confirm('Видалити заняття з розкладу?');">
                                 <button class="btn btn-light btn-icon text-danger" title="Видалити"><i class="bi bi-trash"></i></button>
                             </form>
+                            </th:block>
                         </td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(schedules)}">

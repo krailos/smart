@@ -1,6 +1,7 @@
 package com.krailo.smart.controller;
 
 import com.krailo.smart.calendar.ScheduleCalendar;
+import com.krailo.smart.config.CurrentUser;
 import com.krailo.smart.dto.AudienceDto;
 import com.krailo.smart.dto.GangDto;
 import com.krailo.smart.dto.ScheduleDto;
@@ -33,10 +34,14 @@ ScheduleController {
     private GangService gangService;
         private TeacherService teacherService;
     private ScheduleCalendar scheduleCalendar;
+    private CurrentUser currentUser;
 
         @GetMapping
         public String findAll(Model model) {
-            model.addAttribute("schedules", scheduleService.findAll());
+            // адмін — увесь розклад, вчитель — тільки свої заняття
+            model.addAttribute("schedules", currentUser.isAdmin()
+                    ? scheduleService.findAll()
+                    : scheduleService.findAllByTeacher(currentUser.teacherId()));
             return "schedules";
     }
 

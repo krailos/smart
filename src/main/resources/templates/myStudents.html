@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Мої учні')}"></head>
+<body>
+<div class="app">
+    <th:block th:replace="~{fragments/layout :: sidebar('myStudents')}"></th:block>
+
+    <main class="app-main">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Мої учні</h1>
+                <div class="page-subtitle">Учні груп, у яких ви ведете заняття</div>
+            </div>
+        </div>
+
+        <!-- логін не пов'язаний з карткою вчителя (напр. адміністратор) -->
+        <div th:if="${noTeacher}" class="alert alert-light border d-flex align-items-center gap-2" role="alert">
+            <i class="bi bi-info-circle"></i>
+            Ваш логін не пов'язаний з карткою вчителя, тому тут порожньо. Прив'язку задає адміністратор на сторінці «Користувачі».
+        </div>
+        <div th:if="${!noTeacher and #lists.isEmpty(gangs)}" class="alert alert-light border d-flex align-items-center gap-2" role="alert">
+            <i class="bi bi-info-circle"></i>
+            У розкладі поки немає ваших занять.
+        </div>
+
+        <div th:each="gang : ${gangs}" class="card mb-3">
+            <div class="card-header bg-transparent py-3 d-flex flex-wrap align-items-center gap-2">
+                <span class="fw-semibold" th:text="${gang.gangName}"></span>
+                <span th:if="${gang.subjectName != null}" class="text-muted" th:text="'· ' + ${gang.subjectName}"></span>
+                <span class="badge rounded-pill text-bg-light border ms-auto" th:text="${#lists.size(gang.students)} + ' уч.'"></span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover table-app mb-0">
+                    <thead>
+                    <!-- однакова ширина колонок у всіх групах — щоб таблиці стояли рівно одна під одною -->
+                    <tr>
+                        <th scope="col" style="width: 3rem">#</th>
+                        <th scope="col" style="width: 38%">Учень</th>
+                        <th scope="col" style="width: 34%">Контактна особа</th>
+                        <th scope="col">Телефон</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="student, index : ${gang.students}">
+                        <td class="text-muted" th:text="${index.count}"></td>
+                        <td class="fw-medium" th:text="${student.lastName + ' ' + student.firstName}"></td>
+                        <td th:text="${student.contactName}"></td>
+                        <td>
+                            <a th:if="${student.phone != null}" th:href="'tel:' + ${student.phone}" th:text="${student.phone}"></a>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(gang.students)}">
+                        <td colspan="4" class="empty-state"><i class="bi bi-person-video2"></i> У групі немає учнів</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>

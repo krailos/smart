@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<html lang="uk" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:replace="~{fragments/layout :: head('Головна')}"></head>
 <body>
 <div class="app">
@@ -27,6 +27,29 @@
                     </div>
                 </a>
             </div>
+            <!-- вчителю: свої уроки й учні -->
+            <th:block sec:authorize="hasAuthority('TEACHER')">
+            <div class="col-sm-6 col-xl-3">
+                <a th:href="@{/lessons}" class="card quick-action h-100">
+                    <div class="card-body p-4">
+                        <div class="report-icon"><i class="bi bi-journal-check"></i></div>
+                        <div class="fw-bold mt-3">Мої уроки</div>
+                        <div class="text-muted small">уже проведені</div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <a th:href="@{/my/students}" class="card quick-action h-100">
+                    <div class="card-body p-4">
+                        <div class="report-icon"><i class="bi bi-person-video2"></i></div>
+                        <div class="fw-bold mt-3">Мої учні</div>
+                        <div class="text-muted small">учні моїх груп і контакти</div>
+                    </div>
+                </a>
+            </div>
+            </th:block>
+            <!-- адміну: гроші, учні, звіти -->
+            <th:block sec:authorize="hasAuthority('ADMIN')">
             <div class="col-sm-6 col-xl-3">
                 <a th:href="@{/payments/payment/new}" class="card quick-action h-100">
                     <div class="card-body p-4">
@@ -54,6 +77,7 @@
                     </div>
                 </a>
             </div>
+            </th:block>
         </div>
 
         <div class="card overflow-hidden">

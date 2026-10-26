@@ -32,6 +32,14 @@ public class ScheduleService {
       return scheduleRepository.findAll().stream().map(scheduleMapper::mapEntityToDto).toList();
   }
 
+    // розклад вчителя: заняття, які він веде (teacherId null — вчителя не обрано, нічого)
+    public List<ScheduleDto> findAllByTeacher(Integer teacherId) {
+        if (teacherId == null) {
+            return List.of();
+        }
+        return scheduleRepository.findAllByTeacherId(teacherId).stream().map(scheduleMapper::mapEntityToDto).toList();
+    }
+
 
     public ScheduleDto findById(Integer id) {
         return scheduleRepository.findById(id).map(scheduleMapper::mapEntityToDto)

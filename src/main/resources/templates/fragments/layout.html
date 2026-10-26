@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<html lang="uk" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <!--
     Спільні шматки (фрагменти) для всіх сторінок. Сторінка підключає їх так:
       <head th:replace="~{fragments/layout :: head('Вчителі')}"></head>
@@ -56,6 +56,13 @@
                         <i class="bi bi-calendar-week"></i> Розклад</a>
                     <a th:href="@{/lessons}" class="nav-item-link" th:classappend="${active == 'lessons'} ? 'active'">
                         <i class="bi bi-journal-check"></i> Уроки</a>
+                    <!-- вчителю: учні його груп (адміну — повний розділ «Учні» нижче) -->
+                    <a sec:authorize="hasAuthority('TEACHER')" th:href="@{/my/students}" class="nav-item-link"
+                       th:classappend="${active == 'myStudents'} ? 'active'">
+                        <i class="bi bi-person-video2"></i> Мої учні</a>
+
+                    <!-- далі — тільки адміну (вчителю ці сторінки однаково закриті: SecurityConfiguration) -->
+                    <th:block sec:authorize="hasAuthority('ADMIN')">
                     <a th:href="@{/gangs}" class="nav-item-link" th:classappend="${active == 'gangs'} ? 'active'">
                         <i class="bi bi-people"></i> Групи</a>
                     <a th:href="@{/subjects}" class="nav-item-link" th:classappend="${active == 'subjects'} ? 'active'">
@@ -80,6 +87,7 @@
                     <div class="nav-section">Адміністрування</div>
                     <a th:href="@{/users}" class="nav-item-link" th:classappend="${active == 'users'} ? 'active'">
                         <i class="bi bi-person-gear"></i> Користувачі</a>
+                    </th:block>
 
                     <!-- хто увійшов + свій пароль -->
                     <div class="mt-auto pt-3">
