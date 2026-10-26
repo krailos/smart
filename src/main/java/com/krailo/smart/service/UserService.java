@@ -8,6 +8,7 @@ import com.krailo.smart.mapper.UserMapper;
 import com.krailo.smart.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
+import com.krailo.smart.entity.Teacher;
 import com.krailo.smart.entity.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -30,6 +31,7 @@ public class UserService implements UserDetailsService {
     private UserRepository userRepository;
     private UserMapper userMapper;
     private PasswordEncoder passwordEncoder;
+    private TeacherService teacherService;
 
     public List<UserDto> findAll(boolean archived) {
         return userRepository.findAllByArchivedOrderByName(archived).stream().map(userMapper::mapEntityToDto).toList();
@@ -49,7 +51,7 @@ public class UserService implements UserDetailsService {
     }
 
     // Новий користувач з тимчасовим паролем (адмін передає його людині)
-    public void create(String name, String password, Role role) {
+    public void create(String name, String password, Role role, Integer teacherId) {
         String login = name == null ? "" : name.trim();
         if (login.isEmpty()) {
             throw new BusinessException("Вкажіть логін");
@@ -63,6 +65,7 @@ public class UserService implements UserDetailsService {
         if (role == null) {
             throw new BusinessException("Оберіть роль");
         }
+        Teacher teacher = teacherForRole(role, teacherId, null);
         checkPassword(password);
         if (userRepository.existsByName(login)) {
             throw new BusinessException("Користувач з логіном «" + login + "» уже є (можливо, в архіві)");
@@ -71,11 +74,13 @@ public class UserService implements UserDetailsService {
                 .name(login)
                 .password(passwordEncoder.encode(password)) // у базу — тільки хеш
                 .role(role)
+                .teacher(teacher)
                 .mustChangePassword(true)   // пароль знає адмін — при першому вході користувач змінить його
                 .build());
     }
 
-    public void changeRole(Integer id, Role role, String currentName) {
+    // Роль і (для вчителя) хто це з вчителів
+    public void changeRole(Integer id, Role role, Integer teacherId, String currentName) {
         User user = findByIdEntity(id);
         if (role == null) {
             throw new BusinessException("Оберіть роль");
@@ -83,10 +88,35 @@ public class UserService implements UserDetailsService {
         if (user.getName().equals(currentName)) {
             throw new BusinessException("Свою роль змінити не можна — попросіть іншого адміна");
         }
+        Teacher teacher = teacherForRole(role, teacherId, user.getId());
         if (user.getRole() == Role.ADMIN && role != Role.ADMIN && !user.isArchived()) {
             requireAnotherAdmin();
         }
         user.setRole(role);
+        user.setTeacher(teacher);
+    }
+
+    // Вчитель, з яким пов'язаний логін. Адмін — без вчителя.
+    // Вчитель — обов'язково активна картка, і в одного вчителя лише один активний логін
+    // (userId — той, кого змінюємо: його власна прив'язка конфліктом не є)
+    private Teacher teacherForRole(Role role, Integer teacherId, Integer userId) {
+        if (role != Role.TEACHER) {
+            return null;
+        }
+        if (teacherId == null) {
+            throw new BusinessException("Для ролі «Вчитель» оберіть, хто це з вчителів");
+        }
+        Teacher teacher = teacherService.findByIdEntity(teacherId);
+        if (teacher.isArchived()) {
+            throw new BusinessException("Вчитель в архіві — спершу відновіть його");
+        }
+        userRepository.findFirstByTeacherIdAndArchivedFalse(teacherId)
+                .filter(other -> !other.getId().equals(userId))
+                .ifPresent(other -> {
+                    throw new BusinessException("У вчителя " + teacher.getLastName() + " " + teacher.getFirstName()
+                            + " уже є логін «" + other.getName() + "»");
+                });
+        return teacher;
     }
 
     // Забули пароль: його не відновити (у базі хеш) — тільки задати новий, тимчасовий
@@ -135,7 +165,12 @@ public class UserService implements UserDetailsService {
     }
 
     public void restore(Integer id) {
-        findByIdEntity(id).setArchived(false);
+        User user = findByIdEntity(id);
+        // поки логін був в архіві, вчитель міг отримати інший логін
+        if (user.getTeacher() != null) {
+            teacherForRole(user.getRole(), user.getTeacher().getId(), user.getId());
+        }
+        user.setArchived(false);
     }
 
     private User findByIdEntity(Integer id) {

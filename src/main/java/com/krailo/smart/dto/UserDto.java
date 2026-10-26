@@ -9,6 +9,9 @@ public class UserDto {
     private Integer id;
     private String name;
     private String role;
+    // для вчителя — чия це картка (у адміна null)
+    private Integer teacherId;
+    private String teacherName;
     // пароль ще тимчасовий (задав адмін, користувач його не змінив)
     private boolean mustChangePassword;
     private boolean archived;

@@ -17,6 +17,9 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     // логін унікальний серед УСІХ, і архівних теж (UNIQUE у базі, V22)
     boolean existsByName(String name);
 
+    // активний логін цього вчителя (у вчителя — не більше одного)
+    Optional<User> findFirstByTeacherIdAndArchivedFalse(Integer teacherId);
+
     // скільки активних адмінів — щоб не лишитись без жодного
     long countByRoleAndArchivedFalse(Role role);
 }

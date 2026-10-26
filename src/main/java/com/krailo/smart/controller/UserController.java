@@ -3,6 +3,7 @@ package com.krailo.smart.controller;
 
 import com.krailo.smart.enumeration.Role;
 import com.krailo.smart.exception.BusinessException;
+import com.krailo.smart.service.TeacherService;
 import com.krailo.smart.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -24,6 +25,7 @@ import java.security.Principal;
 public class UserController {
 
     UserService userService;
+    TeacherService teacherService;
 
     // /users — активні, /users?archived=true — архів (той самий шаблон)
     @GetMapping
@@ -32,6 +34,7 @@ public class UserController {
         model.addAttribute("archived", archived);
         model.addAttribute("currentUser", principal.getName());
         model.addAttribute("roles", Role.values());
+        model.addAttribute("teachers", teacherService.findAll());   // активні — для ролі «Вчитель»
         model.addAttribute("minPasswordLength", UserService.MIN_PASSWORD_LENGTH);
         return "users";
     }
@@ -40,9 +43,10 @@ public class UserController {
     public String create(@RequestParam(required = false) String name,
                          @RequestParam(required = false) String password,
                          @RequestParam(required = false) Role role,
+                         @RequestParam(required = false) Integer teacherId,
                          RedirectAttributes redirectAttributes) {
         try {
-            userService.create(name, password, role);
+            userService.create(name, password, role, teacherId);
             redirectAttributes.addFlashAttribute("successMessage",
                     "Користувача «" + name.trim() + "» додано. Передайте йому тимчасовий пароль");
         } catch (BusinessException e) {
@@ -50,6 +54,7 @@ public class UserController {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
             redirectAttributes.addFlashAttribute("draftName", name);
             redirectAttributes.addFlashAttribute("draftRole", role);
+            redirectAttributes.addFlashAttribute("draftTeacherId", teacherId);
             redirectAttributes.addFlashAttribute("openForm", "create");
         }
         return "redirect:/users";
@@ -57,9 +62,10 @@ public class UserController {
 
     @PostMapping("/{id}/role")
     public String changeRole(@PathVariable("id") Integer id, @RequestParam(required = false) Role role,
+                             @RequestParam(required = false) Integer teacherId,
                              Principal principal, RedirectAttributes redirectAttributes) {
         try {
-            userService.changeRole(id, role, principal.getName());
+            userService.changeRole(id, role, teacherId, principal.getName());
             redirectAttributes.addFlashAttribute("successMessage", "Роль змінено");
         } catch (BusinessException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
@@ -93,8 +99,12 @@ public class UserController {
 
     @PostMapping("/{id}/restore")
     public String restore(@PathVariable("id") Integer id, RedirectAttributes redirectAttributes) {
-        userService.restore(id);
-        redirectAttributes.addFlashAttribute("successMessage", "Користувача відновлено з архіву");
+        try {
+            userService.restore(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Користувача відновлено з архіву");
+        } catch (BusinessException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
         return "redirect:/users?archived=true";
     }
 }

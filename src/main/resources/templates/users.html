@@ -51,19 +51,20 @@
                                   title="Пароль задав адмін — користувач ще не змінив його на свій">тимчасовий пароль</span>
                         </td>
                         <td>
-                            <!-- свою роль змінити не можна — тільки показуємо -->
-                            <span th:if="${me or archived}" class="badge text-bg-light border fw-semibold"
+                            <span class="badge text-bg-light border fw-semibold"
                                   th:text="${user.role == 'ADMIN'} ? 'Адміністратор' : 'Вчитель'"></span>
-                            <form th:unless="${me or archived}" th:action="@{/users/{id}/role(id=${user.id})}" method="post"
-                                  class="d-inline-flex">
-                                <select name="role" class="form-select form-select-sm w-auto" title="Роль"
-                                        onchange="this.form.submit()">
-                                    <option th:each="r : ${roles}" th:value="${r}" th:selected="${r.name() == user.role}"
-                                            th:text="${r.name() == 'ADMIN'} ? 'Адміністратор' : 'Вчитель'"></option>
-                                </select>
-                            </form>
+                            <!-- вчитель: чий це логін (його заняття, уроки й учні — "свої") -->
+                            <span th:if="${user.teacherName != null}" class="ms-1" th:text="${user.teacherName}"></span>
+                            <span th:if="${user.role == 'TEACHER' and user.teacherName == null}" class="badge text-bg-danger ms-1"
+                                  title="Не обрано, хто це з вчителів — такий користувач нічого не побачить">не обрано вчителя</span>
                         </td>
                         <td class="col-actions">
+                            <!-- роль і вчитель — у вікні; свою роль змінити не можна -->
+                            <button th:unless="${archived or me}" type="button" class="btn btn-light btn-icon" title="Роль"
+                                    data-bs-toggle="modal" data-bs-target="#roleModal"
+                                    th:attr="data-id=${user.id},data-name=${user.name},data-role=${user.role},data-teacher=${user.teacherId}">
+                                <i class="bi bi-person-gear"></i>
+                            </button>
                             <!-- свій пароль — тільки через "Змінити мій пароль" (там питають поточний) -->
                             <a th:if="${me}" th:href="@{/account/password}" class="btn btn-light btn-icon" title="Змінити мій пароль">
                                 <i class="bi bi-key"></i>
@@ -113,17 +114,60 @@
                 </div>
                 <div class="mb-3">
                     <label for="newRole" class="form-label">Роль</label>
-                    <select id="newRole" name="role" class="form-select">
+                    <select id="newRole" name="role" class="form-select js-role">
                         <option th:each="r : ${roles}" th:value="${r}"
                                 th:selected="${draftRole != null ? r == draftRole : r.name() == 'TEACHER'}"
                                 th:text="${r.name() == 'ADMIN'} ? 'Адміністратор' : 'Вчитель'"></option>
                     </select>
+                </div>
+                <div class="mb-3 js-teacher-block">
+                    <label for="newTeacher" class="form-label">Хто це з вчителів</label>
+                    <select id="newTeacher" name="teacherId" class="form-select">
+                        <option value="">— оберіть —</option>
+                        <option th:each="t : ${teachers}" th:value="${t.id}" th:selected="${t.id == draftTeacherId}"
+                                th:text="${t.lastName + ' ' + t.firstName}"></option>
+                    </select>
+                    <div class="form-text">Вчитель бачитиме тільки свої заняття, уроки та учнів</div>
                 </div>
                 <div th:replace="~{:: passwordField('newPassword')}"></div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-light" data-bs-dismiss="modal">Скасувати</button>
                 <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Додати</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Роль користувача і (для вчителя) хто це з вчителів -->
+<div class="modal fade" id="roleModal" tabindex="-1" aria-labelledby="roleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <!-- th:action — заради CSRF-токена; справжню адресу (з id) підставляє JS -->
+        <form class="modal-content" id="roleForm" method="post"
+              th:action="@{/users/USER_ID/role}" th:attr="data-action=@{/users/USER_ID/role}">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="roleModalLabel">Роль: <span id="roleUser"></span></h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрити"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="editRole" class="form-label">Роль</label>
+                    <select id="editRole" name="role" class="form-select js-role">
+                        <option th:each="r : ${roles}" th:value="${r}"
+                                th:text="${r.name() == 'ADMIN'} ? 'Адміністратор' : 'Вчитель'"></option>
+                    </select>
+                </div>
+                <div class="mb-1 js-teacher-block">
+                    <label for="editTeacher" class="form-label">Хто це з вчителів</label>
+                    <select id="editTeacher" name="teacherId" class="form-select">
+                        <option value="">— оберіть —</option>
+                        <option th:each="t : ${teachers}" th:value="${t.id}" th:text="${t.lastName + ' ' + t.firstName}"></option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Скасувати</button>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Зберегти</button>
             </div>
         </form>
     </div>
@@ -193,6 +237,29 @@
             const form = document.getElementById('passwordForm');
             form.action = form.dataset.action.replace('USER_ID', button.dataset.id);
             document.getElementById('passwordUser').textContent = button.dataset.name;
+        });
+
+        // поле "Хто це з вчителів" — тільки для ролі «Вчитель» (у вікнах "новий" і "роль")
+        function syncTeacher(form) {
+            const isTeacher = form.querySelector('.js-role').value === 'TEACHER';
+            const block = form.querySelector('.js-teacher-block');
+            block.classList.toggle('d-none', !isTeacher);
+            block.querySelector('select').required = isTeacher;
+        }
+        document.querySelectorAll('.js-role').forEach(select => {
+            select.addEventListener('change', () => syncTeacher(select.form));
+            syncTeacher(select.form);
+        });
+
+        // вікно "роль": підставляємо id, логін, поточну роль і вчителя
+        document.getElementById('roleModal').addEventListener('show.bs.modal', event => {
+            const button = event.relatedTarget;
+            const form = document.getElementById('roleForm');
+            form.action = form.dataset.action.replace('USER_ID', button.dataset.id);
+            document.getElementById('roleUser').textContent = button.dataset.name;
+            document.getElementById('editRole').value = button.dataset.role;
+            document.getElementById('editTeacher').value = button.dataset.teacher || '';
+            syncTeacher(form);
         });
 
         // після закриття вікна пароль стирається

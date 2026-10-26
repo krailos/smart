@@ -1,8 +1,10 @@
 package com.krailo.smart.service;
 
+import com.krailo.smart.entity.Teacher;
 import com.krailo.smart.entity.User;
 import com.krailo.smart.enumeration.Role;
 import com.krailo.smart.exception.BusinessException;
+import com.krailo.smart.repository.TeacherRepository;
 import com.krailo.smart.repository.UserRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,23 +30,67 @@ class UserManagementTest {
     @Autowired private UserRepository userRepository;
     @Autowired private PasswordEncoder passwordEncoder;
 
+    @Autowired private TeacherRepository teacherRepository;
+
     private User admin;
+    private Teacher teacher;
 
     @BeforeEach
     void setUp() {
         // той, хто працює зі сторінкою користувачів
         admin = userRepository.save(User.builder().name("admin").password(passwordEncoder.encode("admin-pass")).role(Role.ADMIN).build());
+        // картка вчителя, з якою пов'язують логін ролі «Вчитель»
+        teacher = teacherRepository.save(Teacher.builder().firstName("Анна").lastName("Коваль").build());
     }
 
     @AfterEach
     void cleanUp() {
-        userRepository.deleteAll();
+        userRepository.deleteAll();     // спершу логіни — вони посилаються на вчителів
+        teacherRepository.deleteAll();
+    }
+
+    @Test
+    void shouldLinkTeacherLogin_OnlyToOneActiveTeacher() {
+        // вчитель без картки — не можна; адмін — без картки, навіть якщо її передали
+        assertThatThrownBy(() -> userService.create("anna", "temp-pass-1", Role.TEACHER, null))
+                .isInstanceOf(BusinessException.class).hasMessageContaining("оберіть, хто це з вчителів");
+        userService.create("boss", "temp-pass-1", Role.ADMIN, teacher.getId());
+        assertThat(userRepository.findUserByNameAndArchivedFalse("boss").orElseThrow().getTeacher()).isNull();
+
+        // When: логін вчителя
+        userService.create("anna", "temp-pass-1", Role.TEACHER, teacher.getId());
+
+        // Then: пов'язаний з карткою; другий логін тій самій вчительці — не можна
+        assertThat(userRepository.findUserByNameAndArchivedFalse("anna").orElseThrow().getTeacher().getId())
+                .isEqualTo(teacher.getId());
+        assertThatThrownBy(() -> userService.create("anna2", "temp-pass-1", Role.TEACHER, teacher.getId()))
+                .isInstanceOf(BusinessException.class).hasMessageContaining("уже є логін «anna»");
+
+        // вчителя в архіві — не можна
+        Teacher archived = teacherRepository.save(Teacher.builder().firstName("Іван").lastName("Сірко").archived(true).build());
+        assertThatThrownBy(() -> userService.create("ivan", "temp-pass-1", Role.TEACHER, archived.getId()))
+                .isInstanceOf(BusinessException.class).hasMessageContaining("в архіві");
+
+        // anna в архіві — картка вільна для нового логіна; тоді відновити anna вже не можна
+        Integer annaId = userRepository.findUserByNameAndArchivedFalse("anna").orElseThrow().getId();
+        userService.archive(annaId, "admin");
+        userService.create("anna2", "temp-pass-1", Role.TEACHER, teacher.getId());
+        assertThatThrownBy(() -> userService.restore(annaId))
+                .isInstanceOf(BusinessException.class).hasMessageContaining("уже є логін «anna2»");
+
+        // адмін -> вчитель (через зміну ролі): треба обрати вчителя; вчитель -> адмін: прив'язка знімається
+        Integer bossId = userRepository.findUserByNameAndArchivedFalse("boss").orElseThrow().getId();
+        assertThatThrownBy(() -> userService.changeRole(bossId, Role.TEACHER, null, "admin"))
+                .isInstanceOf(BusinessException.class).hasMessageContaining("оберіть, хто це з вчителів");
+        Integer anna2Id = userRepository.findUserByNameAndArchivedFalse("anna2").orElseThrow().getId();
+        userService.changeRole(anna2Id, Role.ADMIN, teacher.getId(), "admin");
+        assertThat(userRepository.findById(anna2Id).orElseThrow().getTeacher()).isNull();
     }
 
     @Test
     void shouldCreateUserWithHashedPassword() {
         // When
-        userService.create("  anna ", "temp-pass-1", Role.TEACHER);
+        userService.create("  anna ", "temp-pass-1", Role.TEACHER, teacher.getId());
 
         // Then: логін без пробілів по краях, у базі — хеш, з тимчасовим паролем можна увійти
         User anna = userRepository.findUserByNameAndArchivedFalse("anna").orElseThrow();
@@ -54,16 +100,16 @@ class UserManagementTest {
 
     @Test
     void shouldRejectBadNewUser() {
-        assertThatThrownBy(() -> userService.create("anna", "short", Role.TEACHER))
+        assertThatThrownBy(() -> userService.create("anna", "short", Role.TEACHER, teacher.getId()))
                 .isInstanceOf(BusinessException.class).hasMessageContaining("не коротший за 8");
-        assertThatThrownBy(() -> userService.create(" ", "temp-pass-1", Role.TEACHER))
+        assertThatThrownBy(() -> userService.create(" ", "temp-pass-1", Role.TEACHER, teacher.getId()))
                 .isInstanceOf(BusinessException.class).hasMessageContaining("Вкажіть логін");
-        assertThatThrownBy(() -> userService.create("anna maria", "temp-pass-1", Role.TEACHER))
+        assertThatThrownBy(() -> userService.create("anna maria", "temp-pass-1", Role.TEACHER, teacher.getId()))
                 .isInstanceOf(BusinessException.class).hasMessageContaining("без пробілів");
-        assertThatThrownBy(() -> userService.create("anna", "temp-pass-1", null))
+        assertThatThrownBy(() -> userService.create("anna", "temp-pass-1", null, null))
                 .isInstanceOf(BusinessException.class).hasMessageContaining("Оберіть роль");
         // такий логін уже є
-        assertThatThrownBy(() -> userService.create("admin", "temp-pass-1", Role.TEACHER))
+        assertThatThrownBy(() -> userService.create("admin", "temp-pass-1", Role.TEACHER, teacher.getId()))
                 .isInstanceOf(BusinessException.class).hasMessageContaining("уже є");
 
         assertThat(userRepository.count()).isEqualTo(1);
@@ -72,7 +118,7 @@ class UserManagementTest {
     @Test
     void shouldResetPassword_OldOneStopsWorking() {
         // Given
-        userService.create("anna", "temp-pass-1", Role.TEACHER);
+        userService.create("anna", "temp-pass-1", Role.TEACHER, teacher.getId());
         Integer id = userRepository.findUserByNameAndArchivedFalse("anna").orElseThrow().getId();
 
         userService.changeOwnPassword("anna", "temp-pass-1", "anna-own-pass", "anna-own-pass");
@@ -95,7 +141,7 @@ class UserManagementTest {
     @Test
     void shouldMarkNewUserPasswordAsTemporary_UntilChangedByUser() {
         // Given: адмін створив користувача — пароль тимчасовий
-        userService.create("anna", "temp-pass-1", Role.TEACHER);
+        userService.create("anna", "temp-pass-1", Role.TEACHER, teacher.getId());
         assertThat(userService.mustChangePassword("anna")).isTrue();
 
         // When: анна задає свій
@@ -109,7 +155,7 @@ class UserManagementTest {
 
     @Test
     void shouldRejectBadOwnPasswordChange() {
-        userService.create("anna", "temp-pass-1", Role.TEACHER);
+        userService.create("anna", "temp-pass-1", Role.TEACHER, teacher.getId());
 
         assertThatThrownBy(() -> userService.changeOwnPassword("anna", "wrong-pass", "anna-own-pass", "anna-own-pass"))
                 .isInstanceOf(BusinessException.class).hasMessageContaining("Поточний пароль");
@@ -128,7 +174,7 @@ class UserManagementTest {
     @Test
     void shouldNotLogin_WhenArchived_AndLoginAgainAfterRestore() {
         // Given
-        userService.create("anna", "temp-pass-1", Role.TEACHER);
+        userService.create("anna", "temp-pass-1", Role.TEACHER, teacher.getId());
         Integer id = userRepository.findUserByNameAndArchivedFalse("anna").orElseThrow().getId();
 
         // When: в архів — увійти не може (Spring каже "невірний логін або пароль")
@@ -136,7 +182,7 @@ class UserManagementTest {
         assertThatThrownBy(() -> login("anna", "temp-pass-1")).isInstanceOf(BadCredentialsException.class);
 
         // логін в архіві теж зайнятий — друга "anna" не створиться
-        assertThatThrownBy(() -> userService.create("anna", "temp-pass-1", Role.TEACHER))
+        assertThatThrownBy(() -> userService.create("anna", "temp-pass-1", Role.TEACHER, teacher.getId()))
                 .isInstanceOf(BusinessException.class).hasMessageContaining("в архіві");
 
         // Then: відновили — знову входить
@@ -149,18 +195,18 @@ class UserManagementTest {
         // себе — ні в архів, ні змінити роль
         assertThatThrownBy(() -> userService.archive(admin.getId(), "admin"))
                 .isInstanceOf(BusinessException.class).hasMessageContaining("Себе");
-        assertThatThrownBy(() -> userService.changeRole(admin.getId(), Role.TEACHER, "admin"))
+        assertThatThrownBy(() -> userService.changeRole(admin.getId(), Role.TEACHER, teacher.getId(), "admin"))
                 .isInstanceOf(BusinessException.class).hasMessageContaining("Свою роль");
 
         // admin — єдиний адмін; навіть хтось інший (наприклад, вчитель) не може його прибрати
         assertThatThrownBy(() -> userService.archive(admin.getId(), "anna"))
                 .isInstanceOf(BusinessException.class).hasMessageContaining("останній адміністратор");
-        assertThatThrownBy(() -> userService.changeRole(admin.getId(), Role.TEACHER, "anna"))
+        assertThatThrownBy(() -> userService.changeRole(admin.getId(), Role.TEACHER, teacher.getId(), "anna"))
                 .isInstanceOf(BusinessException.class).hasMessageContaining("останній адміністратор");
 
         // з'явився другий адмін — тепер першого можна зробити вчителем
-        userService.create("boss", "temp-pass-1", Role.ADMIN);
-        userService.changeRole(admin.getId(), Role.TEACHER, "boss");
+        userService.create("boss", "temp-pass-1", Role.ADMIN, null);
+        userService.changeRole(admin.getId(), Role.TEACHER, teacher.getId(), "boss");
         assertThat(userRepository.findById(admin.getId()).orElseThrow().getRole()).isEqualTo(Role.TEACHER);
     }
 
