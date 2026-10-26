@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<!-- 403 "заборонено" від Spring Security: запит без CSRF-токена (форма відкрита дуже давно / з чужого сайту)
+     або (згодом) сторінка не для вашої ролі. Текст пояснюємо самі — технічне повідомлення Spring не показуємо -->
+<head th:replace="~{fragments/layout :: head('Доступ заборонено')}"></head>
+<body>
+<div class="app">
+    <th:block th:replace="~{fragments/layout :: sidebar('')}"></th:block>
+
+    <main class="app-main">
+        <div class="error-page">
+            <div class="error-code text-warning">403</div>
+            <h1 class="h4 fw-bold">Дію не виконано</h1>
+            <p class="text-muted">
+                Немає доступу до цієї сторінки, або форма застаріла (була відкрита надто довго).
+                Відкрийте сторінку заново і повторіть дію.
+            </p>
+            <div class="d-flex gap-2 justify-content-center">
+                <a href="javascript:history.go(-1)" class="btn btn-light"><i class="bi bi-arrow-left"></i> Назад</a>
+                <a th:href="@{/}" class="btn btn-primary"><i class="bi bi-house"></i> На головну</a>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>
