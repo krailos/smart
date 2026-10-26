@@ -13,12 +13,18 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.Set;
+
 @Controller
 @RequestMapping("/students")
 @AllArgsConstructor
 public class StudentController {
 
     private StudentService studentService;
+
+    // за якими полями дозволено сортувати (ті, що є в заголовку таблиці)
+    private static final Set<String> SORT_FIELDS = Set.of("id", "lastName", "balance");
+    private static final int MAX_PAGE_SIZE = 100;
 
     @GetMapping
     public String findAll(@RequestParam(defaultValue = "0") int page,
@@ -29,6 +35,15 @@ public class StudentController {
                           // /students — активні, /students?archived=true — архів (той самий шаблон)
                           @RequestParam(defaultValue = "false") boolean archived,
                           Model model) {
+        // параметри приходять з адреси (закладка, ручна правка, кнопка «‹» на першій сторінці дає page=-1) —
+        // невалідне значення замінюємо допустимим, а не падаємо з 500
+        page = Math.max(page, 0);
+        if (size < 1 || size > MAX_PAGE_SIZE) {
+            size = 10;
+        }
+        if (!SORT_FIELDS.contains(sortBy)) {
+            sortBy = "lastName";
+        }
 
         Page<StudentDto> studentPage  = studentService.findAllByPage(page, size, sortBy, sortDir, keyword, archived);
         model.addAttribute("archived", archived);
