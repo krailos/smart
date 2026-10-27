@@ -17,6 +17,5 @@ public class SubjectDto {
     private String name;
     private String description;
     private List<PriceDto> pricesDto;
-    private List<GangDto> gangsDto;
 
 }

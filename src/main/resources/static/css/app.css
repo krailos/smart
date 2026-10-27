@@ -150,6 +150,20 @@ body {
     font-size: .9rem;
     margin-top: 2px;
 }
+/* головна: картинка-фон на всю область праворуч від бічної панелі (заголовок і картки — поверх неї) */
+.app-main.page-home {
+    max-width: none;       /* фон до правого краю екрана, а не до 1400px */
+    background: #f1effb url("../smartum-3.jpg") center / cover no-repeat;
+}
+.page-hero {
+    padding: 24px 0 16px;
+}
+.page-hero .page-title {
+    font-size: 2rem;
+}
+.page-hero .page-subtitle {
+    font-size: 1rem;
+}
 .page-actions {
     display: flex;
     flex-wrap: wrap;

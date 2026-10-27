@@ -260,8 +260,9 @@ class ArchiveTest {
     }
 
     private StudentsDiscountsDto studentDiscount(Student student, Discount discount) {
-        // DTO без builder — конструктор з усіма полями: id, discount, discountId, student, studentId, subject, subjectId, date
-        return new StudentsDiscountsDto(null, null, discount.getId(), null, student.getId(), null, subject.getId(),
+        // DTO без builder — конструктор з усіма полями: id, discountId, discountName, discountValue,
+        // studentId, studentName, subjectId, subjectName, date (з форми приходять лише id і дата)
+        return new StudentsDiscountsDto(null, discount.getId(), null, null, student.getId(), null, subject.getId(), null,
                 LocalDate.of(2026, 9, 1));
     }
 

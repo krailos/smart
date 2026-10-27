@@ -37,7 +37,7 @@
                     <tbody>
                     <tr th:each="payment : ${payments}" th:classappend="${payment.storned} ? 'row-storned'">
                         <td class="text-nowrap" th:text="${payment.date != null} ? ${#temporals.format(payment.date, 'dd.MM.yyyy')}"></td>
-                        <td class="fw-medium" th:text="${payment.student.lastName + ' ' + payment.student.firstName}"></td>
+                        <td class="fw-medium" th:text="${payment.studentName}"></td>
                         <!-- сторно (мінусова сума) — червоним -->
                         <td class="text-end fw-semibold text-nowrap"
                             th:classappend="${payment.value < 0} ? 'text-danger' : 'text-success'"

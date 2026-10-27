@@ -38,11 +38,11 @@
                     <tbody>
                     <tr th:each="studentDiscount, index : ${studentsDiscounts}">
                         <td class="text-muted" th:text="${index.count}"></td>
-                        <td class="fw-medium" th:text="${studentDiscount.student.lastName + ' ' + studentDiscount.student.firstName}"></td>
-                        <td th:text="${studentDiscount.subject.name}"></td>
-                        <td th:text="${studentDiscount.discount.name}"></td>
+                        <td class="fw-medium" th:text="${studentDiscount.studentName}"></td>
+                        <td th:text="${studentDiscount.subjectName}"></td>
+                        <td th:text="${studentDiscount.discountName}"></td>
                         <td>
-                            <span class="badge rounded-pill text-bg-success" th:text="${studentDiscount.discount.value} + ' %'"></span>
+                            <span class="badge rounded-pill text-bg-success" th:text="${studentDiscount.discountValue} + ' %'"></span>
                         </td>
                         <td th:text="${studentDiscount.date != null} ? ${#temporals.format(studentDiscount.date, 'dd.MM.yyyy')}"></td>
                         <td class="col-actions">

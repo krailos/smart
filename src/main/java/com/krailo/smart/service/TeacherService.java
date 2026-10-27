@@ -28,19 +28,20 @@ public class TeacherService {
 
     // тільки активні — для списку вчителів і всіх випадаючих меню у формах
     public List<TeacherDto> findAll() {
-        return mapWithGangs(teacherRepository.findAllByArchived(false));
+        return teacherRepository.findAllByArchived(false).stream().map(teacherMapper::mapEntityToDto).toList();
     }
 
     public List<TeacherDto> findAllArchived() {
-        return mapWithGangs(teacherRepository.findAllByArchived(true));
+        return teacherRepository.findAllByArchived(true).stream().map(teacherMapper::mapEntityToDto).toList();
     }
 
-    // проти N+1: у списку вчителів показуємо кількість груп. Вантажимо їх тут, у транзакції, —
-    // перший виклик тягне пачкою групи всіх вчителів. Після транзакції (у шаблоні) пачками не вийде,
-    // і Hibernate робив би окремий запит на кожного вчителя
-    private List<TeacherDto> mapWithGangs(List<Teacher> teachers) {
+    // для сторінки /teachers, де показуємо кількість груп (випадаючим меню у формах групи не потрібні).
+    // Проти N+1: вантажимо групи тут, у транзакції, — перший виклик тягне пачкою групи всіх вчителів.
+    // Після транзакції (у шаблоні) пачками не вийде, і Hibernate робив би окремий запит на кожного вчителя
+    public List<TeacherDto> findAllWithGangs(boolean archived) {
+        List<Teacher> teachers = teacherRepository.findAllByArchived(archived);
         teachers.forEach(teacher -> Hibernate.initialize(teacher.getGangs()));
-        return teachers.stream().map(teacherMapper::mapEntityToDto).toList();
+        return teachers.stream().map(teacher -> teacherMapper.mapEntityToDto(teacher, teacher.getGangs().size())).toList();
     }
 
     public TeacherDto findById(Integer id) {

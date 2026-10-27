@@ -31,12 +31,13 @@ public class StudentsDiscountsMapper implements Mapper<StudentsDiscounts, Studen
     public StudentsDiscountsDto mapEntityToDto(StudentsDiscounts e) {
         return new StudentsDiscountsDto(
                 e.getId(),
-                e.getDiscount(),
                 e.getDiscount().getId(),
-                e.getStudent(),
-                e.getStudent().getId(), 
-                e.getSubject(), 
+                e.getDiscount().getName(),
+                e.getDiscount().getValue(),
+                e.getStudent().getId(),
+                e.getStudent().getLastName() + " " + e.getStudent().getFirstName(),
                 e.getSubject().getId(),
+                e.getSubject().getName(),
                 e.getDate());
     }
 

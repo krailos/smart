@@ -24,6 +24,10 @@ public class StudentsDiscountsService {
         return studentsDiscountsRepository.findAll().stream().map(studentsDiscountsMapper::mapEntityToDto).toList();
     }
 
+    public List<StudentsDiscountsDto> findAllByStudentId(Integer studentId) {
+        return studentsDiscountsRepository.findAllByStudentId(studentId).stream().map(studentsDiscountsMapper::mapEntityToDto).toList();
+    }
+
     public StudentsDiscountsDto findById(Integer id) {
         return studentsDiscountsRepository.findById(id).map(studentsDiscountsMapper::mapEntityToDto)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("studentsDiscounts whith id= %d not exist", id)));

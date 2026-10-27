@@ -1,6 +1,5 @@
 package com.krailo.smart.dto;
 
-import com.krailo.smart.entity.Student;
 import lombok.Value;
 
 import java.math.BigDecimal;
@@ -11,7 +10,7 @@ public class PaymentDto {
 
 
     private Integer id;
-    private Student student;
+    private String studentName; // "Прізвище Ім'я" — для списку й картки оплати
     private Integer studentId;
     private BigDecimal value;
     private LocalDate date;

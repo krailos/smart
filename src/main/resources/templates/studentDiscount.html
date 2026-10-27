@@ -27,7 +27,7 @@
                                 <option th:each="student : ${students}"
                                         th:text="|${student.lastName} ${student.firstName} (${student.contactName} - ${student.phone})|"
                                         th:value="${student.id}"
-                                        th:selected="${studentDiscount.student.id == student.id}">name</option>
+                                        th:selected="${studentDiscount.studentId == student.id}">name</option>
                             </select>
                         </div>
                         <div class="col-md-6">
@@ -37,7 +37,7 @@
                                 <option th:each="subject : ${subjects}"
                                         th:text="${subject.name}"
                                         th:value="${subject.id}"
-                                        th:selected="${studentDiscount.subject.id == subject.id}">name</option>
+                                        th:selected="${studentDiscount.subjectId == subject.id}">name</option>
                             </select>
                         </div>
                         <div class="col-md-6">
@@ -47,7 +47,7 @@
                                 <option th:each="discount : ${discounts}"
                                         th:text="|${discount.name} — ${discount.value} %|"
                                         th:value="${discount.id}"
-                                        th:selected="${studentDiscount.discount.id == discount.id}">name</option>
+                                        th:selected="${studentDiscount.discountId == discount.id}">name</option>
                             </select>
                         </div>
                         <div class="col-md-6">

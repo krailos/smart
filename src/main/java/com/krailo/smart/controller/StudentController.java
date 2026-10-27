@@ -8,6 +8,7 @@ import com.krailo.smart.enumeration.StudentStatus;
 import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.service.GangService;
 import com.krailo.smart.service.StudentService;
+import com.krailo.smart.service.StudentsDiscountsService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
@@ -25,6 +26,7 @@ public class StudentController {
 
     private StudentService studentService;
     private GangService gangService;
+    private StudentsDiscountsService studentsDiscountsService;
 
     // за якими полями дозволено сортувати (ті, що є в заголовку таблиці)
     private static final Set<String> SORT_FIELDS = Set.of("id", "lastName", "balance");
@@ -86,7 +88,8 @@ public class StudentController {
     // знижки учня (була /studentsDiscounts/{id}/byStudent)
     @GetMapping("/{id}/discounts")
     public String discounts(@PathVariable("id") Integer id, Model model) {
-        model.addAttribute("studentsDiscounts", studentService.findByIdEntity(id).getStudentsDiscounts());
+        studentService.findByIdEntity(id); // немає такого учня — 404
+        model.addAttribute("studentsDiscounts", studentsDiscountsService.findAllByStudentId(id));
         return "studentsDiscounts";
     }
 

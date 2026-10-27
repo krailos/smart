@@ -1,21 +1,21 @@
 package com.krailo.smart.dto;
 
-import com.krailo.smart.entity.Discount;
-import com.krailo.smart.entity.Student;
-import com.krailo.smart.entity.Subject;
 import lombok.Value;
 
 import java.time.LocalDate;
 
+// пласкі поля замість сутностей: id — для форми (вибір у списках), назви — для показу.
+// З форми приходять лише id і date, решта — null
 @Value
 public class StudentsDiscountsDto {
 
     private Integer id;
-    private Discount discount;
     private Integer discountId;
-    private Student student;
+    private String discountName;
+    private Integer discountValue; // у відсотках
     private Integer studentId;
-    private Subject subject;
+    private String studentName;    // "Прізвище Ім'я"
     private Integer subjectId;
+    private String subjectName;
     private LocalDate date;
 }

@@ -5,8 +5,9 @@
 <div class="app">
     <th:block th:replace="~{fragments/layout :: sidebar('home')}"></th:block>
 
-    <main class="app-main">
-        <div class="page-header">
+    <!-- page-home: фон smartum-3.jpg на всю основну область (див. app.css) -->
+    <main class="app-main page-home">
+        <div class="page-header page-hero">
             <div>
                 <h1 class="page-title">Вітаємо в Smartum</h1>
                 <div class="page-subtitle">Перегінське · що робимо сьогодні?</div>
@@ -78,10 +79,6 @@
                 </a>
             </div>
             </th:block>
-        </div>
-
-        <div class="card overflow-hidden">
-            <img th:src="@{/smartum.jpg}" class="img-fluid w-100" alt="Smartum">
         </div>
     </main>
 </div>

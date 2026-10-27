@@ -53,7 +53,7 @@
                             <a th:href="@{/teachers/{id}/gangs(id=${teacher.id})}"
                                class="badge rounded-pill text-bg-light border text-decoration-none fw-semibold"
                                title="Групи вчителя">
-                                <i class="bi bi-people"></i> <span th:text="${teacher.getGangs().size()}"></span>
+                                <i class="bi bi-people"></i> <span th:text="${teacher.gangsCount}"></span>
                             </a>
                         </td>
                         <td class="col-actions">

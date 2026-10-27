@@ -24,7 +24,7 @@ public class TeacherController {
     // /teachers — активні, /teachers?archived=true — архів (той самий шаблон)
     @GetMapping
     public String findAll(@RequestParam(defaultValue = "false") boolean archived, Model model) {
-        model.addAttribute("teachers", archived ? teacherService.findAllArchived() : teacherService.findAll());
+        model.addAttribute("teachers", teacherService.findAllWithGangs(archived));
         model.addAttribute("archived", archived);
         return "teachers";
     }

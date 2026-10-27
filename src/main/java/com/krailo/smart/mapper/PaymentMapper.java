@@ -34,7 +34,7 @@ public class PaymentMapper implements Mapper<Payment, PaymentDto> {
     public PaymentDto mapEntityToDto(Payment e, boolean storned) {
         return new PaymentDto(
                 e.getId(),                            
-                e.getStudent(), 
+                e.getStudent().getLastName() + " " + e.getStudent().getFirstName(),
                 e.getStudent().getId(), 
                 e.getValue(),
                 e.getDate(),

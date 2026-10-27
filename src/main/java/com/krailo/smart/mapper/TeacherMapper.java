@@ -20,8 +20,14 @@ public class TeacherMapper implements Mapper<Teacher, TeacherDto> {
         return e;
     }
 
+    // без кількості груп — для випадаючих меню і картки вчителя: групи з бази не вантажаться
     @Override
     public TeacherDto mapEntityToDto(Teacher e) {
+        return mapEntityToDto(e, null);
+    }
+
+    // для списку вчителів (TeacherService.findAllWithGangs), де показуємо кількість груп
+    public TeacherDto mapEntityToDto(Teacher e, Integer gangsCount) {
         return new TeacherDto(
                 e.getId(),
                 e.getFirstName(),
@@ -32,7 +38,7 @@ public class TeacherMapper implements Mapper<Teacher, TeacherDto> {
                 e.getAddress(),
                 e.getBirthDate(),
                 e.getDescription(),
-                e.getGangs()
+                gangsCount
         );
     }
 
