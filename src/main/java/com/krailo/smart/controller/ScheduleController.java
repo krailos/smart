@@ -8,7 +8,7 @@ import com.krailo.smart.dto.ScheduleDto;
 import com.krailo.smart.dto.SubjectDto;
 import com.krailo.smart.dto.TeacherDto;
 import com.krailo.smart.enumeration.WeekDay;
-import com.krailo.smart.exception.ScheduleConflictException;
+import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.service.AudienceService;
 import com.krailo.smart.service.GangService;
 import com.krailo.smart.service.ScheduleService;
@@ -73,7 +73,7 @@ ScheduleController {
         try {
             scheduleService.create(scheduleDto);
             redirectAttributes.addFlashAttribute("successMessage", "Заняття додано в розклад");
-        } catch (ScheduleConflictException e) {
+        } catch (BusinessException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
             redirectAttributes.addFlashAttribute("draft", scheduleDto);
             redirectAttributes.addFlashAttribute("openForm", true);
@@ -92,7 +92,7 @@ ScheduleController {
         try {
             scheduleService.update(id, scheduleDto);
             redirectAttributes.addFlashAttribute("successMessage", "Заняття змінено");
-        } catch (ScheduleConflictException e) {
+        } catch (BusinessException e) {
             scheduleDto.setId(id);
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
             redirectAttributes.addFlashAttribute("draft", scheduleDto);
@@ -129,7 +129,7 @@ ScheduleController {
     public String create(@ModelAttribute ScheduleDto scheduleDto, Model model) {
         try {
             scheduleService.create(scheduleDto);
-        } catch (ScheduleConflictException e) {
+        } catch (BusinessException e) {
             // показуємо ту саму форму з уже введеними даними та текстом помилки
             model.addAttribute("schedule", scheduleDto);
             model.addAttribute("errorMessage", e.getMessage());
@@ -157,7 +157,7 @@ ScheduleController {
     public String update(@PathVariable("id") Integer id, @ModelAttribute ScheduleDto scheduleDto, Model model) {
         try {
             scheduleService.update(id, scheduleDto);
-        } catch (ScheduleConflictException e) {
+        } catch (BusinessException e) {
             scheduleDto.setId(id); // щоб форма знову відправлялась на /schedules/{id}/update
             model.addAttribute("schedule", scheduleDto);
             model.addAttribute("errorMessage", e.getMessage());

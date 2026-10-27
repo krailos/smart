@@ -24,7 +24,7 @@ public class LessonsStudentsService {
                 .map(lessonsStudentsMapper::mapDtoToEntityForCreate)
                 .map(lessonsStudentsRepository::saveAndFlush)
                 .map(lessonsStudentsMapper::mapEntityToDto)
-                .orElseThrow(() -> new RuntimeException("smth wrong when save lessonsStudents"));
+                .orElseThrow();
     }
 
 

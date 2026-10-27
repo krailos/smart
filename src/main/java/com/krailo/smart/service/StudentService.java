@@ -7,7 +7,7 @@ import com.krailo.smart.entity.GangsStudents;
 import com.krailo.smart.entity.Schedule;
 import com.krailo.smart.entity.Student;
 import com.krailo.smart.exception.BusinessException;
-import com.krailo.smart.exception.ResourceNotFoundException;
+import com.krailo.smart.exception.NotFoundException;
 import com.krailo.smart.mapper.StudentMapper;
 import com.krailo.smart.repository.GangsStudentsRepository;
 import com.krailo.smart.repository.ScheduleRepository;
@@ -92,12 +92,12 @@ public class StudentService {
 
     public StudentDto findById(Integer id) {
         return studentRepository.findById(id).map(studentMapper::mapEntityToDto)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format("student whith id= %d not exist", id)));
+                .orElseThrow(() -> new NotFoundException("Учень", id));
     }
     
     public Student findByIdEntity(Integer id) {
         return studentRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format("student whith id= %d not exist", id)));
+                .orElseThrow(() -> new NotFoundException("Учень", id));
     }
 
 
@@ -110,7 +110,7 @@ public class StudentService {
         return studentRepository.findById(id)
                 .map(entity -> studentMapper.mapDtoToEntityForUpdate(studentDto, entity))
                 .map(studentRepository::saveAndFlush).map(studentMapper::mapEntityToDto)
-                .orElseThrow(() -> new RuntimeException("smth wrong when update"));
+                .orElseThrow(() -> new NotFoundException("Учень", id));
     }
 
     // Архівування замість видалення: учень зникає зі списків і форм,

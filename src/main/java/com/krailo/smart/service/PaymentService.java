@@ -6,7 +6,7 @@ import com.krailo.smart.entity.Student;
 import com.krailo.smart.exception.PaymentException;
 import com.krailo.smart.mapper.PaymentMapper;
 import com.krailo.smart.repository.PaymentRepository;
-import jakarta.persistence.EntityNotFoundException;
+import com.krailo.smart.exception.NotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,12 +32,12 @@ public class PaymentService {
     }
 
     public Payment findByIdEntity(Integer id) {
-        return paymentRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format("Payment whith id= %d not exist", id)));
+        return paymentRepository.findById(id).orElseThrow(() -> new NotFoundException("Оплата", id));
     }
 
     public PaymentDto findById(Integer id) {
         return paymentRepository.findById(id).map(paymentMapper::mapEntityToDto)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Payment whith id= %d not exist", id)));
+                .orElseThrow(() -> new NotFoundException("Оплата", id));
     }
     
     public List<Payment> findAllByStudentEntity(Student student) {

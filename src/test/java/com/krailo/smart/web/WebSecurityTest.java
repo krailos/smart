@@ -209,7 +209,8 @@ class WebSecurityTest {
     @Test
     void errorPages_ShowFriendlyNotFound() throws Exception {
         // немає такого запису / id не число / немає такої адреси — 404 зі зрозумілим текстом, без stackTrace
-        for (String url : List.of("/students/999999", "/students/abc", "/no-such-page")) {
+        // (/lessons/999999 раніше давав 500 — LessonService.findById брав .get() без перевірки)
+        for (String url : List.of("/students/999999", "/lessons/999999", "/students/abc", "/no-such-page")) {
             mvc.perform(get(url).with(admin()).accept(MediaType.TEXT_HTML))
                     .andExpect(status().isNotFound())
                     .andExpect(content().string(containsString("Ресурс відсутній")))

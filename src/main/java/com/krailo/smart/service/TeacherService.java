@@ -7,7 +7,7 @@ import com.krailo.smart.mapper.TeacherMapper;
 import com.krailo.smart.repository.GangRepository;
 import com.krailo.smart.repository.ScheduleRepository;
 import com.krailo.smart.repository.TeacherRepository;
-import jakarta.persistence.EntityNotFoundException;
+import com.krailo.smart.exception.NotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,12 +44,12 @@ public class TeacherService {
 
     public TeacherDto findById(Integer id) {
         return teacherRepository.findById(id).map(teacherMapper::mapEntityToDto)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Teacher whith id= %d not exist", id)));
+                .orElseThrow(() -> new NotFoundException("Вчитель", id));
     }
 
     public Teacher findByIdEntity(Integer id) {
         return teacherRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Teacher whith id= %d not exist", id)));
+                .orElseThrow(() -> new NotFoundException("Вчитель", id));
     }
 
     // Архівування замість видалення: вчитель зникає зі списків і форм,
@@ -78,13 +78,13 @@ public class TeacherService {
     public TeacherDto create(TeacherDto teacherDto) {
         return Optional.of(teacherDto).map(teacherMapper::mapDtoToEntityForCreate)
                 .map(teacherRepository::save).map(teacherMapper::mapEntityToDto)
-                .orElseThrow(() -> new RuntimeException("smth wrong when create"));
+                .orElseThrow();
     }
 
     public TeacherDto update(Integer id, TeacherDto teacherDto) {
         return teacherRepository.findById(id).map(entity -> teacherMapper.mapDtoToEntityForUpdate(teacherDto, entity))
                 .map(teacherRepository::saveAndFlush).map(teacherMapper::mapEntityToDto)
-                .orElseThrow(() -> new RuntimeException("smth wrong when update"));
+                .orElseThrow(() -> new NotFoundException("Вчитель", id));
     }
 
 

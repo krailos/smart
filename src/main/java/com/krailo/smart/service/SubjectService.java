@@ -7,7 +7,7 @@ import com.krailo.smart.mapper.SubjectMapper;
 import com.krailo.smart.repository.GangRepository;
 import com.krailo.smart.repository.ScheduleRepository;
 import com.krailo.smart.repository.SubjectRepository;
-import jakarta.persistence.EntityNotFoundException;
+import com.krailo.smart.exception.NotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,12 +45,12 @@ public class SubjectService {
     // з цінами — картка курсу і сторінка цін курсу
     public SubjectDto findById(Integer id) {
         return subjectRepository.findById(id).map(subjectMapper::mapEntityToDtoWithPrices)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Subject whith id= %d not exist", id)));
+                .orElseThrow(() -> new NotFoundException("Курс", id));
     }
 
     public Subject findByIdEntity(Integer id) {
         return subjectRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Audience whith id= %d not exist", id)));
+                .orElseThrow(() -> new NotFoundException("Курс", id));
     }
 
     public SubjectDto create(SubjectDto subjectDto) {
@@ -62,7 +62,7 @@ public class SubjectService {
         return subjectRepository.findById(id)
                 .map(entity -> subjectMapper.mapDtoToEntityForUpdate(subjectDto, entity))
                 .map(subjectRepository::saveAndFlush).map(subjectMapper::mapEntityToDto)
-                .orElseThrow(() -> new RuntimeException("smth wrong when update"));
+                .orElseThrow(() -> new NotFoundException("Курс", id));
     }
 
     // Архівування замість видалення: курс зникає зі списків і форм, але уроки, ціни й оплати в історії лишаються.

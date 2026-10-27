@@ -9,7 +9,7 @@ import com.krailo.smart.exception.ScheduleConflictException;
 import com.krailo.smart.mapper.ScheduleMapper;
 import com.krailo.smart.repository.GangRepository;
 import com.krailo.smart.repository.ScheduleRepository;
-import jakarta.persistence.EntityNotFoundException;
+import com.krailo.smart.exception.NotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,12 +43,12 @@ public class ScheduleService {
 
     public ScheduleDto findById(Integer id) {
         return scheduleRepository.findById(id).map(scheduleMapper::mapEntityToDto)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Gang whith id= %d not exist", id)));
+                .orElseThrow(() -> new NotFoundException("Розклад", id));
     }
 
     public Schedule findByIdEntity(Integer id) {
         return scheduleRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Audience whith id= %d not exist", id)));
+                .orElseThrow(() -> new NotFoundException("Розклад", id));
     }
 
     public ScheduleDto create(ScheduleDto scheduleDto) {
@@ -65,7 +65,7 @@ public class ScheduleService {
         return scheduleRepository.findById(id)
                 .map(entity -> scheduleMapper.mapDtoToEntityForUpdate(scheduleDto, entity))
                 .map(scheduleRepository::saveAndFlush).map(scheduleMapper::mapEntityToDto)
-                .orElseThrow(() -> new RuntimeException("smth wrong when update"));
+                .orElseThrow(() -> new NotFoundException("Розклад", id));
     }
 
     public boolean delete(Integer id) {
@@ -97,7 +97,7 @@ public class ScheduleService {
         }
 
         Gang gang = gangRepository.findById(d.getGangId())
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Gang whith id= %d not exist", d.getGangId())));
+                .orElseThrow(() -> new NotFoundException("Група", d.getGangId()));
 
         // вчителя не вибрали у формі — беремо основного вчителя групи
         if (d.getTeacherId() == null && gang.getTeacher() != null) {

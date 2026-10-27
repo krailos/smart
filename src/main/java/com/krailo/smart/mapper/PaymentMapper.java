@@ -2,6 +2,7 @@ package com.krailo.smart.mapper;
 
 import com.krailo.smart.dto.PaymentDto;
 import com.krailo.smart.entity.Payment;
+import com.krailo.smart.exception.NotFoundException;
 import com.krailo.smart.repository.PaymentRepository;
 import com.krailo.smart.repository.StudentRepository;
 import lombok.AllArgsConstructor;
@@ -18,7 +19,8 @@ public class PaymentMapper implements Mapper<Payment, PaymentDto> {
     @Override
     public Payment mapDtoToEntityForCreate(PaymentDto d) {
         Payment e = new Payment();      
-        e.setStudent(studentRepository.findById(d.getStudentId()).get());
+        e.setStudent(studentRepository.findById(d.getStudentId())
+                .orElseThrow(() -> new NotFoundException("Учень", d.getStudentId())));
         e.setValue(d.getValue());
         e.setDate(d.getDate());
         e.setDescription(d.getDescription());

@@ -8,7 +8,7 @@ import com.krailo.smart.exception.LessonException;
 import com.krailo.smart.exception.ScheduleConflictException;
 import com.krailo.smart.mapper.LessonMapper;
 import com.krailo.smart.repository.LessonRepository;
-import jakarta.persistence.EntityNotFoundException;
+import com.krailo.smart.exception.NotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,18 +48,16 @@ public class LessonService {
     }
 
     public LessonDto findById(Integer id) {
-        Lesson lesson = lessonRepository.findById(id).get();
+        Lesson lesson = findByIdEntity(id);
         lesson.getLessonsStudents()
                 .sort((o1, o2) -> o1.getStudent().getLastName().compareTo(o2.getStudent().getLastName()));
         LessonDto lessonDto = lessonMapper.mapEntityToDto(lesson);
         return lessonDto;
-//        return lessonRepository.findById(id).map(lessonMapper::mapEntityToDto)
-//                .orElseThrow(() -> new EntityNotFoundException(String.format("Lessson whith id= %d not exist", id)));
     }
 
     public Lesson findByIdEntity(Integer id) {
         return lessonRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Lessson whith id= %d not exist", id)));
+                .orElseThrow(() -> new NotFoundException("Урок", id));
     }
 
     public LessonDto create(LessonDto lessonDto) {
@@ -109,7 +107,7 @@ public class LessonService {
 
         return Optional.of(lesson).map(entity -> lessonMapper.mapDtoToEntityForUpdate(lessonDto, entity))
                 .map(lessonRepository::saveAndFlush).map(lessonMapper::mapEntityToDto)
-                .orElseThrow(() -> new RuntimeException("smth wrong when update"));
+                .orElseThrow(() -> new NotFoundException("Урок", id));
     }
 
     // Перевірка введених даних уроку. Конфлікти (зайнятий вчитель, кабінет, група) перевіряються

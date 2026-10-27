@@ -8,9 +8,7 @@ import com.krailo.smart.dto.LessonDto;
 import com.krailo.smart.dto.LessonsStudentsDto;
 import com.krailo.smart.dto.ScheduleDto;
 import com.krailo.smart.dto.StudentDto;
-import com.krailo.smart.exception.LessonException;
-import com.krailo.smart.exception.PriceNotFoundException;
-import com.krailo.smart.exception.ScheduleConflictException;
+import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.service.*;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -100,7 +98,7 @@ public class LessonController {
         try {
             // урок + відмітки учнів + списання — одна транзакція (див. LessonClosingService)
             lessonClosingService.closeLesson(lessonDto);
-        } catch (ScheduleConflictException | PriceNotFoundException | LessonException e) {
+        } catch (BusinessException e) {
             // нічого не збережено — показуємо ту саму форму з відмітками учнів і текстом помилки
             fillNames(lessonDto);
             model.addAttribute("lesson", lessonDto);
@@ -125,7 +123,7 @@ public class LessonController {
     public String update(@PathVariable("id") Integer id, @ModelAttribute LessonDto lessonDto, Model model) {
         try {
             lessonService.update(id, lessonDto);
-        } catch (ScheduleConflictException | LessonException e) {
+        } catch (BusinessException e) {
             // беремо урок з бази (учні, назви, час) і накладаємо те, що користувач вибрав у формі
             LessonDto lesson = lessonService.findById(id);
             fillEditFormLists(model, lesson.getTeacherId(), lesson.getAudienceId());
@@ -147,7 +145,7 @@ public class LessonController {
             lessonClosingService.stornoLesson(id);
             redirectAttributes.addFlashAttribute("successMessage",
                     "Урок сторновано, гроші повернуто учням. За потреби проведіть урок заново з розкладу");
-        } catch (LessonException e) {
+        } catch (BusinessException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/lessons";

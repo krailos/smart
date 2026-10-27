@@ -15,16 +15,18 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    // Обробка "не знайдено": запис у БД (EntityNotFoundException — більшість сервісів,
-    // ResourceNotFoundException — StudentService), неіснуюча адреса (NoResourceFoundException)
+    // Обробка "не знайдено": запис у БД (NotFoundException — наші сервіси; EntityNotFoundException — сам Hibernate,
+    // якщо пов'язаного запису не стало), неіснуюча адреса (NoResourceFoundException)
     // або id в адресі не число, напр. /teachers/abc (MethodArgumentTypeMismatchException).
     // Параметр — спільний батько Exception, бо NoResourceFoundException не є RuntimeException.
-    @ExceptionHandler({EntityNotFoundException.class, ResourceNotFoundException.class, NoResourceFoundException.class,
+    @ExceptionHandler({NotFoundException.class, EntityNotFoundException.class, NoResourceFoundException.class,
             MethodArgumentTypeMismatchException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public String handleResourceNotFound (Exception ex, Model model){
 
-        log.error("Ось помилка : {}", ex.getMessage(), ex);
+        // 404 — звичайна ситуація (описка в адресі, стара закладка), а не збій: один рядок warn без stack trace,
+        // щоб справжні помилки (error нижче) не тонули в шумі smart.log
+        log.warn("404: {}", ex.getMessage());
 
         // технічний ex.getMessage() — тільки в лог (рядок вище), користувачеві — зрозумілий текст
         model.addAttribute("message", "Можливо, адреса містить помилку або запис було видалено. Спробуйте повернутися на головну.");
@@ -40,6 +42,20 @@ public class GlobalExceptionHandler {
     public String handleAccessDenied(AccessDeniedException ex) {
         log.warn("Доступ заборонено: {}", ex.getMessage());
         return "error/403";
+    }
+
+    // Запасний варіант для порушень бізнес-правил (BusinessException і нащадки: Lesson-, Payment-, PriceNotFound-,
+    // ScheduleConflictException). Зазвичай контролер сам ловить їх і показує текст над формою;
+    // якщо десь try/catch немає — людина все одно бачить зрозумілий текст правила, а не "500".
+    // Це очікувана ситуація, а не збій — у лог рівнем info, без stack trace
+    @ExceptionHandler(BusinessException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String handleBusinessException(BusinessException ex, Model model) {
+        log.info("Порушено правило: {}", ex.getMessage());
+        model.addAttribute("status", 400);
+        model.addAttribute("error", "Дію не виконано");
+        model.addAttribute("message", ex.getMessage());
+        return "error/error";
     }
 
     // Обробка інших помилок. stackTrace користувачеві не показуємо — він є в smart.log (log.error нижче)

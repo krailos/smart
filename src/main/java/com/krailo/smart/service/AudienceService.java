@@ -7,7 +7,7 @@ import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.mapper.AudienceMapper;
 import com.krailo.smart.repository.AudienceRepository;
 import com.krailo.smart.repository.ScheduleRepository;
-import jakarta.persistence.EntityNotFoundException;
+import com.krailo.smart.exception.NotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,12 +35,12 @@ public class AudienceService {
 
     public AudienceDto findById(Integer id) {
         return audienceRepository.findById(id).map(audienceMapper::mapEntityToDto)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Audience whith id= %d not exist", id)));
+                .orElseThrow(() -> new NotFoundException("Аудиторія", id));
     }
 
     public Audience findByIdEntity(Integer id) {
         return audienceRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Audience whith id= %d not exist", id)));
+                .orElseThrow(() -> new NotFoundException("Аудиторія", id));
     }
 
     public AudienceDto create(AudienceDto audienceDto) {
@@ -52,7 +52,7 @@ public class AudienceService {
         return audienceRepository.findById(id)
                 .map(entity -> audienceMapper.mapDtoToEntityForUpdate(audienceDto, entity))
                 .map(audienceRepository::saveAndFlush).map(audienceMapper::mapEntityToDto)
-                .orElseThrow(() -> new RuntimeException("smth wrong when update"));
+                .orElseThrow(() -> new NotFoundException("Аудиторія", id));
     }
 
     // Архівування замість видалення: аудиторія зникає зі списків і форм, але проведені уроки її пам'ятають.

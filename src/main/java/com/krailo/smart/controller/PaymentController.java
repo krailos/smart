@@ -1,7 +1,7 @@
 package com.krailo.smart.controller;
 
 import com.krailo.smart.dto.PaymentDto;
-import com.krailo.smart.exception.PaymentException;
+import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.service.PaymentReceivingService;
 import com.krailo.smart.service.PaymentService;
 import com.krailo.smart.service.StudentService;
@@ -49,7 +49,7 @@ public class PaymentController {
         try {
             // оплата + журнал транзакцій + баланс — одна транзакція (див. PaymentReceivingService)
             paymentReceivingService.receivePayment(paymentDto);
-        } catch (PaymentException e) {
+        } catch (BusinessException e) {
             model.addAttribute("students", studentService.findAll());
             model.addAttribute("errorMessage", e.getMessage());
             return "paymentNew";
@@ -64,7 +64,7 @@ public class PaymentController {
         try {
             paymentReceivingService.stornoPayment(id);
             redirectAttributes.addFlashAttribute("successMessage", "Оплату сторновано");
-        } catch (PaymentException e) {
+        } catch (BusinessException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/payments";

@@ -6,7 +6,7 @@ import com.krailo.smart.enumeration.Role;
 import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.mapper.UserMapper;
 import com.krailo.smart.repository.UserRepository;
-import jakarta.persistence.EntityNotFoundException;
+import com.krailo.smart.exception.NotFoundException;
 import lombok.AllArgsConstructor;
 import com.krailo.smart.entity.Teacher;
 import com.krailo.smart.entity.User;
@@ -137,7 +137,7 @@ public class UserService implements UserDetailsService {
     // не змінив його за незаблокованим комп'ютером), новий — двічі, щоб не помилитись
     public void changeOwnPassword(String name, String currentPassword, String newPassword, String repeatPassword) {
         User user = userRepository.findUserByNameIgnoreCaseAndArchivedFalse(name)
-                .orElseThrow(() -> new EntityNotFoundException("User " + name + " not exist"));
+                .orElseThrow(() -> new NotFoundException("Користувача " + name + " не знайдено"));
         if (currentPassword == null || !passwordEncoder.matches(currentPassword, user.getPassword())) {
             throw new BusinessException("Поточний пароль введено неправильно");
         }
@@ -178,7 +178,7 @@ public class UserService implements UserDetailsService {
 
     private User findByIdEntity(Integer id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("User with id= %d not exist", id)));
+                .orElseThrow(() -> new NotFoundException("Користувач", id));
     }
 
     private void checkPassword(String password) {

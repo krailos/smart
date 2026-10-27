@@ -2,6 +2,7 @@ package com.krailo.smart.mapper;
 
 import com.krailo.smart.dto.StudentsDiscountsDto;
 import com.krailo.smart.entity.StudentsDiscounts;
+import com.krailo.smart.exception.NotFoundException;
 import com.krailo.smart.repository.DiscountRepository;
 import com.krailo.smart.repository.StudentRepository;
 import com.krailo.smart.repository.SubjectRepository;
@@ -20,9 +21,12 @@ public class StudentsDiscountsMapper implements Mapper<StudentsDiscounts, Studen
     public StudentsDiscounts mapDtoToEntityForCreate(StudentsDiscountsDto d) {
         StudentsDiscounts e = new StudentsDiscounts();
         e.setId(d.getId());
-        e.setDiscount(discountRepository.findById(d.getDiscountId()).get());
-        e.setStudent(studentRepository.findById(d.getStudentId()).get());
-        e.setSubject(subjectRepository.findById(d.getSubjectId()).get());
+        e.setDiscount(discountRepository.findById(d.getDiscountId())
+                .orElseThrow(() -> new NotFoundException("Знижка", d.getDiscountId())));
+        e.setStudent(studentRepository.findById(d.getStudentId())
+                .orElseThrow(() -> new NotFoundException("Учень", d.getStudentId())));
+        e.setSubject(subjectRepository.findById(d.getSubjectId())
+                .orElseThrow(() -> new NotFoundException("Курс", d.getSubjectId())));
         e.setDate(d.getDate());
         return e;
     }
@@ -44,9 +48,12 @@ public class StudentsDiscountsMapper implements Mapper<StudentsDiscounts, Studen
     @Override
     public StudentsDiscounts mapDtoToEntityForUpdate(StudentsDiscountsDto d, StudentsDiscounts e) {
         e.setId(d.getId());
-        e.setDiscount(discountRepository.findById(d.getDiscountId()).get());
-        e.setStudent(studentRepository.findById(d.getStudentId()).get());
-        e.setSubject(subjectRepository.findById(d.getSubjectId()).get());
+        e.setDiscount(discountRepository.findById(d.getDiscountId())
+                .orElseThrow(() -> new NotFoundException("Знижка", d.getDiscountId())));
+        e.setStudent(studentRepository.findById(d.getStudentId())
+                .orElseThrow(() -> new NotFoundException("Учень", d.getStudentId())));
+        e.setSubject(subjectRepository.findById(d.getSubjectId())
+                .orElseThrow(() -> new NotFoundException("Курс", d.getSubjectId())));
         e.setDate(d.getDate());
         return e;
     }

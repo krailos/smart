@@ -11,7 +11,7 @@ import com.krailo.smart.repository.GangRepository;
 import com.krailo.smart.repository.GangsStudentsRepository;
 import com.krailo.smart.repository.ScheduleRepository;
 import com.krailo.smart.repository.StudentRepository;
-import jakarta.persistence.EntityNotFoundException;
+import com.krailo.smart.exception.NotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,12 +60,12 @@ public class GangService {
     // з учнями — картка групи, «Учні групи», проведення уроку
     public GangDto findById(Integer id) {
         return gangRepository.findById(id).map(gangMapper::mapEntityToDtoWithStudents)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Gang whith id= %d not exist", id)));
+                .orElseThrow(() -> new NotFoundException("Група", id));
     }
 
     public Gang findByIdEntity(Integer id) {
         return gangRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Audience whith id= %d not exist", id)));
+                .orElseThrow(() -> new NotFoundException("Група", id));
     }
 
     public GangDto create(GangDto gangDto) {
@@ -78,7 +78,7 @@ public class GangService {
         return gangRepository.findById(id)
                 .map(entity -> gangMapper.mapDtoToEntityForUpdate(gangDto, entity))
                 .map(gangRepository::saveAndFlush).map(gangMapper::mapEntityToDto)
-                .orElseThrow(() -> new RuntimeException("smth wrong when update"));
+                .orElseThrow(() -> new NotFoundException("Група", id));
     }
 
     // Архівування замість видалення: група зникає зі списків і форм, але проведені уроки її пам'ятають.
@@ -105,7 +105,7 @@ public class GangService {
         }
         Gang gang = findByIdEntity(gangId);
         Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Student whith id= %d not exist", studentId)));
+                .orElseThrow(() -> new NotFoundException("Учень", studentId));
         if (gang.isArchived()) {
             throw new BusinessException("Група в архіві — додавати учнів не можна");
         }

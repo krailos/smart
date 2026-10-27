@@ -5,7 +5,7 @@ import com.krailo.smart.dto.SubjectDto;
 import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.mapper.PriceMapper;
 import com.krailo.smart.repository.PriceRepository;
-import jakarta.persistence.EntityNotFoundException;
+import com.krailo.smart.exception.NotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,7 +29,7 @@ public class PriceService {
 
     public PriceDto findById(Integer id) {
         return priceRepository.findById(id).map(priceMapper::mapEntityToDto)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Price whith id= %d not exist", id)));
+                .orElseThrow(() -> new NotFoundException("Ціна", id));
     }
 
     public List<PriceDto> findBySubject(SubjectDto subjectDto) {
@@ -52,7 +52,7 @@ public class PriceService {
         return priceRepository.findById(id)
                 .map(entity -> priceMapper.mapDtoToEntityForUpdate(priceDto, entity))
                 .map(priceRepository::saveAndFlush).map(priceMapper::mapEntityToDto)
-                .orElseThrow(() -> new RuntimeException("smth wrong when update"));
+                .orElseThrow(() -> new NotFoundException("Ціна", id));
     }
 
     // браузер теж перевіряє (required, min, step), але форму можна надіслати в обхід нього

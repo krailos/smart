@@ -5,7 +5,6 @@ import com.krailo.smart.dto.GangsStudentsDto;
 import com.krailo.smart.dto.StudentDto;
 import com.krailo.smart.entity.Gang;
 import com.krailo.smart.exception.BusinessException;
-import com.krailo.smart.exception.ScheduleConflictException;
 import com.krailo.smart.service.GangService;
 import com.krailo.smart.service.StudentService;
 import com.krailo.smart.service.SubjectService;
@@ -73,7 +72,7 @@ public class GangController {
         try {
             gangService.addStudent(id, studentId);
             redirectAttributes.addFlashAttribute("successMessage", "Учня додано в групу");
-        } catch (BusinessException | ScheduleConflictException e) {
+        } catch (BusinessException e) {
             // в архіві, уже в групі, зайнятий в цей час в іншій групі
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }

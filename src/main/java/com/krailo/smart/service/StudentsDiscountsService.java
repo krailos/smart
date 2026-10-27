@@ -4,7 +4,7 @@ import com.krailo.smart.dto.StudentsDiscountsDto;
 import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.mapper.StudentsDiscountsMapper;
 import com.krailo.smart.repository.StudentsDiscountsRepository;
-import jakarta.persistence.EntityNotFoundException;
+import com.krailo.smart.exception.NotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +30,7 @@ public class StudentsDiscountsService {
 
     public StudentsDiscountsDto findById(Integer id) {
         return studentsDiscountsRepository.findById(id).map(studentsDiscountsMapper::mapEntityToDto)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("studentsDiscounts whith id= %d not exist", id)));
+                .orElseThrow(() -> new NotFoundException("Знижка учня", id));
     }
 
     public StudentsDiscountsDto create(StudentsDiscountsDto studentsDiscountsDto) {
@@ -48,7 +48,7 @@ public class StudentsDiscountsService {
         return studentsDiscountsRepository.findById(id)
                 .map(entity -> studentsDiscountsMapper.mapDtoToEntityForUpdate(studentsDiscountsDto, entity))
                 .map(studentsDiscountsRepository::saveAndFlush).map(studentsDiscountsMapper::mapEntityToDto)
-                .orElseThrow(() -> new RuntimeException("smth wrong when update"));
+                .orElseThrow(() -> new NotFoundException("Знижка учня", id));
     }
 
     public boolean delete(Integer id) {
