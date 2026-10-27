@@ -34,7 +34,7 @@ public class DiscountController {
     }
 
 
-    @GetMapping("/discount/new")
+    @GetMapping("/new")
     public String createForm(Model model) {
         model.addAttribute("audience", new Audience());
         return "discountNew";

@@ -36,7 +36,7 @@ public class PaymentController {
     }
     
     
-    @GetMapping("/payment/new")
+    @GetMapping("/new")
     public String createForm (Model model) {
     model.addAttribute("students", studentService.findAll());    
     return "paymentNew";

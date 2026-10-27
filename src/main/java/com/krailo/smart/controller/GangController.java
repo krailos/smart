@@ -96,7 +96,7 @@ public class GangController {
 
 
     
-    @GetMapping("/gang/new")
+    @GetMapping("/new")
     public String createForm (Model model) {
     model.addAttribute("gang", new Gang());
     model.addAttribute("subjects", subjectService.findAll());

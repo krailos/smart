@@ -35,7 +35,7 @@ public class AudienceController {
     }
 
 
-    @GetMapping("/audience/new")
+    @GetMapping("/new")
     public String createForm (Model model) {
         model.addAttribute("audience", new Audience());
         return "audienceNew";

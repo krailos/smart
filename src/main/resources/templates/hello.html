@@ -51,7 +51,7 @@
             <!-- адміну: гроші, учні, звіти -->
             <th:block sec:authorize="hasAuthority('ADMIN')">
             <div class="col-sm-6 col-xl-3">
-                <a th:href="@{/payments/payment/new}" class="card quick-action h-100">
+                <a th:href="@{/payments/new}" class="card quick-action h-100">
                     <div class="card-body p-4">
                         <div class="report-icon"><i class="bi bi-cash-coin"></i></div>
                         <div class="fw-bold mt-3">Прийняти оплату</div>
@@ -60,7 +60,7 @@
                 </a>
             </div>
             <div class="col-sm-6 col-xl-3">
-                <a th:href="@{/students/student/new}" class="card quick-action h-100">
+                <a th:href="@{/students/new}" class="card quick-action h-100">
                     <div class="card-body p-4">
                         <div class="report-icon"><i class="bi bi-person-plus"></i></div>
                         <div class="fw-bold mt-3">Додати учня</div>

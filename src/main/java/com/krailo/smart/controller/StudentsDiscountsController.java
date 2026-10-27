@@ -43,7 +43,7 @@ public class StudentsDiscountsController {
     }
     
     
-    @GetMapping("/studentDiscount/new")
+    @GetMapping("/new")
     public String createForm (Model model) {
         model.addAttribute("students", studentService.findAll());
         model.addAttribute("discounts", discountService.findAll());

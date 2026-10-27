@@ -46,7 +46,7 @@ public class TeacherController {
     }
     
     
-    @GetMapping("/teacher/new")
+    @GetMapping("/new")
     public String createForm (Model model) {
     model.addAttribute("teacher", new Teacher());
     return "teacherNew";

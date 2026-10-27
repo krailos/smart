@@ -116,7 +116,7 @@ ScheduleController {
         return "schedule";
     }
 
-    @GetMapping("/schedule/new")
+    @GetMapping("/new")
     public String createForm(Model model) {
         ScheduleDto scheduleDto = ScheduleDto.builder().build();
         model.addAttribute("schedule",scheduleDto );

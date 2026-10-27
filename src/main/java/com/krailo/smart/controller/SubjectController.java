@@ -55,7 +55,7 @@ public class SubjectController {
     }
     
     
-    @GetMapping("/subject/new")
+    @GetMapping("/new")
     public String createForm (Model model) {
     model.addAttribute("subject", new Subject());
     return "subjectNew";

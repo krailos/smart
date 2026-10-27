@@ -91,7 +91,7 @@ public class StudentController {
     }
 
 
-    @GetMapping("/student/new")
+    @GetMapping("/new")
     public String createForm(Model model) {
         model.addAttribute("student", new Student());
         model.addAttribute("gender", Gender.values());
