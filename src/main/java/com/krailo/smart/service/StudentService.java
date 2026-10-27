@@ -13,6 +13,7 @@ import com.krailo.smart.repository.GangsStudentsRepository;
 import com.krailo.smart.repository.ScheduleRepository;
 import com.krailo.smart.repository.StudentRepository;
 import lombok.AllArgsConstructor;
+import org.hibernate.Hibernate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -73,6 +74,13 @@ public class StudentService {
         } else {
             studentPage = studentRepository.findAllByArchived(archived, pageable);
         }
+        // проти N+1: у списку показуємо кількість груп і знижок учня. Вантажимо їх тут, у транзакції, —
+        // перший виклик тягне пачкою списки всіх учнів сторінки. Після транзакції (у шаблоні) пачками не вийде,
+        // і Hibernate робив би окремий запит на кожного учня
+        studentPage.forEach(student -> {
+            Hibernate.initialize(student.getGangsStudents());
+            Hibernate.initialize(student.getStudentsDiscounts());
+        });
         // Мапимо сутності в DTO
         return studentPage.map(student -> studentMapper.mapEntityToDto(student));
     }

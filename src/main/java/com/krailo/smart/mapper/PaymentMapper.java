@@ -27,6 +27,11 @@ public class PaymentMapper implements Mapper<Payment, PaymentDto> {
 
     @Override
     public PaymentDto mapEntityToDto(Payment e) {
+        return mapEntityToDto(e, paymentRepository.existsByStornoOfId(e.getId()));
+    }
+
+    // для списку: чи сторновано — уже відомо (PaymentRepository.findStornedIds), без запиту на кожну оплату
+    public PaymentDto mapEntityToDto(Payment e, boolean storned) {
         return new PaymentDto(
                 e.getId(),                            
                 e.getStudent(), 
@@ -35,7 +40,7 @@ public class PaymentMapper implements Mapper<Payment, PaymentDto> {
                 e.getDate(),
                 e.getDescription(),
                 e.getStornoOf() == null ? null : e.getStornoOf().getId(),
-                paymentRepository.existsByStornoOfId(e.getId()));
+                storned);
     }
 
     // оплати не редагуються — помилку виправляють сторнуванням (PaymentReceivingService.stornoPayment)

@@ -9,6 +9,7 @@ import com.krailo.smart.repository.ScheduleRepository;
 import com.krailo.smart.repository.TeacherRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
+import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,11 +28,19 @@ public class TeacherService {
 
     // тільки активні — для списку вчителів і всіх випадаючих меню у формах
     public List<TeacherDto> findAll() {
-        return teacherRepository.findAllByArchived(false).stream().map(teacherMapper::mapEntityToDto).toList();
+        return mapWithGangs(teacherRepository.findAllByArchived(false));
     }
 
     public List<TeacherDto> findAllArchived() {
-        return teacherRepository.findAllByArchived(true).stream().map(teacherMapper::mapEntityToDto).toList();
+        return mapWithGangs(teacherRepository.findAllByArchived(true));
+    }
+
+    // проти N+1: у списку вчителів показуємо кількість груп. Вантажимо їх тут, у транзакції, —
+    // перший виклик тягне пачкою групи всіх вчителів. Після транзакції (у шаблоні) пачками не вийде,
+    // і Hibernate робив би окремий запит на кожного вчителя
+    private List<TeacherDto> mapWithGangs(List<Teacher> teachers) {
+        teachers.forEach(teacher -> Hibernate.initialize(teacher.getGangs()));
+        return teachers.stream().map(teacherMapper::mapEntityToDto).toList();
     }
 
     public TeacherDto findById(Integer id) {

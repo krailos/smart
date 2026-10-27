@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Transactional
 @Service
@@ -24,7 +25,10 @@ public class PaymentService {
     private PaymentMapper paymentMapper;
 
     public List<PaymentDto> findAll() {
-        return paymentRepository.findAll().stream().map(paymentMapper::mapEntityToDto).toList();
+        Set<Integer> stornedIds = paymentRepository.findStornedIds();
+        return paymentRepository.findAll().stream()
+                .map(payment -> paymentMapper.mapEntityToDto(payment, stornedIds.contains(payment.getId())))
+                .toList();
     }
 
     public Payment findByIdEntity(Integer id) {
