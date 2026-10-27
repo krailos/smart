@@ -5,11 +5,15 @@ import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.service.PaymentReceivingService;
 import com.krailo.smart.service.PaymentService;
 import com.krailo.smart.service.StudentService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.time.LocalDate;
 
 @Controller
 @RequestMapping("/payments")
@@ -38,14 +42,25 @@ public class PaymentController {
     
     @GetMapping("/new")
     public String createForm (Model model) {
-    model.addAttribute("students", studentService.findAll());    
-    return "paymentNew";
+        // порожня оплата для th:object форми; дата за замовчуванням — сьогодні
+        model.addAttribute("payment", new PaymentDto(null, null, null, null, LocalDate.now(), null, null, null));
+        model.addAttribute("students", studentService.findAll());
+        return "paymentNew";
     }
-    
-    
+
+
     @PostMapping("/create")
    // @ResponseStatus(HttpStatus.CREATED)
-    public String create ( @ModelAttribute PaymentDto paymentDto, Model model) {
+    // @Valid — перевірити анотації PaymentDto (@NotNull, @DecimalMin…) ще до сервісу.
+    // BindingResult (обов'язково одразу після перевіряємого параметра) — сюди Spring складає помилки
+    // замість того, щоб кинути виняток; ("payment") — під цим іменем DTO і помилки потраплять у шаблон
+    public String create (@Valid @ModelAttribute("payment") PaymentDto paymentDto, BindingResult bindingResult,
+                          Model model) {
+        if (bindingResult.hasErrors()) {
+            // та сама форма: введені значення й текст помилки біля кожного поля (th:errors у шаблоні)
+            model.addAttribute("students", studentService.findAll());
+            return "paymentNew";
+        }
         try {
             // оплата + журнал транзакцій + баланс — одна транзакція (див. PaymentReceivingService)
             paymentReceivingService.receivePayment(paymentDto);

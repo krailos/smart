@@ -20,34 +20,40 @@
 
         <div class="card form-card">
             <div class="card-body p-4">
-                <!-- після помилки поля заповнюються тим, що вже ввели (${param...} — значення з відправленої форми) -->
-                <form th:action="@{/payments/create}" method="post">
+                <!-- th:object — форма прив'язана до ${payment} (PaymentDto з контролера);
+                     th:field="*{поле}" сам ставить id, name і value — після помилки там те, що вже ввели;
+                     th:errorclass — додає червону рамку (is-invalid), якщо поле не пройшло перевірку @Valid;
+                     th:errors — текст помилки з анотації DTO (message = "...") під полем -->
+                <form th:action="@{/payments/create}" th:object="${payment}" method="post">
                     <div class="row g-3">
                         <div class="col-md-8">
                             <label for="studentId" class="form-label">Учень</label>
-                            <!-- value="" + required: без вибраного учня браузер форму не відправить -->
-                            <select id="studentId" name="studentId" class="form-select" required>
+                            <!-- value="" + required: без вибраного учня браузер форму не відправить
+                                 (а якщо надіслали в обхід браузера — спрацює @NotNull у PaymentDto) -->
+                            <select th:field="*{studentId}" class="form-select" th:errorclass="is-invalid" required>
                                 <option value="">-- Оберіть учня --</option>
                                 <option th:each="student : ${students}"
                                         th:text="|${student.lastName} ${student.firstName} (${student.contactName} - ${student.phone})|"
-                                        th:value="${student.id}"
-                                        th:selected="${param.studentId != null and param.studentId.toString() == student.id.toString()}">name</option>
+                                        th:value="${student.id}">name</option>
                             </select>
+                            <div class="invalid-feedback" th:errors="*{studentId}"></div>
                         </div>
                         <div class="col-md-4">
                             <label for="date" class="form-label">Дата</label>
-                            <input class="form-control" id="date" type="date" name="date"
-                                   th:value="${param.date != null} ? ${param.date.toString()} : ${#dates.format(#dates.createToday(), 'yyyy-MM-dd')}"/>
+                            <input class="form-control" type="date" th:field="*{date}" th:errorclass="is-invalid"/>
+                            <div class="invalid-feedback" th:errors="*{date}"></div>
                         </div>
                         <div class="col-md-4">
                             <label for="value" class="form-label">Сума, грн</label>
-                            <input class="form-control" id="value" type="number" min="0.01" step="0.01" name="value" required
-                                   th:value="${param.value != null} ? ${param.value.toString()}"/>
+                            <input class="form-control" type="number" min="0.01" step="0.01" th:field="*{value}" required
+                                   th:errorclass="is-invalid"/>
+                            <div class="invalid-feedback" th:errors="*{value}"></div>
                         </div>
                         <div class="col-md-8">
                             <label for="description" class="form-label">Примітка</label>
-                            <input class="form-control" id="description" type="text" name="description"
-                                   th:value="${param.description != null} ? ${param.description.toString()}"/>
+                            <input class="form-control" type="text" maxlength="150" th:field="*{description}"
+                                   th:errorclass="is-invalid"/>
+                            <div class="invalid-feedback" th:errors="*{description}"></div>
                         </div>
 
                         <div class="col-12 form-actions">
