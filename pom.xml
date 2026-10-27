@@ -106,6 +106,13 @@
             <artifactId>spring-boot-starter-data-jpa-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- MockMvc: тести веб-шару (адреси, доступ за ролями, CSRF, сторінки помилок) без запуску сервера.
+             У Spring Boot 4 — окремий модуль; лише для тестів, у застосунок не потрапляє -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc-test</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
