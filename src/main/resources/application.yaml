@@ -19,6 +19,9 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        # проти N+1: пов'язані дані (групи учня, учні уроку, ціни курсу…) Hibernate довантажує не по одному
+        # запиту на кожен рядок списку, а пачками — WHERE id IN (?, ?, … до 50 значень)
+        default_batch_fetch_size: 50
   flyway:
     baseline-on-migrate: true
     # db/migration — спільні міграції; db/vendor/{vendor} — лише для конкретної бази
