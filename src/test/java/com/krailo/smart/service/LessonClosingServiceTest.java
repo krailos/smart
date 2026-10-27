@@ -194,6 +194,70 @@ class LessonClosingServiceTest {
         assertThat(balance()).isZero();
     }
 
+    @Test
+    void shouldChargePriceValidOnLessonDate_WhenPriceChanged() {
+        // Given: ціна курсу змінювалась — 100 з 01.09, 120 з 01.10, і вже внесена майбутня 150 з 01.11
+        priceRepository.save(Price.builder().subject(subject).value(new BigDecimal("100")).date(LocalDate.of(2026, 9, 1)).build());
+        priceRepository.save(Price.builder().subject(subject).value(new BigDecimal("120")).date(LocalDate.of(2026, 10, 1)).build());
+        priceRepository.save(Price.builder().subject(subject).value(new BigDecimal("150")).date(LocalDate.of(2026, 11, 1)).build());
+
+        // When: урок 28.09 (діяла ціна 100) і урок 26.10 (діє 120; майбутня 150 ще не настала)
+        lessonClosingService.closeLesson(lessonDto(LocalDate.of(2026, 9, 28), true, true));
+        lessonClosingService.closeLesson(lessonDto(LESSON_DATE, true, true));
+
+        // Then: кожен урок — за ціною, що діяла саме на його дату
+        assertThat(transactionStudentRepository.findAll())
+                .extracting(TransactionStudent::getCredit)
+                .usingElementComparator(BigDecimal::compareTo)
+                .containsExactlyInAnyOrder(new BigDecimal("100"), new BigDecimal("120"));
+        assertThat(balance()).isEqualByComparingTo("-220");
+    }
+
+    @Test
+    void shouldApplyOnlyDiscountOfLessonSubjectValidOnLessonDate() {
+        // Given: ціна 100; у учня кілька знижок
+        priceRepository.save(Price.builder().subject(subject).value(new BigDecimal("100")).date(LocalDate.of(2026, 9, 1)).build());
+        Subject drawing = subjectRepository.save(Subject.builder().name("Малювання").build());
+        discount(drawing, 50, LocalDate.of(2026, 9, 1));    // інший курс — не має зачепити англійську
+        discount(subject, 5, LocalDate.of(2026, 8, 1));     // давня знижка цього курсу
+        discount(subject, 20, LocalDate.of(2026, 9, 1));    // новіша — вона й діє на 26.10
+        discount(subject, 30, LocalDate.of(2026, 11, 1));   // майбутня — ще не діє
+
+        // When
+        lessonClosingService.closeLesson(lessonDto());
+
+        // Then: 20 % від 100 = 20, списано 80
+        assertThat(transactionStudentRepository.findAll()).singleElement()
+                .satisfies(t -> {
+                    assertThat(t.getDiscountPercentage()).isEqualTo(20);
+                    assertThat(t.getDiscountSum()).isEqualByComparingTo("20");
+                    assertThat(t.getCredit()).isEqualByComparingTo("80");
+                });
+        assertThat(balance()).isEqualByComparingTo("-80");
+    }
+
+    @Test
+    void shouldNotCharge_WhenPresentButLessonNotPaid() {
+        // Given: ціна є; учень присутній, але урок безкоштовний (не відмічено «Платний»)
+        priceRepository.save(Price.builder().subject(subject).value(new BigDecimal("100")).date(LocalDate.of(2026, 9, 1)).build());
+
+        // When
+        lessonClosingService.closeLesson(lessonDto(true, false));
+
+        // Then: урок проведено, але нічого не списано
+        assertThat(lessonRepository.count()).isEqualTo(1);
+        assertThat(transactionStudentRepository.findAll())
+                .allSatisfy(t -> assertThat(t.getCredit()).isZero());
+        assertThat(balance()).isZero();
+    }
+
+    private void discount(Subject forSubject, int percent, LocalDate from) {
+        Discount discount = discountRepository.save(Discount.builder()
+                .name("Знижка " + percent + "%").value(percent).date(from).build());
+        studentsDiscountsRepository.save(StudentsDiscounts.builder()
+                .student(student).subject(forSubject).discount(discount).date(from).build());
+    }
+
     private BigDecimal balance() {
         return studentRepository.findById(student.getId()).orElseThrow().getBalance();
     }
@@ -204,13 +268,18 @@ class LessonClosingServiceTest {
     }
 
     private LessonDto lessonDto(boolean present, boolean payed) {
+        return lessonDto(LESSON_DATE, present, payed);
+    }
+
+    // той самий слот розкладу, але на іншу дату (урок за цим слотом — один на дату)
+    private LessonDto lessonDto(LocalDate date, boolean present, boolean payed) {
         return LessonDto.builder()
                 .scheduleId(schedule.getId())
                 .subjectId(subject.getId())
                 .gangId(schedule.getGang().getId())
                 .audienceId(schedule.getAudience().getId())
                 .teacherId(schedule.getTeacher().getId())
-                .date(LESSON_DATE)
+                .date(date)
                 .startTime(schedule.getStartTime())
                 .endTime(schedule.getEndTime())
                 .lessonsStudentsDto(List.of(LessonsStudentsDto.builder()

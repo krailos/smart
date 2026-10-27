@@ -44,6 +44,8 @@ class ReportTest {
     @Autowired private TeacherRepository teacherRepository;
     @Autowired private GangRepository gangRepository;
     @Autowired private ScheduleRepository scheduleRepository;
+    @Autowired private LessonRepository lessonRepository;
+    @Autowired private PaymentRepository paymentRepository;
     @Autowired private JdbcTemplate jdbcTemplate;
 
     private Subject subject;
@@ -120,15 +122,58 @@ class ReportTest {
         assertThat(bill.getClosingBalance()).isEqualByComparingTo("400");
     }
 
+    @Test
+    void shouldShowStornoInStatement_AndNetToZero() {
+        // Given: урок і оплату сторновано (помилки) — у журналі 4 записи: оплата, урок, сторно уроку, сторно оплати
+        lessonClosingService.stornoLesson(lessonRepository.findAll().get(0).getId());
+        paymentReceivingService.stornoPayment(paymentRepository.findAll().get(0).getId());
+
+        // When: період з вересня і до кінця (сторно оплати датується днем сторнування — сьогодні)
+        Bill bill = report.createBill(student, LocalDate.of(2026, 9, 1), LocalDate.of(2099, 12, 31));
+
+        // Then: усі 4 операції видно (історію не ховаємо), а в підсумку — нуль
+        assertThat(bill.getItems()).hasSize(4);
+        assertThat(bill.getItems()).extracting(ItemBill::getBalance)
+                .usingElementComparator(BigDecimal::compareTo)
+                .containsExactly(new BigDecimal("500"), new BigDecimal("400"), new BigDecimal("500"), BigDecimal.ZERO);
+        assertThat(bill.getTotalPaid()).isZero();       // 500 - 500
+        assertThat(bill.getTotalCharged()).isZero();    // 100 - 100
+        assertThat(bill.getClosingBalance()).isZero()
+                .isEqualByComparingTo(studentRepository.findById(student.getId()).orElseThrow().getBalance());
+    }
+
+    @Test
+    void shouldOrderByOperationDate_WhenLessonEnteredLater() {
+        // Given: урок 28.09 провели "заднім числом" — внесли ПІСЛЯ оплати 01.10 і уроку 26.10
+        lessonClosingService.closeLesson(lessonDto(LocalDate.of(2026, 9, 28)));
+
+        // When
+        Bill bill = report.createBill(student, LocalDate.of(2026, 9, 1), LocalDate.of(2026, 10, 31));
+
+        // Then: у виписці — за датою операції, і баланс після кожної рахується в цьому ж порядку
+        assertThat(bill.getItems()).extracting(ItemBill::getDate)
+                .containsExactly(LocalDate.of(2026, 9, 28), PAYMENT_DATE, LESSON_DATE);
+        assertThat(bill.getItems()).extracting(ItemBill::getBalance)
+                .usingElementComparator(BigDecimal::compareTo)
+                .containsExactly(new BigDecimal("-100"), new BigDecimal("400"), new BigDecimal("300"));
+        assertThat(bill.getTotalCharged()).isEqualByComparingTo("200");
+        assertThat(bill.getClosingBalance()).isEqualByComparingTo("300")
+                .isEqualByComparingTo(studentRepository.findById(student.getId()).orElseThrow().getBalance());
+    }
+
     // урок з розкладу: учень присутній, урок платний
     private LessonDto lessonDto() {
+        return lessonDto(LESSON_DATE);
+    }
+
+    private LessonDto lessonDto(LocalDate date) {
         return LessonDto.builder()
                 .scheduleId(schedule.getId())
                 .subjectId(subject.getId())
                 .gangId(schedule.getGang().getId())
                 .audienceId(schedule.getAudience().getId())
                 .teacherId(schedule.getTeacher().getId())
-                .date(LESSON_DATE)
+                .date(date)
                 .startTime(schedule.getStartTime())
                 .endTime(schedule.getEndTime())
                 .lessonsStudentsDto(List.of(LessonsStudentsDto.builder()
