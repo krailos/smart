@@ -32,7 +32,7 @@ public class CurrentUser {
         if (auth == null) {
             return null;
         }
-        return userRepository.findUserByNameAndArchivedFalse(auth.getName())
+        return userRepository.findUserByNameIgnoreCaseAndArchivedFalse(auth.getName())
                 .map(User::getTeacher)
                 .map(teacher -> teacher.getId())
                 .orElse(null);

@@ -38,11 +38,12 @@ public class UserService implements UserDetailsService {
     }
 
     // Вхід у застосунок: Spring шукає користувача тут, а пароль перевіряє сам (PasswordEncoder).
-    // Архівного не знаходимо — для Spring це "невірний логін або пароль"
+    // Архівного не знаходимо — для Spring це "невірний логін або пароль".
+    // Регістр не важливий: увійти можна як "OLENA" чи "olena"
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findUserByNameAndArchivedFalse(username).map(user -> new org.springframework.security.core.userdetails.User(
-                user.getName(),
+        return userRepository.findUserByNameIgnoreCaseAndArchivedFalse(username).map(user -> new org.springframework.security.core.userdetails.User(
+                user.getName(),   // логін як у базі, а не як набрали — далі (меню, «це ви», перевірки) він один
                 user.getPassword(),
                 Collections.singleton(user.getRole())
         )).orElseThrow(() -> new UsernameNotFoundException("failed to retrieve user: " + username));
@@ -67,8 +68,10 @@ public class UserService implements UserDetailsService {
         }
         Teacher teacher = teacherForRole(role, teacherId, null);
         checkPassword(password);
-        if (userRepository.existsByName(login)) {
-            throw new BusinessException("Користувач з логіном «" + login + "» уже є (можливо, в архіві)");
+        // "Olena" і "olena" — той самий логін
+        if (userRepository.existsByNameIgnoreCase(login)) {
+            throw new BusinessException("Користувач з логіном «" + login + "» уже є "
+                    + "(можливо, великими/малими літерами інакше або в архіві)");
         }
         userRepository.save(User.builder()
                 .name(login)
@@ -133,7 +136,7 @@ public class UserService implements UserDetailsService {
     // Користувач сам змінює свій пароль: спершу підтверджує поточний (щоб ніхто чужий
     // не змінив його за незаблокованим комп'ютером), новий — двічі, щоб не помилитись
     public void changeOwnPassword(String name, String currentPassword, String newPassword, String repeatPassword) {
-        User user = userRepository.findUserByNameAndArchivedFalse(name)
+        User user = userRepository.findUserByNameIgnoreCaseAndArchivedFalse(name)
                 .orElseThrow(() -> new EntityNotFoundException("User " + name + " not exist"));
         if (currentPassword == null || !passwordEncoder.matches(currentPassword, user.getPassword())) {
             throw new BusinessException("Поточний пароль введено неправильно");
@@ -150,7 +153,7 @@ public class UserService implements UserDetailsService {
     }
 
     public boolean mustChangePassword(String name) {
-        return userRepository.findUserByNameAndArchivedFalse(name).map(User::isMustChangePassword).orElse(false);
+        return userRepository.findUserByNameIgnoreCaseAndArchivedFalse(name).map(User::isMustChangePassword).orElse(false);
     }
 
     public void archive(Integer id, String currentName) {

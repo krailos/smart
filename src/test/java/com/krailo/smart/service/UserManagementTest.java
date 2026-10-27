@@ -50,18 +50,33 @@ class UserManagementTest {
     }
 
     @Test
+    void shouldIgnoreLoginCase() {
+        // Given: адмін створив "Olena"
+        userService.create("Olena", "temp-pass-1", Role.ADMIN, null);
+
+        // Then: увійти можна з будь-якими великими/малими літерами,
+        // а далі в застосунку логін такий, як у базі ("Olena")
+        assertThat(login("OLENA", "temp-pass-1").getName()).isEqualTo("Olena");
+        assertThat(login("olena", "temp-pass-1").getName()).isEqualTo("Olena");
+
+        // другу "olena" створити не можна — це той самий логін
+        assertThatThrownBy(() -> userService.create("olena", "temp-pass-1", Role.ADMIN, null))
+                .isInstanceOf(BusinessException.class).hasMessageContaining("великими/малими літерами");
+    }
+
+    @Test
     void shouldLinkTeacherLogin_OnlyToOneActiveTeacher() {
         // вчитель без картки — не можна; адмін — без картки, навіть якщо її передали
         assertThatThrownBy(() -> userService.create("anna", "temp-pass-1", Role.TEACHER, null))
                 .isInstanceOf(BusinessException.class).hasMessageContaining("оберіть, хто це з вчителів");
         userService.create("boss", "temp-pass-1", Role.ADMIN, teacher.getId());
-        assertThat(userRepository.findUserByNameAndArchivedFalse("boss").orElseThrow().getTeacher()).isNull();
+        assertThat(userRepository.findUserByNameIgnoreCaseAndArchivedFalse("boss").orElseThrow().getTeacher()).isNull();
 
         // When: логін вчителя
         userService.create("anna", "temp-pass-1", Role.TEACHER, teacher.getId());
 
         // Then: пов'язаний з карткою; другий логін тій самій вчительці — не можна
-        assertThat(userRepository.findUserByNameAndArchivedFalse("anna").orElseThrow().getTeacher().getId())
+        assertThat(userRepository.findUserByNameIgnoreCaseAndArchivedFalse("anna").orElseThrow().getTeacher().getId())
                 .isEqualTo(teacher.getId());
         assertThatThrownBy(() -> userService.create("anna2", "temp-pass-1", Role.TEACHER, teacher.getId()))
                 .isInstanceOf(BusinessException.class).hasMessageContaining("уже є логін «anna»");
@@ -72,17 +87,17 @@ class UserManagementTest {
                 .isInstanceOf(BusinessException.class).hasMessageContaining("в архіві");
 
         // anna в архіві — картка вільна для нового логіна; тоді відновити anna вже не можна
-        Integer annaId = userRepository.findUserByNameAndArchivedFalse("anna").orElseThrow().getId();
+        Integer annaId = userRepository.findUserByNameIgnoreCaseAndArchivedFalse("anna").orElseThrow().getId();
         userService.archive(annaId, "admin");
         userService.create("anna2", "temp-pass-1", Role.TEACHER, teacher.getId());
         assertThatThrownBy(() -> userService.restore(annaId))
                 .isInstanceOf(BusinessException.class).hasMessageContaining("уже є логін «anna2»");
 
         // адмін -> вчитель (через зміну ролі): треба обрати вчителя; вчитель -> адмін: прив'язка знімається
-        Integer bossId = userRepository.findUserByNameAndArchivedFalse("boss").orElseThrow().getId();
+        Integer bossId = userRepository.findUserByNameIgnoreCaseAndArchivedFalse("boss").orElseThrow().getId();
         assertThatThrownBy(() -> userService.changeRole(bossId, Role.TEACHER, null, "admin"))
                 .isInstanceOf(BusinessException.class).hasMessageContaining("оберіть, хто це з вчителів");
-        Integer anna2Id = userRepository.findUserByNameAndArchivedFalse("anna2").orElseThrow().getId();
+        Integer anna2Id = userRepository.findUserByNameIgnoreCaseAndArchivedFalse("anna2").orElseThrow().getId();
         userService.changeRole(anna2Id, Role.ADMIN, teacher.getId(), "admin");
         assertThat(userRepository.findById(anna2Id).orElseThrow().getTeacher()).isNull();
     }
@@ -93,7 +108,7 @@ class UserManagementTest {
         userService.create("  anna ", "temp-pass-1", Role.TEACHER, teacher.getId());
 
         // Then: логін без пробілів по краях, у базі — хеш, з тимчасовим паролем можна увійти
-        User anna = userRepository.findUserByNameAndArchivedFalse("anna").orElseThrow();
+        User anna = userRepository.findUserByNameIgnoreCaseAndArchivedFalse("anna").orElseThrow();
         assertThat(anna.getPassword()).startsWith("{bcrypt}").doesNotContain("temp-pass-1");
         assertThat(login("anna", "temp-pass-1").isAuthenticated()).isTrue();
     }
@@ -119,7 +134,7 @@ class UserManagementTest {
     void shouldResetPassword_OldOneStopsWorking() {
         // Given
         userService.create("anna", "temp-pass-1", Role.TEACHER, teacher.getId());
-        Integer id = userRepository.findUserByNameAndArchivedFalse("anna").orElseThrow().getId();
+        Integer id = userRepository.findUserByNameIgnoreCaseAndArchivedFalse("anna").orElseThrow().getId();
 
         userService.changeOwnPassword("anna", "temp-pass-1", "anna-own-pass", "anna-own-pass");
         assertThat(userService.mustChangePassword("anna")).isFalse();
@@ -175,7 +190,7 @@ class UserManagementTest {
     void shouldNotLogin_WhenArchived_AndLoginAgainAfterRestore() {
         // Given
         userService.create("anna", "temp-pass-1", Role.TEACHER, teacher.getId());
-        Integer id = userRepository.findUserByNameAndArchivedFalse("anna").orElseThrow().getId();
+        Integer id = userRepository.findUserByNameIgnoreCaseAndArchivedFalse("anna").orElseThrow().getId();
 
         // When: в архів — увійти не може (Spring каже "невірний логін або пароль")
         userService.archive(id, "admin");

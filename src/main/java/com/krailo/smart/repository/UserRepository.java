@@ -9,13 +9,13 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Integer> {
 
-    // вхід: тільки активні (архівний користувач увійти не може)
-    Optional<User> findUserByNameAndArchivedFalse(String name);
+    // вхід: тільки активні (архівний користувач увійти не може); регістр не важливий — Olena = olena
+    Optional<User> findUserByNameIgnoreCaseAndArchivedFalse(String name);
 
     List<User> findAllByArchivedOrderByName(boolean archived);
 
-    // логін унікальний серед УСІХ, і архівних теж (UNIQUE у базі, V22)
-    boolean existsByName(String name);
+    // логін унікальний серед УСІХ, і архівних теж, без урахування регістру (у базі — UNIQUE lower(name), V25)
+    boolean existsByNameIgnoreCase(String name);
 
     // активний логін цього вчителя (у вчителя — не більше одного)
     Optional<User> findFirstByTeacherIdAndArchivedFalse(Integer teacherId);

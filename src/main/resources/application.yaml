@@ -21,6 +21,9 @@ spring:
         format_sql: true
   flyway:
     baseline-on-migrate: true
+    # db/migration — спільні міграції; db/vendor/{vendor} — лише для конкретної бази
+    # (Spring підставляє postgresql або h2), напр. V25 з індексом lower(name), якого H2 не знає
+    locations: classpath:db/migration, classpath:db/vendor/{vendor}
 logging:
   level:
     root: INFO                        # Загальний рівень для всього проєкту
