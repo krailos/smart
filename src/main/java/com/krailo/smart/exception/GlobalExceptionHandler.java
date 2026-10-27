@@ -1,10 +1,13 @@
 package com.krailo.smart.exception;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.ui.Model;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -42,6 +45,24 @@ public class GlobalExceptionHandler {
     public String handleAccessDenied(AccessDeniedException ex) {
         log.warn("Доступ заборонено: {}", ex.getMessage());
         return "error/403";
+    }
+
+    // Неправильний HTTP-метод: дію (кнопка з POST, напр. /payments/1/storno) відкрили як адресу (GET) —
+    // вставили в рядок браузера, перейшли за старим посиланням. Без цього обробника — загальний нижче і "500".
+    // Allow — стандартний заголовок відповіді 405: які методи ця адреса приймає
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
+    public String handleMethodNotAllowed(HttpRequestMethodNotSupportedException ex, HttpServletResponse response,
+                                         Model model) {
+        log.warn("405: {}", ex.getMessage());
+        if (ex.getSupportedMethods() != null) {
+            response.setHeader(HttpHeaders.ALLOW, String.join(", ", ex.getSupportedMethods()));
+        }
+        model.addAttribute("status", 405);
+        model.addAttribute("error", "Так відкрити не можна");
+        model.addAttribute("message", "Цю дію виконують кнопкою на сторінці, а не переходом за адресою. "
+                + "Поверніться назад і скористайтеся кнопкою.");
+        return "error/error";
     }
 
     // Запасний варіант для порушень бізнес-правил (BusinessException і нащадки: Lesson-, Payment-, PriceNotFound-,

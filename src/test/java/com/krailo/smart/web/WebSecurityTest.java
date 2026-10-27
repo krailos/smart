@@ -30,6 +30,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -218,6 +219,16 @@ class WebSecurityTest {
                     .andExpect(content().string(not(containsString("at com.krailo"))))
                     .andExpect(content().string(not(containsString("Caused by"))));
         }
+    }
+
+    @Test
+    void wrongHttpMethod_Gives405_NotServerError() throws Exception {
+        // дію (POST-кнопку) відкрили як адресу: вставили в рядок браузера, перейшли за старим посиланням
+        mvc.perform(get("/payments/1/storno").with(admin()).accept(MediaType.TEXT_HTML))
+                .andExpect(status().isMethodNotAllowed())
+                .andExpect(header().string("Allow", "POST"))
+                .andExpect(content().string(containsString("Цю дію виконують кнопкою")))
+                .andExpect(content().string(not(containsString("Внутрішня помилка сервера"))));
     }
 
     @Test

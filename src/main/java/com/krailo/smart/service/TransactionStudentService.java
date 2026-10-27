@@ -11,6 +11,7 @@ import com.krailo.smart.repository.StudentRepository;
 import com.krailo.smart.repository.TransactionStudentRepository;
 import jakarta.persistence.EntityManager;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +23,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Transactional
 @Service
 @AllArgsConstructor
@@ -60,30 +62,14 @@ public class TransactionStudentService {
 
     public void createByLesson(LessonDto lessonDto) {
         entityManager.clear();
-        System.out.println("----TEST LessonDTO----");
-        System.out.println(lessonDto);
         // тільки lesson без колекції (чому її нема хз, щось з кешем хібернейт)
         Lesson lesson = lessonService.findByIdEntity(lessonDto.getId());
-        System.out.println("----TEST Lesson----");
-        System.out.println(lesson);
-        System.out.println("----TEST lessonsStudents on lessons----");
         List<LessonsStudents> lessonsStudents = lessonsStudentsRepository.findAllByLesson(lesson);
-        System.out.println(lessonsStudents.stream().toList());
-        // System.out.println("----TEST select on lessons student----");
-        // колекція lessonsStudent з бази через select
-        // List<LessonsStudents> lessonsStudentsSelected = lessonsStudentsRepository.findAllByLesson(lesson);
-        lessonsStudents.forEach(System.out::println);
-        lessonsStudents.stream().map(ls -> ls.getStudent()).forEach(System.out::println);
-        lessonsStudents.stream().map(ls -> ls.getLesson()).forEach(System.out::println);
-        System.out.println("----TEST subject----");
         Price subjectPrice = findSubjectPrice(lessonDto);
-        System.out.println(subjectPrice);
-        System.out.println("----TEST  transaction fill----");
+        // debug, а не info: у звичайному лозі не потрібно; увімкнути — logging.level.com.krailo.smart.service: DEBUG
+        log.debug("Урок id={}: ціна {} грн, учнів у списку {}", lesson.getId(), subjectPrice.getValue(), lessonsStudents.size());
         List<TransactionStudent> transactionStudentFill = fillTransactionByLesson(lesson, lessonsStudents);
-        transactionStudentFill.stream().forEach(System.out::println);
-        System.out.println("----TEST  transaction calculate and create----");
         calculateSaveTransactionByLesson(subjectPrice, transactionStudentFill);
-        System.out.println("----END TEST----");
     }
 
     private Price findSubjectPrice(LessonDto lessonDto) {
@@ -100,20 +86,15 @@ public class TransactionStudentService {
     private List<TransactionStudent> fillTransactionByLesson(Lesson lesson, List<LessonsStudents> lessonsStudents) {
 
         LocalDate lessonDate = lesson.getDate();
-        System.out.println("lessonDate -------" + lessonDate.toString());
         Subject lessonSubject = lesson.getSubject();
-        System.out.println("lessonSubject-----" + lessonSubject.toString());
         List<TransactionStudent> transactionStudentsList = new ArrayList<>();
         for (LessonsStudents ls : lessonsStudents) {
             Student student = ls.getStudent();
-            System.out.println("-----Test discounts");
             List<StudentsDiscounts> studentsDiscountsList = student.getStudentsDiscounts();
-            studentsDiscountsList.forEach(System.out::println);
             Optional<StudentsDiscounts> studentDiscountFiltered = studentsDiscountsList.stream()
                     .filter(sd -> sd.getSubject().equals(lessonSubject))
                     .filter(sd -> !sd.getDate().isAfter(lessonDate))
                     .max(Comparator.comparing(StudentsDiscounts::getDate));
-            System.out.println("studentDiscountFiltered" + studentDiscountFiltered.toString() );
             int discountPercentage = studentDiscountFiltered.isEmpty() ? 0 : studentDiscountFiltered.get().getDiscount().getValue();
             TransactionStudent transactionStudent = TransactionStudent.builder()
                     .lesson(lesson)
