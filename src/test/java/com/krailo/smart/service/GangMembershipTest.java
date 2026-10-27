@@ -100,6 +100,27 @@ class GangMembershipTest {
     }
 
     @Test
+    void shouldRejectAdding_WhenGangOrStudentIsArchived() {
+        // група в архіві (у "Арт-1" немає занять — архівувати можна) — додавати учнів не можна
+        gangService.archive(art.getId());
+        assertThatThrownBy(() -> gangService.addStudent(art.getId(), ivanenko.getId()))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("Група в архіві");
+
+        // учень в архіві (Іваненко ні в якій групі — архівувати можна) — у групу його не додати
+        studentService.archive(ivanenko.getId());
+        assertThatThrownBy(() -> gangService.addStudent(math.getId(), ivanenko.getId()))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("Іваненко в архіві");
+        assertThat(gangsStudentsRepository.existsByGangIdAndStudentId(math.getId(), ivanenko.getId())).isFalse();
+
+        // відновили учня — додається
+        studentService.restore(ivanenko.getId());
+        gangService.addStudent(math.getId(), ivanenko.getId());
+        assertThat(gangsStudentsRepository.existsByGangIdAndStudentId(math.getId(), ivanenko.getId())).isTrue();
+    }
+
+    @Test
     void shouldRejectStudent_WhenAlreadyInGang() {
         assertThatThrownBy(() -> gangService.addStudent(english.getId(), petrenko.getId()))
                 .isInstanceOf(BusinessException.class)

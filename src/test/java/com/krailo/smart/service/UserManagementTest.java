@@ -50,6 +50,16 @@ class UserManagementTest {
     }
 
     @Test
+    void shouldAcceptLoginOf50Chars_ButNot51() {
+        // межа — саме там, де найчастіше помиляються "на одиницю" (колонка users.name — varchar(50))
+        assertThatThrownBy(() -> userService.create("a".repeat(51), "temp-pass-1", Role.ADMIN, null))
+                .isInstanceOf(BusinessException.class).hasMessageContaining("задовгий");
+
+        userService.create("a".repeat(50), "temp-pass-1", Role.ADMIN, null);
+        assertThat(userRepository.findUserByNameIgnoreCaseAndArchivedFalse("a".repeat(50))).isPresent();
+    }
+
+    @Test
     void shouldIgnoreLoginCase() {
         // Given: адмін створив "Olena"
         userService.create("Olena", "temp-pass-1", Role.ADMIN, null);

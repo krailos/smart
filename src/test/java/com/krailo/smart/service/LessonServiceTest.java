@@ -5,6 +5,7 @@ import com.krailo.smart.entity.Gang;
 import com.krailo.smart.entity.Lesson;
 import com.krailo.smart.entity.Schedule;
 import com.krailo.smart.entity.Teacher;
+import com.krailo.smart.exception.LessonException;
 import com.krailo.smart.exception.ScheduleConflictException;
 import com.krailo.smart.mapper.LessonMapper;
 import com.krailo.smart.repository.LessonRepository;
@@ -183,6 +184,32 @@ class LessonServiceTest {
     }
 
     // успішне збереження: мапер і saveAndFlush повертають урок з id=5
+    @Test
+    void shouldThrowException_WhenNoTeacherSelectedAndGangHasNoTeacher() {
+        // Given: вчителя у формі не вибрали, а в групи немає основного вчителя — підставити нікого
+        Gang gangWithoutTeacher = Gang.builder().id(10).name("Англ-1").build();
+        when(gangService.findByIdEntity(10)).thenReturn(gangWithoutTeacher);
+
+        // When & Then: урок без вчителя не проводимо
+        assertThatThrownBy(() -> lessonService.create(lessonDto(null)))
+                .isInstanceOf(ScheduleConflictException.class)
+                .hasMessageContaining("Оберіть вчителя уроку");
+        verify(lessonRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void shouldNotUpdateStornedLesson() {
+        // Given: урок сторновано (гроші повернуто) — він лишається в історії лише для перегляду
+        Lesson storned = Lesson.builder().id(5).storned(true).build();
+        when(lessonRepository.findById(5)).thenReturn(Optional.of(storned));
+
+        // When & Then: змінити дату чи вчителя такого уроку не можна — тільки провести заново з розкладу
+        assertThatThrownBy(() -> lessonService.update(5, lessonDto(2)))
+                .isInstanceOf(LessonException.class)
+                .hasMessageContaining("Сторнований урок не редагується");
+        verify(lessonRepository, never()).saveAndFlush(any());
+    }
+
     private void stubSuccessfulSave(LessonDto dto) {
         Lesson saved = Lesson.builder().id(5).build();
         when(lessonMapper.mapDtoToEntityForCreate(dto)).thenReturn(saved);

@@ -2,6 +2,7 @@ package com.krailo.smart.service;
 
 import com.krailo.smart.dto.LessonDto;
 import com.krailo.smart.dto.PriceDto;
+import com.krailo.smart.dto.StudentsDiscountsDto;
 import com.krailo.smart.entity.*;
 import com.krailo.smart.enumeration.Gender;
 import com.krailo.smart.enumeration.StudentStatus;
@@ -45,6 +46,10 @@ class ArchiveTest {
     @Autowired private StudentRepository studentRepository;
     @Autowired private GangsStudentsRepository gangsStudentsRepository;
     @Autowired private PriceRepository priceRepository;
+    @Autowired private SubjectService subjectService;
+    @Autowired private StudentsDiscountsService studentsDiscountsService;
+    @Autowired private DiscountRepository discountRepository;
+    @Autowired private StudentsDiscountsRepository studentsDiscountsRepository;
     @Autowired private JdbcTemplate jdbcTemplate;
 
     private Audience audience;
@@ -63,7 +68,7 @@ class ArchiveTest {
     @AfterEach
     void cleanUp() {
         for (String table : List.of("transaction_student", "lessons_students", "lesson", "schedule", "price",
-                "gangs_students", "gang", "student", "teacher", "subject", "audience")) {
+                "students_discounts", "discount", "gangs_students", "gang", "student", "teacher", "subject", "audience")) {
             jdbcTemplate.update("DELETE FROM " + table);
         }
     }
@@ -192,6 +197,72 @@ class ArchiveTest {
                 .subjectId(subject.getId()).value(new BigDecimal("100.500")).date(LocalDate.of(2026, 9, 1)).build());
         assertThat(priceRepository.findAll()).singleElement()
                 .satisfies(p -> assertThat(p.getValue()).isEqualByComparingTo("100.5"));
+    }
+
+    @Test
+    void shouldNotArchiveGang_WhileInSchedule() {
+        // Given: у групи є заняття в розкладі
+        Schedule slot = scheduleRepository.save(schedule());
+
+        // When & Then: архівувати не можна — інакше заняття в розкладі вели б «у нікуди»
+        assertThatThrownBy(() -> gangService.archive(gang.getId()))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("архівувати групу")
+                .hasMessageContaining("розкладі");
+
+        // заняття прибрали з розкладу — тепер можна
+        scheduleService.delete(slot.getId());
+        gangService.archive(gang.getId());
+        assertThat(gangRepository.findById(gang.getId()).orElseThrow().isArchived()).isTrue();
+    }
+
+    @Test
+    void shouldNotArchiveSubject_WhileNeededInFuture() {
+        // 1) є активна група цього курсу — не можна
+        assertThatThrownBy(() -> subjectService.archive(subject.getId()))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("активні групи");
+
+        // 2) групу архівували, але курс ще є в розкладі — теж не можна
+        gangService.archive(gang.getId());
+        Schedule slot = scheduleRepository.save(schedule());
+        assertThatThrownBy(() -> subjectService.archive(subject.getId()))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("архівувати курс")
+                .hasMessageContaining("розкладі");
+
+        // 3) заняття прибрали — курс іде в архів і зникає зі списків
+        scheduleService.delete(slot.getId());
+        subjectService.archive(subject.getId());
+        assertThat(subjectService.findAll()).isEmpty();
+        assertThat(subjectService.findAllArchived()).hasSize(1);
+    }
+
+    @Test
+    void shouldRejectSameDiscountTwice_ButAllowAgainAfterDelete() {
+        // Given: учень і знижка, призначена на курс
+        Student student = studentRepository.save(Student.builder()
+                .firstName("Оля").lastName("Петренко").contactName("мама").phone("067")
+                .gender(Gender.ДІВЧИНА).studentStatus(StudentStatus.УЧЕНЬ).build());
+        Discount discount = discountRepository.save(Discount.builder().name("Сімейна").value(10).date(LocalDate.of(2026, 9, 1)).build());
+        StudentsDiscountsDto first = studentsDiscountsService.create(studentDiscount(student, discount));
+
+        // When & Then: та сама знижка на той самий курс удруге — не можна (знижка рахувалась би двічі)
+        assertThatThrownBy(() -> studentsDiscountsService.create(studentDiscount(student, discount)))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("уже має цю знижку");
+        assertThat(studentsDiscountsRepository.findAll()).hasSize(1);
+
+        // видалену (м'яко) знижку можна призначити знову
+        studentsDiscountsService.delete(first.getId());
+        studentsDiscountsService.create(studentDiscount(student, discount));
+        assertThat(studentsDiscountsRepository.findAll()).hasSize(1);
+    }
+
+    private StudentsDiscountsDto studentDiscount(Student student, Discount discount) {
+        // DTO без builder — конструктор з усіма полями: id, discount, discountId, student, studentId, subject, subjectId, date
+        return new StudentsDiscountsDto(null, null, discount.getId(), null, student.getId(), null, subject.getId(),
+                LocalDate.of(2026, 9, 1));
     }
 
     private Schedule schedule() {
