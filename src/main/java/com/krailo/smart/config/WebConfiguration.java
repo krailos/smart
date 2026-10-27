@@ -13,6 +13,6 @@ public class WebConfiguration implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new MustChangePasswordInterceptor())
-                .excludePathPatterns(CHANGE_PASSWORD_URL, "/login", "/css/**", "/favicon.ico", "/smartum.jpg", "/error");
+                .excludePathPatterns(CHANGE_PASSWORD_URL, "/login", "/css/**", "/favicon.ico", "/smartum-3.jpg", "/error");
     }
 }
