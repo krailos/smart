@@ -1,6 +1,5 @@
 package com.krailo.smart.controller;
 
-import com.krailo.smart.dto.GangDto;
 import com.krailo.smart.dto.StudentDto;
 import com.krailo.smart.entity.Student;
 import com.krailo.smart.enumeration.Gender;
@@ -16,7 +15,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.List;
 import java.util.Set;
 
 @Controller
@@ -76,12 +74,9 @@ public class StudentController {
     // групи учня (була /gangs/{id}/byStudent — там id був учня, а не групи)
     @GetMapping("/{id}/gangs")
     public String gangs(@PathVariable("id") Integer id, Model model) {
-        Student student = studentService.findByIdEntity(id);
+        studentService.findByIdEntity(id); // немає такого учня — 404
         // у шаблон — GangDto, як і в інших списках груп (gangs.html читає назву курсу, прізвище вчителя)
-        List<GangDto> gangs = student.getGangsStudents().stream()
-                .map(gs -> gangService.findById(gs.getGang().getId()))
-                .toList();
-        model.addAttribute("gangs", gangs);
+        model.addAttribute("gangs", gangService.findAllByStudent(id));
         return "gangs";
     }
 

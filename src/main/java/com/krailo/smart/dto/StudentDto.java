@@ -1,22 +1,16 @@
 package com.krailo.smart.dto;
 
-import com.krailo.smart.entity.GangsStudents;
-import com.krailo.smart.entity.LessonsStudents;
-import com.krailo.smart.entity.Payment;
-import com.krailo.smart.entity.StudentsDiscounts;
 import com.krailo.smart.enumeration.Gender;
 import com.krailo.smart.enumeration.StudentStatus;
 import lombok.Value;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 
 @Value
 public class StudentDto {
  
     private Integer id;
-    private List<GangsStudents> gangsStudents;
     private String firstName;
     private String secondName;
     private String lastName;
@@ -29,8 +23,8 @@ public class StudentDto {
     private LocalDate birthDate;
     private String description;
     private BigDecimal balance; // може бути null: у формах учня цього поля немає
-    private List<StudentsDiscounts> studentsDiscounts;
-    private List<Payment> payments;
-    private List<LessonsStudents> lessonsStudents;
+    // кількості — лише для списку учнів (StudentService.findAllByPage); Integer, бо з форм учня приходить null
+    private Integer gangsCount;
+    private Integer discountsCount;
 
 }

@@ -25,24 +25,26 @@ public class SubjectService {
     private GangRepository gangRepository;
     private ScheduleRepository scheduleRepository;
 
-    // тільки активні — для списку курсів і всіх випадаючих меню у формах
+    // тільки активні, без цін — для випадаючих меню у формах
     public List<SubjectDto> findAll() {
-      return findAllByArchived(false);
+      return subjectRepository.findAllByArchived(false).stream().map(subjectMapper::mapEntityToDto).toList();
   }
 
     public List<SubjectDto> findAllArchived() {
-        return findAllByArchived(true);
+        return subjectRepository.findAllByArchived(true).stream().map(subjectMapper::mapEntityToDto).toList();
     }
 
-    private List<SubjectDto> findAllByArchived(boolean archived) {
+    // для списку курсів (subjects.html показує першу ціну — найновішу). Ціни мапляться тут, у транзакції:
+    // перше звернення тягне пачкою ціни всіх курсів (проти N+1)
+    public List<SubjectDto> findAllWithPrices(boolean archived) {
         return subjectRepository.findAllByArchived(archived).stream()
                 .peek(s -> s.getPrices().sort((o1, o2) -> o2.getDate().compareTo(o1.getDate())))
-                .map(subjectMapper::mapEntityToDto).toList();
+                .map(subjectMapper::mapEntityToDtoWithPrices).toList();
     }
 
-
+    // з цінами — картка курсу і сторінка цін курсу
     public SubjectDto findById(Integer id) {
-        return subjectRepository.findById(id).map(subjectMapper::mapEntityToDto)
+        return subjectRepository.findById(id).map(subjectMapper::mapEntityToDtoWithPrices)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Subject whith id= %d not exist", id)));
     }
 

@@ -31,7 +31,7 @@ public class GangService {
     private StudentRepository studentRepository;
     private ScheduleService scheduleService;
 
-    // тільки активні — для списку груп і всіх випадаючих меню у формах
+    // тільки активні, без учнів — для випадаючих меню у формах
     public List<GangDto> findAll() {
       return gangRepository.findAllByArchived(false).stream().map(gangMapper::mapEntityToDto).toList();
   }
@@ -40,13 +40,26 @@ public class GangService {
         return gangRepository.findAllByArchived(true).stream().map(gangMapper::mapEntityToDto).toList();
     }
 
-    public List<GangDto> findAllByTeacher(Teacher teacher) {
-        return gangRepository.findAllByTeacher(teacher).stream().map(gangMapper::mapEntityToDto).toList();
+    // списки груп (gangs.html показує кількість учнів). Учні мапляться тут, у транзакції:
+    // перше звернення тягне пачкою учнів усіх груп (проти N+1)
+    public List<GangDto> findAllWithStudents(boolean archived) {
+        return gangRepository.findAllByArchived(archived).stream().map(gangMapper::mapEntityToDtoWithStudents).toList();
     }
 
+    public List<GangDto> findAllByTeacher(Teacher teacher) {
+        return gangRepository.findAllByTeacher(teacher).stream().map(gangMapper::mapEntityToDtoWithStudents).toList();
+    }
 
+    // групи учня (/students/{id}/gangs)
+    public List<GangDto> findAllByStudent(Integer studentId) {
+        return gangsStudentsRepository.findAllByStudentId(studentId).stream()
+                .map(GangsStudents::getGang)
+                .map(gangMapper::mapEntityToDtoWithStudents).toList();
+    }
+
+    // з учнями — картка групи, «Учні групи», проведення уроку
     public GangDto findById(Integer id) {
-        return gangRepository.findById(id).map(gangMapper::mapEntityToDto)
+        return gangRepository.findById(id).map(gangMapper::mapEntityToDtoWithStudents)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Gang whith id= %d not exist", id)));
     }
 

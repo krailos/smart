@@ -3,6 +3,7 @@ package com.krailo.smart.repository;
 import com.krailo.smart.entity.GangsStudents;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -15,4 +16,7 @@ public interface GangsStudentsRepository extends JpaRepository<GangsStudents, In
     boolean existsByGangIdAndStudentId(Integer gangId, Integer studentId);
 
     Optional<GangsStudents> findByGangIdAndStudentId(Integer gangId, Integer studentId);
+
+    // групи учня (через зв'язок «учень у групі»)
+    List<GangsStudents> findAllByStudentId(Integer studentId);
 }

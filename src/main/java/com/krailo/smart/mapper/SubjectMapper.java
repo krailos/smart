@@ -12,15 +12,24 @@ public class SubjectMapper implements Mapper<Subject, SubjectDto> {
 
     PriceMapper priceMapper;
 
+    // без цін (pricesDto = null) — для випадаючих меню: ціни курсу з бази не вантажаться
     @Override
     public SubjectDto mapEntityToDto(Subject entity) {
+        return builder(entity).build();
+    }
 
+    // з цінами — список курсів, картка курсу, сторінка цін
+    public SubjectDto mapEntityToDtoWithPrices(Subject entity) {
+        return builder(entity)
+                .pricesDto(entity.getPrices().stream().map(priceMapper::mapEntityToDto).toList())
+                .build();
+    }
+
+    private SubjectDto.SubjectDtoBuilder builder(Subject entity) {
         return SubjectDto.builder()
                 .id(entity.getId())
                 .name(entity.getName())
-                .description(entity.getDescription())
-                .pricesDto(entity.getPrices().stream().map(priceMapper::mapEntityToDto).toList())
-                .build();
+                .description(entity.getDescription());
     }
 
     @Override

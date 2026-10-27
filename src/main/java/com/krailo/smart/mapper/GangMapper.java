@@ -12,8 +12,21 @@ import org.springframework.stereotype.Component;
 public class GangMapper implements Mapper<Gang, GangDto> {
 
     GangsStudentsMapper gangsStudentsMapper;
+
+    // без учнів (gangsStudentsDto = null) — для випадаючих меню: учні групи з бази не вантажаться
     @Override
     public GangDto mapEntityToDto(Gang o) {
+        return builder(o).build();
+    }
+
+    // з учнями — для списків груп (gangs.html показує кількість), картки групи й проведення уроку
+    public GangDto mapEntityToDtoWithStudents(Gang o) {
+        return builder(o)
+                .gangsStudentsDto(o.getGangStudents().stream().map(gangsStudentsMapper::mapEntityToDto).toList())
+                .build();
+    }
+
+    private GangDto.GangDtoBuilder builder(Gang o) {
         return GangDto.builder().id(o.getId())
                 .name(o.getName())
                 .description(o.getDescription())
@@ -21,9 +34,7 @@ public class GangMapper implements Mapper<Gang, GangDto> {
                 .subjectNme(o.getSubject().getName())
                 .teacherId(o.getTeacher().getId())
                 .teacherLastName(o.getTeacher().getLastName())
-                .teacherFirstName(o.getTeacher().getFirstName())
-                .gangsStudentsDto(o.getGangStudents().stream().map(gangsStudentsMapper::mapEntityToDto).toList())
-                .build();
+                .teacherFirstName(o.getTeacher().getFirstName());
     }
 
     @Override

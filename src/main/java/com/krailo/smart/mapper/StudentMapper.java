@@ -13,7 +13,6 @@ public class StudentMapper implements Mapper<Student, StudentDto> {
     @Override
     public Student mapDtoToEntityForCreate(StudentDto d) {
         Student e = new Student();
-        e.setGangsStudents(d.getGangsStudents());
         e.setFirstName(d.getFirstName());
         e.setSecondName(d.getSecondName());
         e.setLastName(d.getLastName());
@@ -26,17 +25,19 @@ public class StudentMapper implements Mapper<Student, StudentDto> {
         e.setBirthDate(d.getBirthDate()); 
         e.setDescription(d.getDescription());
         e.setBalance(BigDecimal.ZERO); // новий учень завжди починає з нульовим балансом
-        e.setStudentsDiscounts(d.getStudentsDiscounts());       
-        e.setPayments(d.getPayments());      
-        e.setLessonsStudents(d.getLessonsStudents());       
         return e;
     }
 
+    // без кількостей — для картки, форм і випадаючих меню: групи й знижки з бази не вантажаться
     @Override
     public StudentDto mapEntityToDto(Student e) {
+        return mapEntityToDto(e, null, null);
+    }
+
+    // для списку учнів (StudentService.findAllByPage), де показуємо кількість груп і знижок
+    public StudentDto mapEntityToDto(Student e, Integer gangsCount, Integer discountsCount) {
         return new StudentDto(
                 e.getId(), 
-                e.getGangsStudents(), 
                 e.getFirstName(), 
                 e.getSecondName(), 
                 e.getLastName(),
@@ -49,16 +50,14 @@ public class StudentMapper implements Mapper<Student, StudentDto> {
                 e.getBirthDate(), 
                 e.getDescription(),
                 e.getBalance(),
-                e.getStudentsDiscounts(),
-                e.getPayments(),
-                e.getLessonsStudents()           
+                gangsCount,
+                discountsCount
                 );
         
     }
 
     @Override
     public Student mapDtoToEntityForUpdate(StudentDto d, Student e) {
-        e.setGangsStudents(d.getGangsStudents());
         e.setFirstName(d.getFirstName());
         e.setSecondName(d.getSecondName());
         e.setLastName(d.getLastName());
@@ -71,9 +70,6 @@ public class StudentMapper implements Mapper<Student, StudentDto> {
         e.setBirthDate(d.getBirthDate()); 
         e.setDescription(d.getDescription());
         // баланс НЕ беремо з форми: його змінюють тільки оплати та уроки (TransactionStudentService)
-        e.setStudentsDiscounts(d.getStudentsDiscounts());
-        e.setPayments(d.getPayments());
-        e.setLessonsStudents(d.getLessonsStudents());
         return e;
     }
 

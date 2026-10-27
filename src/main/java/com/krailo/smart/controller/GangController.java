@@ -32,7 +32,7 @@ public class GangController {
     // /gangs — активні, /gangs?archived=true — архів (той самий шаблон)
     @GetMapping
     public String findAll(@RequestParam(defaultValue = "false") boolean archived, Model model) {
-        model.addAttribute("gangs", archived ? gangService.findAllArchived() : gangService.findAll());
+        model.addAttribute("gangs", gangService.findAllWithStudents(archived));
         model.addAttribute("archived", archived);
         return "gangs";
     }

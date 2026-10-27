@@ -14,6 +14,9 @@ spring:
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
+    # сесія з базою закривається разом із транзакцією сервісу, а не тримається до кінця малювання сторінки.
+    # Шаблон отримує готові DTO; якщо десь лишився лінивий зв'язок — буде помилка 500, а не тихі зайві запити
+    open-in-view: false
     ddl-auto: none
     show-sql: false
     properties:

@@ -21,7 +21,7 @@ public class SubjectController {
     // /subjects — активні, /subjects?archived=true — архів (той самий шаблон)
     @GetMapping
     public String findAll(@RequestParam(defaultValue = "false") boolean archived, Model model) {
-        model.addAttribute("subjects", archived ? subjectService.findAllArchived() : subjectService.findAll());
+        model.addAttribute("subjects", subjectService.findAllWithPrices(archived));
         model.addAttribute("archived", archived);
         return "subjects";
     }
