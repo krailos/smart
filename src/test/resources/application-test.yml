@@ -19,6 +19,13 @@ spring:
     # Вмикаємо виконання файлу data_v1.sql ПІСЛЯ того, як Hibernate створить схему
     defer-datasource-initialization: true
 
+  # Схему тестової бази будує ТІЛЬКИ Hibernate (з @Entity, рядок ddl-auto вище).
+  # З увімкненим Flyway її будували двоє: міграції (V16 — таблиці з UNIQUE, яких V20 у H2 не прибирає,
+  # бо шукає їх за назвами PostgreSQL) і Hibernate (без UNIQUE) — і результат залежав від порядку тестів.
+  # Міграції однаково виконуються на справжньому PostgreSQL при кожному запуску застосунку.
+  flyway:
+    enabled: false
+
 # 2. Секція логування (З САМОГО ПОЧАТКУ, на одному рівні зі spring)
 logging:
   level:
