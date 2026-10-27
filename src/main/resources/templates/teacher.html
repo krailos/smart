@@ -8,7 +8,7 @@
     <main class="app-main">
         <div class="page-header">
             <div>
-                <h1 class="page-title" th:text="${teacher.lastName + ' ' + teacher.firstName}">Вчитель</h1>
+                <h1 class="page-title" th:text="${#strings.isEmpty(teacher.lastName)} ? 'Вчитель' : ${teacher.lastName + ' ' + teacher.firstName}">Вчитель</h1>
                 <div class="page-subtitle"><a th:href="@{/teachers}">Вчителі</a> / редагування</div>
             </div>
         </div>
@@ -19,38 +19,45 @@
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label for="lastName" class="form-label">Прізвище</label>
-                            <input class="form-control" id="lastName" type="text" name="lastName" th:value="*{lastName}"/>
+                            <input class="form-control" type="text" maxlength="50" required th:field="*{lastName}" th:errorclass="is-invalid"/>
+                            <div class="invalid-feedback" th:errors="*{lastName}"></div>
                         </div>
                         <div class="col-md-4">
                             <label for="firstName" class="form-label">Ім'я</label>
-                            <input class="form-control" id="firstName" type="text" name="firstName" th:value="*{firstName}"/>
+                            <input class="form-control" type="text" maxlength="50" required th:field="*{firstName}" th:errorclass="is-invalid"/>
+                            <div class="invalid-feedback" th:errors="*{firstName}"></div>
                         </div>
                         <div class="col-md-4">
                             <label for="secondName" class="form-label">По батькові</label>
-                            <input class="form-control" id="secondName" type="text" name="secondName" th:value="*{secondName}"/>
+                            <input class="form-control" type="text" maxlength="50" th:field="*{secondName}" th:errorclass="is-invalid"/>
+                            <div class="invalid-feedback" th:errors="*{secondName}"></div>
                         </div>
 
                         <div class="col-md-4">
                             <label for="phone" class="form-label">Телефон</label>
-                            <input class="form-control" id="phone" type="text" name="phone" th:value="*{phone}"/>
+                            <input class="form-control" type="text" maxlength="50" th:field="*{phone}" th:errorclass="is-invalid"/>
+                            <div class="invalid-feedback" th:errors="*{phone}"></div>
                         </div>
                         <div class="col-md-4">
                             <label for="email" class="form-label">Email</label>
-                            <input class="form-control" id="email" type="email" name="email" th:value="*{email}"/>
+                            <input class="form-control" type="email" maxlength="50" th:field="*{email}" th:errorclass="is-invalid"/>
+                            <div class="invalid-feedback" th:errors="*{email}"></div>
                         </div>
                         <div class="col-md-4">
                             <label for="birthDate" class="form-label">Дата народження</label>
-                            <input class="form-control" id="birthDate" type="date" name="birthDate" th:value="*{birthDate}"/>
+                            <input class="form-control" type="date" th:field="*{birthDate}" th:errorclass="is-invalid"/>
+                            <div class="invalid-feedback" th:errors="*{birthDate}"></div>
                         </div>
 
                         <div class="col-12">
                             <label for="address" class="form-label">Адреса</label>
-                            <input class="form-control" id="address" type="text" name="address" th:value="*{address}"/>
+                            <input class="form-control" type="text" maxlength="150" th:field="*{address}" th:errorclass="is-invalid"/>
+                            <div class="invalid-feedback" th:errors="*{address}"></div>
                         </div>
                         <div class="col-12">
                             <label for="description" class="form-label">Опис</label>
-                            <textarea class="form-control" id="description" name="description" rows="3"
-                                      th:text="*{description}"></textarea>
+                            <textarea class="form-control" maxlength="150" th:field="*{description}" th:errorclass="is-invalid" rows="3"></textarea>
+                            <div class="invalid-feedback" th:errors="*{description}"></div>
                         </div>
 
                         <div class="col-12 form-actions">

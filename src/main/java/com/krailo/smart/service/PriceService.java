@@ -2,6 +2,7 @@ package com.krailo.smart.service;
 
 import com.krailo.smart.dto.PriceDto;
 import com.krailo.smart.dto.SubjectDto;
+import com.krailo.smart.entity.Price;
 import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.mapper.PriceMapper;
 import com.krailo.smart.repository.PriceRepository;
@@ -12,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
 @Transactional
 @Service
@@ -43,8 +43,8 @@ public class PriceService {
         if (priceRepository.existsBySubjectIdAndDate(priceDto.getSubjectId(), priceDto.getDate())) {
             throw new BusinessException(String.format("Ціна цього курсу на %s уже є", priceDto.getDate()));
         }
-        return Optional.of(priceDto).map(priceMapper::mapDtoToEntityForCreate).map(priceRepository::save)
-                .map(priceMapper::mapEntityToDto).orElseThrow();
+        Price price = priceRepository.save(priceMapper.mapDtoToEntityForCreate(priceDto));
+        return priceMapper.mapEntityToDto(price);
     }
 
     public PriceDto update(Integer id, PriceDto priceDto) {

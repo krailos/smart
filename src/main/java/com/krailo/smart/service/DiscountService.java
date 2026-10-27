@@ -4,13 +4,14 @@ import com.krailo.smart.dto.DiscountDto;
 import com.krailo.smart.entity.Discount;
 import com.krailo.smart.mapper.DiscountMapper;
 import com.krailo.smart.repository.DiscountRepository;
+import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.exception.NotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Optional;
 
 @Transactional
 @Service
@@ -35,15 +36,26 @@ public class DiscountService {
     }
 
     public DiscountDto create(DiscountDto discountDto) {
-        return Optional.of(discountDto).map(discountMapper::mapDtoToEntityForCreate).map(discountRepository::save)
-                .map(discountMapper::mapEntityToDto).orElseThrow();
+        checkUnique(discountDto, 0);
+        Discount discount = discountRepository.save(discountMapper.mapDtoToEntityForCreate(discountDto));
+        return discountMapper.mapEntityToDto(discount);
     }
 
     public DiscountDto update(Integer id, DiscountDto discountDto) {
+        checkUnique(discountDto, id);
         return discountRepository.findById(id)
                 .map(entity -> discountMapper.mapDtoToEntityForUpdate(discountDto, entity))
                 .map(discountRepository::saveAndFlush).map(discountMapper::mapEntityToDto)
                 .orElseThrow(() -> new NotFoundException("Знижка", id));
+    }
+
+    // У базі UNIQUE (discount_date, name): без цієї перевірки дубль давав би 500 замість зрозумілого тексту.
+    // excludeId — id знижки, яку редагуємо (для нової = 0)
+    private void checkUnique(DiscountDto d, int excludeId) {
+        if (discountRepository.existsByNameAndDateAndIdNot(d.getName(), d.getDate(), excludeId)) {
+            throw new BusinessException(String.format("Знижка «%s» з датою %s уже є", d.getName(),
+                    d.getDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))));
+        }
     }
 
     // Архівування замість видалення: знижку більше не можна призначити новим учням,

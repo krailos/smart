@@ -2,12 +2,13 @@ package com.krailo.smart.controller;
 
 
 import com.krailo.smart.dto.AudienceDto;
-import com.krailo.smart.entity.Audience;
 import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.service.AudienceService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -37,20 +38,30 @@ public class AudienceController {
 
     @GetMapping("/new")
     public String createForm (Model model) {
-        model.addAttribute("audience", new Audience());
+        model.addAttribute("audience", new AudienceDto());
         return "audienceNew";
     }
 
 
     @PostMapping("/create")
     // @ResponseStatus(HttpStatus.CREATED)
-    public String create ( @ModelAttribute AudienceDto audience) {
+    // @Valid + BindingResult — як у формі оплати: порожні/задовгі поля — та сама форма з текстом біля поля,
+    // а не 500 чи запис без назви в базі
+    public String create (@Valid @ModelAttribute("audience") AudienceDto audience, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return "audienceNew";
+        }
         audienceService.create(audience);
         return "redirect:/audiences";
     }
 
+    // {id} з адреси Spring сам підставляє в audience.id — після помилки форма знову відправиться на /audiences/{id}/update
     @PostMapping("/{id}/update")
-    public String update (@PathVariable("id") Integer id, @ModelAttribute AudienceDto audience) {
+    public String update (@PathVariable("id") Integer id, @Valid @ModelAttribute("audience") AudienceDto audience,
+                          BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return "audience";
+        }
         audienceService.update(id, audience);
         return "redirect:/audiences";
     }

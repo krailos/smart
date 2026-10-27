@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Transactional
 @Service
@@ -54,8 +53,8 @@ public class SubjectService {
     }
 
     public SubjectDto create(SubjectDto subjectDto) {
-        return Optional.of(subjectDto).map(subjectMapper::mapDtoToEntityForCreate).map(subjectRepository::save)
-                .map(subjectMapper::mapEntityToDto).orElseThrow();
+        Subject subject = subjectRepository.save(subjectMapper.mapDtoToEntityForCreate(subjectDto));
+        return subjectMapper.mapEntityToDto(subject);
     }
 
     public SubjectDto update(Integer id, SubjectDto subjectDto) {

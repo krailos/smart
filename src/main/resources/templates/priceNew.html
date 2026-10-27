@@ -22,17 +22,18 @@
                     <input type="hidden" th:field="*{subjectId}"/>
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label for="subName" class="form-label">Курс</label>
-                            <input class="form-control bg-light" id="subName" type="text"
-                                   th:name="subjectName" th:value="*{subjectName}" readonly/>
+                            <label for="subjectName" class="form-label">Курс</label>
+                            <input class="form-control bg-light" type="text" th:field="*{subjectName}" readonly/>
                         </div>
                         <div class="col-md-4">
                             <label for="value" class="form-label">Вартість уроку, грн</label>
-                            <input class="form-control" id="value" type="number" min="0" step="0.01" th:name="value" value="" required/>
+                            <input class="form-control" type="number" min="0" step="0.01" required th:field="*{value}" th:errorclass="is-invalid"/>
+                            <div class="invalid-feedback" th:errors="*{value}"></div>
                         </div>
                         <div class="col-md-4">
                             <label for="date" class="form-label">Діє з</label>
-                            <input class="form-control" id="date" type="date" th:name="date" value=""/>
+                            <input class="form-control" type="date" required th:field="*{date}" th:errorclass="is-invalid"/>
+                            <div class="invalid-feedback" th:errors="*{date}"></div>
                         </div>
 
                         <div class="col-12 form-actions">

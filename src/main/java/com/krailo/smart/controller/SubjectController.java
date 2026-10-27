@@ -2,12 +2,13 @@ package com.krailo.smart.controller;
 
 import com.krailo.smart.dto.PriceDto;
 import com.krailo.smart.dto.SubjectDto;
-import com.krailo.smart.entity.Subject;
 import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.service.SubjectService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -57,21 +58,29 @@ public class SubjectController {
     
     @GetMapping("/new")
     public String createForm (Model model) {
-    model.addAttribute("subject", new Subject());
-    return "subjectNew";
+        model.addAttribute("subject", new SubjectDto());
+        return "subjectNew";
     }
-    
-    
+
+
     @PostMapping("/create")
    // @ResponseStatus(HttpStatus.CREATED)
-    public String create ( @ModelAttribute SubjectDto subject) {
-        subjectService.create(subject);  
-        return "redirect:/subjects";     
+    // @Valid + BindingResult: порожні/задовгі поля — та сама форма з текстом біля поля (див. AudienceController)
+    public String create (@Valid @ModelAttribute("subject") SubjectDto subject, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return "subjectNew";
+        }
+        subjectService.create(subject);
+        return "redirect:/subjects";
     }
-    
+
     @PostMapping("/{id}/update")
-    public String update (@PathVariable("id") Integer id, @ModelAttribute SubjectDto subject) {
-           subjectService.update(id, subject); 
+    public String update (@PathVariable("id") Integer id, @Valid @ModelAttribute("subject") SubjectDto subject,
+                          BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return "subject";
+        }
+        subjectService.update(id, subject);
         return "redirect:/subjects";        
     }
     

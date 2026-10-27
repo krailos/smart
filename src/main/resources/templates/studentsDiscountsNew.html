@@ -17,40 +17,42 @@
 
         <div class="card form-card">
             <div class="card-body p-4">
-                <form th:action="@{/student-discounts/create}" method="post">
+                <form th:action="@{/student-discounts/create}" th:object="${studentDiscount}" method="post">
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label for="studentId" class="form-label">Учень</label>
-                            <!-- value="" у підказці: якщо нічого не вибрано, не відправляємо текст замість id -->
-                            <select id="studentId" name="studentId" class="form-select">
+                            <select class="form-select" th:field="*{studentId}" th:errorclass="is-invalid" required>
                                 <option value="">-- Оберіть учня --</option>
                                 <option th:each="student : ${students}"
                                         th:text="|${student.lastName} ${student.firstName} (${student.contactName} - ${student.phone})|"
                                         th:value="${student.id}">name</option>
                             </select>
+                            <div class="invalid-feedback" th:errors="*{studentId}"></div>
                         </div>
                         <div class="col-md-6">
                             <label for="subjectId" class="form-label">Курс</label>
-                            <select id="subjectId" name="subjectId" class="form-select">
+                            <select class="form-select" th:field="*{subjectId}" th:errorclass="is-invalid" required>
                                 <option value="">-- Оберіть курс --</option>
                                 <option th:each="subject : ${subjects}"
                                         th:text="${subject.name}"
                                         th:value="${subject.id}">name</option>
                             </select>
+                            <div class="invalid-feedback" th:errors="*{subjectId}"></div>
                         </div>
                         <div class="col-md-6">
                             <label for="discountId" class="form-label">Знижка</label>
-                            <select id="discountId" name="discountId" class="form-select">
+                            <select class="form-select" th:field="*{discountId}" th:errorclass="is-invalid" required>
                                 <option value="">-- Оберіть знижку --</option>
                                 <option th:each="discount : ${discounts}"
                                         th:text="|${discount.name} — ${discount.value} %|"
                                         th:value="${discount.id}">name</option>
                             </select>
+                            <div class="invalid-feedback" th:errors="*{discountId}"></div>
                         </div>
                         <div class="col-md-6">
                             <label for="date" class="form-label">Дата</label>
-                            <input class="form-control" id="date" type="date" name="date"
-                                   th:value="${#dates.format(#dates.createToday(), 'yyyy-MM-dd')}"/>
+                            <input class="form-control" type="date" required th:field="*{date}" th:errorclass="is-invalid"/>
+                            <div class="invalid-feedback" th:errors="*{date}"></div>
                         </div>
 
                         <div class="col-12 form-actions">

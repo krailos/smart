@@ -6,12 +6,14 @@ import com.krailo.smart.service.DiscountService;
 import com.krailo.smart.service.StudentService;
 import com.krailo.smart.service.StudentsDiscountsService;
 import com.krailo.smart.service.SubjectService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDate;
 
 @Controller
 @RequestMapping("/student-discounts")
@@ -35,42 +37,58 @@ public class StudentsDiscountsController {
 
     @GetMapping("/{id}")
     public String findById (@PathVariable("id") Integer id, Model model) {
-          model.addAttribute("studentDiscount", studentsDiscountsService.findById(id));
-          model.addAttribute("students", studentService.findAll());
-          model.addAttribute("discounts", discountService.findAll());
-          model.addAttribute("subjects", subjectService.findAll());
+        model.addAttribute("studentDiscount", studentsDiscountsService.findById(id));
+        fillFormLists(model);
         return "studentDiscount";
     }
-    
-    
+
+
     @GetMapping("/new")
     public String createForm (Model model) {
-        model.addAttribute("students", studentService.findAll());
-        model.addAttribute("discounts", discountService.findAll());
-        model.addAttribute("subjects", subjectService.findAll());
-    return "studentsDiscountsNew";
+        // порожня форма; дата за замовчуванням — сьогодні
+        model.addAttribute("studentDiscount", StudentsDiscountsDto.builder().date(LocalDate.now()).build());
+        fillFormLists(model);
+        return "studentsDiscountsNew";
     }
-    
-    
+
+
     @PostMapping("/create")
    // @ResponseStatus(HttpStatus.CREATED)
-    public String create ( @ModelAttribute StudentsDiscountsDto studentsDiscountsDto, RedirectAttributes redirectAttributes) {
+    // @Valid + BindingResult: неправильні поля — та сама форма з текстом біля поля (див. AudienceController)
+    public String create (@Valid @ModelAttribute("studentDiscount") StudentsDiscountsDto studentsDiscountsDto,
+                          BindingResult bindingResult, Model model) {
+        if (bindingResult.hasErrors()) {
+            fillFormLists(model);
+            return "studentsDiscountsNew";
+        }
         try {
             studentsDiscountsService.create(studentsDiscountsDto);
         } catch (BusinessException e) {
-            // така сама знижка учня вже є — показуємо повідомлення на сторінці списку
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            // така сама знижка учня вже є — текст біля поля «Знижка»
+            bindingResult.rejectValue("discountId", "duplicate", e.getMessage());
+            fillFormLists(model);
+            return "studentsDiscountsNew";
         }
         return "redirect:/student-discounts";
     }
-    
+
     @PostMapping("/{id}/update")
-    public String update (@PathVariable("id") Integer id, @ModelAttribute StudentsDiscountsDto studentsDiscountsDto) {
-        System.out.println(studentsDiscountsDto.getStudentId());
-        System.out.println(studentsDiscountsDto.getDiscountId());
-        System.out.println(studentsDiscountsDto.getSubjectId());
-           studentsDiscountsService.update(id, studentsDiscountsDto); 
-        return "redirect:/student-discounts";        
+    public String update (@PathVariable("id") Integer id,
+                          @Valid @ModelAttribute("studentDiscount") StudentsDiscountsDto studentsDiscountsDto,
+                          BindingResult bindingResult, Model model) {
+        if (bindingResult.hasErrors()) {
+            fillFormLists(model);
+            return "studentDiscount";
+        }
+        studentsDiscountsService.update(id, studentsDiscountsDto);
+        return "redirect:/student-discounts";
+    }
+
+    // варіанти для випадаючих меню «Учень», «Знижка», «Курс»
+    private void fillFormLists(Model model) {
+        model.addAttribute("students", studentService.findAll());
+        model.addAttribute("discounts", discountService.findAll());
+        model.addAttribute("subjects", subjectService.findAll());
     }
     
     @PostMapping("/{id}/delete")

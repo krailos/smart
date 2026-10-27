@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 @Transactional
 @Service
@@ -55,8 +54,8 @@ public class ScheduleService {
         checkConflicts(scheduleDto, 0);
 
         // Якщо конфліктів немає — зберігаємо
-        return Optional.of(scheduleDto).map(scheduleMapper::mapDtoToEntityForCreate).map(scheduleRepository::save)
-                .map(scheduleMapper::mapEntityToDto).orElseThrow();
+        Schedule schedule = scheduleRepository.save(scheduleMapper.mapDtoToEntityForCreate(scheduleDto));
+        return scheduleMapper.mapEntityToDto(schedule);
     }
 
     public ScheduleDto update(Integer id, ScheduleDto scheduleDto) {

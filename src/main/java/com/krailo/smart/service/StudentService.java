@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 @Transactional
 @Service
@@ -102,8 +101,8 @@ public class StudentService {
 
 
     public StudentDto create(StudentDto studentDto) {
-        return Optional.of(studentDto).map(studentMapper::mapDtoToEntityForCreate).map(studentRepository::save)
-                .map(studentMapper::mapEntityToDto).orElseThrow();
+        Student student = studentRepository.save(studentMapper.mapDtoToEntityForCreate(studentDto));
+        return studentMapper.mapEntityToDto(student);
     }
 
     public StudentDto update(Integer id, StudentDto studentDto) {

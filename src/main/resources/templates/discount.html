@@ -8,27 +8,29 @@
     <main class="app-main">
         <div class="page-header">
             <div>
-                <h1 class="page-title" th:text="${discount.name}">Знижка</h1>
+                <h1 class="page-title" th:text="${#strings.isEmpty(discount.name)} ? 'Знижка' : ${discount.name}">Знижка</h1>
                 <div class="page-subtitle"><a th:href="@{/discounts}">Знижки</a> / редагування</div>
             </div>
         </div>
 
         <div class="card form-card">
             <div class="card-body p-4">
-                <form th:action="@{/discounts/{id}/update (  id=${discount.id})}" method="post">
+                <form th:action="@{/discounts/{id}/update (  id=${discount.id})}" th:object="${discount}" method="post">
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label for="name" class="form-label">Вид знижки</label>
-                            <input class="form-control" id="name" type="text" name="name" th:value="${discount.name}"/>
+                            <input class="form-control" type="text" maxlength="50" required th:field="*{name}" th:errorclass="is-invalid"/>
+                            <div class="invalid-feedback" th:errors="*{name}"></div>
                         </div>
                         <div class="col-md-4">
                             <label for="value" class="form-label">Знижка, %</label>
-                            <input class="form-control" id="value" type="number" min="0" max="100" step="1" name="value"
-                                   th:value="${discount.value}"/>
+                            <input class="form-control" type="number" min="1" max="100" step="1" required th:field="*{value}" th:errorclass="is-invalid"/>
+                            <div class="invalid-feedback" th:errors="*{value}"></div>
                         </div>
                         <div class="col-md-4">
                             <label for="date" class="form-label">Діє з</label>
-                            <input class="form-control" id="date" type="date" name="date" th:value="${discount.date}"/>
+                            <input class="form-control" type="date" required th:field="*{date}" th:errorclass="is-invalid"/>
+                            <div class="invalid-feedback" th:errors="*{date}"></div>
                         </div>
 
                         <div class="col-12 form-actions">

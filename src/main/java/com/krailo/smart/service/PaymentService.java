@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 @Transactional
@@ -46,8 +45,8 @@ public class PaymentService {
 
 
     public PaymentDto create(PaymentDto paymentDto) {
-        return Optional.of(paymentDto).map(paymentMapper::mapDtoToEntityForCreate).map(paymentRepository::save)
-                .map(paymentMapper::mapEntityToDto).orElseThrow();
+        Payment payment = paymentRepository.save(paymentMapper.mapDtoToEntityForCreate(paymentDto));
+        return paymentMapper.mapEntityToDto(payment);
     }
 
     // Оплати не редагуються і не видаляються (як у бухгалтерії) — помилкову оплату сторнують:

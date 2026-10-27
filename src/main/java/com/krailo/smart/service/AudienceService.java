@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Transactional
 @Service
@@ -44,8 +43,8 @@ public class AudienceService {
     }
 
     public AudienceDto create(AudienceDto audienceDto) {
-        return Optional.of(audienceDto).map(audienceMapper::mapDtoToEntityForCreate).map(audienceRepository::save)
-                .map(audienceMapper::mapEntityToDto).orElseThrow();
+        Audience audience = audienceRepository.save(audienceMapper.mapDtoToEntityForCreate(audienceDto));
+        return audienceMapper.mapEntityToDto(audience);
     }
 
     public AudienceDto update(Integer id, AudienceDto audienceDto) {

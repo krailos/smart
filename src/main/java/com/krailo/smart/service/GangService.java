@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Transactional
 @Service
@@ -69,8 +68,8 @@ public class GangService {
     }
 
     public GangDto create(GangDto gangDto) {
-        return Optional.of(gangDto).map(gangMapper::mapDtoToEntityForCreate).map(gangRepository::save)
-                .map(gangMapper::mapEntityToDto).orElseThrow();
+        Gang gang = gangRepository.save(gangMapper.mapDtoToEntityForCreate(gangDto));
+        return gangMapper.mapEntityToDto(gang);
     }
 
 

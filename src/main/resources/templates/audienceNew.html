@@ -15,16 +15,17 @@
 
         <div class="card form-card">
             <div class="card-body p-4">
-                <form th:action="@{/audiences/create}" method="post">
+                <form th:action="@{/audiences/create}" th:object="${audience}" method="post">
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label for="name" class="form-label">Назва аудиторії</label>
-                            <input class="form-control" id="name" type="text" name="name" th:value="${audience.name}"/>
+                            <input class="form-control" type="text" th:field="*{name}" th:errorclass="is-invalid" maxlength="50" required/>
+                            <div class="invalid-feedback" th:errors="*{name}"></div>
                         </div>
                         <div class="col-12">
                             <label for="description" class="form-label">Опис аудиторії</label>
-                            <textarea class="form-control" id="description" name="description" rows="3"
-                                      th:text="${audience.description}"></textarea>
+                            <textarea class="form-control" th:field="*{description}" th:errorclass="is-invalid" maxlength="150" rows="3"></textarea>
+                            <div class="invalid-feedback" th:errors="*{description}"></div>
                         </div>
 
                         <div class="col-12 form-actions">

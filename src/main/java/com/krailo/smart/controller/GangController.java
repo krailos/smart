@@ -3,15 +3,16 @@ package com.krailo.smart.controller;
 import com.krailo.smart.dto.GangDto;
 import com.krailo.smart.dto.GangsStudentsDto;
 import com.krailo.smart.dto.StudentDto;
-import com.krailo.smart.entity.Gang;
 import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.service.GangService;
 import com.krailo.smart.service.StudentService;
 import com.krailo.smart.service.SubjectService;
 import com.krailo.smart.service.TeacherService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -40,9 +41,8 @@ public class GangController {
     
     @GetMapping("/{id}")
     public String findById (@PathVariable("id") Integer id, Model model) {
-          model.addAttribute("gang", gangService.findById(id));
-        model.addAttribute("subjects", subjectService.findAll());
-        model.addAttribute("teachers", teacherService.findAll());
+        model.addAttribute("gang", gangService.findById(id));
+        fillFormLists(model);
         return "gang";
     }
     
@@ -97,24 +97,39 @@ public class GangController {
     
     @GetMapping("/new")
     public String createForm (Model model) {
-    model.addAttribute("gang", new Gang());
-    model.addAttribute("subjects", subjectService.findAll());
-    model.addAttribute("teachers", teacherService.findAll());
-    return "gangNew";
+        model.addAttribute("gang", new GangDto());
+        fillFormLists(model);
+        return "gangNew";
     }
-    
-    
+
+
     @PostMapping("/create")
    // @ResponseStatus(HttpStatus.CREATED)
-    public String create ( @ModelAttribute GangDto gang) {
-        gangService.create(gang);  
-        return "redirect:/gangs";     
+    // @Valid + BindingResult: неправильні поля — та сама форма з текстом біля поля (див. AudienceController)
+    public String create (@Valid @ModelAttribute("gang") GangDto gang, BindingResult bindingResult, Model model) {
+        if (bindingResult.hasErrors()) {
+            fillFormLists(model);
+            return "gangNew";
+        }
+        gangService.create(gang);
+        return "redirect:/gangs";
     }
-    
+
     @PostMapping("/{id}/update")
-    public String update (@PathVariable("id") Integer id, @ModelAttribute GangDto gangDto) {
-           gangService.update(id, gangDto); 
-        return "redirect:/gangs";        
+    public String update (@PathVariable("id") Integer id, @Valid @ModelAttribute("gang") GangDto gangDto,
+                          BindingResult bindingResult, Model model) {
+        if (bindingResult.hasErrors()) {
+            fillFormLists(model);
+            return "gang";
+        }
+        gangService.update(id, gangDto);
+        return "redirect:/gangs";
+    }
+
+    // варіанти для випадаючих меню «Курс» і «Вчитель»
+    private void fillFormLists(Model model) {
+        model.addAttribute("subjects", subjectService.findAll());
+        model.addAttribute("teachers", teacherService.findAll());
     }
     
     // архівування замість видалення (див. GangService.archive)

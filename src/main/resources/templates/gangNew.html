@@ -15,35 +15,39 @@
 
         <div class="card form-card">
             <div class="card-body p-4">
-                <form th:action="@{/gangs/create}" method="post">
+                <form th:object="${gang}" th:action="@{/gangs/create}" method="post">
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label for="name" class="form-label">Назва групи</label>
-                            <input class="form-control" id="name" type="text" name="name" value=""/>
+                            <input class="form-control" type="text" maxlength="50" required th:field="*{name}" th:errorclass="is-invalid"/>
+                            <div class="invalid-feedback" th:errors="*{name}"></div>
                         </div>
                         <div class="col-md-4">
                             <label for="subjectId" class="form-label">Курс</label>
-                            <select class="form-select" id="subjectId" name="subjectId">
+                            <select class="form-select" th:field="*{subjectId}" th:errorclass="is-invalid" required>
                                 <option value="">-- Оберіть курс --</option>
                                 <option th:each="subject : ${subjects}"
                                         th:value="${subject.id}"
                                         th:text="${subject.name}">
                                 </option>
                             </select>
+                            <div class="invalid-feedback" th:errors="*{subjectId}"></div>
                         </div>
                         <div class="col-md-4">
                             <label for="teacherId" class="form-label">Вчитель</label>
-                            <select class="form-select" id="teacherId" name="teacherId">
+                            <select class="form-select" th:field="*{teacherId}" th:errorclass="is-invalid" required>
                                 <option value="">-- Оберіть вчителя --</option>
                                 <option th:each="teacher : ${teachers}"
                                         th:value="${teacher.id}"
                                         th:text="${teacher.lastName + ' ' + teacher.firstName}">
                                 </option>
                             </select>
+                            <div class="invalid-feedback" th:errors="*{teacherId}"></div>
                         </div>
                         <div class="col-12">
                             <label for="description" class="form-label">Опис групи</label>
-                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                            <textarea class="form-control" maxlength="150" th:field="*{description}" th:errorclass="is-invalid" rows="3"></textarea>
+                            <div class="invalid-feedback" th:errors="*{description}"></div>
                         </div>
 
                         <div class="col-12 form-actions">

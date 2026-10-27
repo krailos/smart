@@ -1,6 +1,7 @@
 package com.krailo.smart.service;
 
 import com.krailo.smart.dto.StudentsDiscountsDto;
+import com.krailo.smart.entity.StudentsDiscounts;
 import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.mapper.StudentsDiscountsMapper;
 import com.krailo.smart.repository.StudentsDiscountsRepository;
@@ -10,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Transactional
 @Service
@@ -40,8 +40,9 @@ public class StudentsDiscountsService {
                 studentsDiscountsDto.getStudentId(), studentsDiscountsDto.getDiscountId(), studentsDiscountsDto.getSubjectId())) {
             throw new BusinessException("Учень уже має цю знижку на цей курс");
         }
-        return Optional.of(studentsDiscountsDto).map(studentsDiscountsMapper::mapDtoToEntityForCreate).map(studentsDiscountsRepository::save)
-                .map(studentsDiscountsMapper::mapEntityToDto).orElseThrow();
+        StudentsDiscounts studentsDiscounts = studentsDiscountsRepository.save(
+                studentsDiscountsMapper.mapDtoToEntityForCreate(studentsDiscountsDto));
+        return studentsDiscountsMapper.mapEntityToDto(studentsDiscounts);
     }
 
     public StudentsDiscountsDto update(Integer id, StudentsDiscountsDto studentsDiscountsDto) {

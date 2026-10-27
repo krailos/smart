@@ -1,12 +1,14 @@
 package com.krailo.smart.controller;
 
 import com.krailo.smart.dto.DiscountDto;
-import com.krailo.smart.entity.Audience;
+import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.service.DiscountService;
 import com.krailo.smart.service.StudentService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -36,21 +38,40 @@ public class DiscountController {
 
     @GetMapping("/new")
     public String createForm(Model model) {
-        model.addAttribute("audience", new Audience());
+        model.addAttribute("discount", new DiscountDto(null, null, null, null));
         return "discountNew";
     }
 
 
     @PostMapping("/create")
     // @ResponseStatus(HttpStatus.CREATED)
-    public String create(@ModelAttribute DiscountDto discount) {
-        discountService.create(discount);
+    // @Valid + BindingResult: неправильні поля — та сама форма з текстом біля поля (див. AudienceController)
+    public String create(@Valid @ModelAttribute("discount") DiscountDto discount, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return "discountNew";
+        }
+        try {
+            discountService.create(discount);
+        } catch (BusinessException e) {
+            // дубль (така сама назва з тією ж датою) — текст сервісу показуємо біля поля «Вид знижки»
+            bindingResult.rejectValue("name", "duplicate", e.getMessage());
+            return "discountNew";
+        }
         return "redirect:/discounts";
     }
 
     @PostMapping("/{id}/update")
-    public String update(@PathVariable("id") Integer id, @ModelAttribute DiscountDto discount) {
-        discountService.update(id, discount);
+    public String update(@PathVariable("id") Integer id, @Valid @ModelAttribute("discount") DiscountDto discount,
+                         BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return "discount";
+        }
+        try {
+            discountService.update(id, discount);
+        } catch (BusinessException e) {
+            bindingResult.rejectValue("name", "duplicate", e.getMessage());
+            return "discount";
+        }
         return "redirect:/discounts";
     }
 

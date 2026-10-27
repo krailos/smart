@@ -1,17 +1,18 @@
 package com.krailo.smart.controller;
 
 import com.krailo.smart.dto.StudentDto;
-import com.krailo.smart.entity.Student;
 import com.krailo.smart.enumeration.Gender;
 import com.krailo.smart.enumeration.StudentStatus;
 import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.service.GangService;
 import com.krailo.smart.service.StudentService;
 import com.krailo.smart.service.StudentsDiscountsService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -66,8 +67,7 @@ public class StudentController {
     @GetMapping("/{id}")
     public String findById(@PathVariable("id") Integer id, Model model) {
         model.addAttribute("student", studentService.findById(id));
-        model.addAttribute("gender", Gender.values());
-        model.addAttribute("status", StudentStatus.values());
+        fillFormLists(model);
         return "student";
     }
 
@@ -91,24 +91,39 @@ public class StudentController {
 
     @GetMapping("/new")
     public String createForm(Model model) {
-        model.addAttribute("student", new Student());
-        model.addAttribute("gender", Gender.values());
-        model.addAttribute("status", StudentStatus.values());
+        model.addAttribute("student", StudentDto.builder().build());
+        fillFormLists(model);
         return "studentNew";
     }
 
 
     @PostMapping("/create")
     // @ResponseStatus(HttpStatus.CREATED)
-    public String create(@ModelAttribute StudentDto student) {
+    // @Valid + BindingResult: неправильні поля — та сама форма з текстом біля поля (див. AudienceController)
+    public String create(@Valid @ModelAttribute("student") StudentDto student, BindingResult bindingResult, Model model) {
+        if (bindingResult.hasErrors()) {
+            fillFormLists(model);
+            return "studentNew";
+        }
         studentService.create(student);
         return "redirect:/students";
     }
 
     @PostMapping("/{id}/update")
-    public String update(@PathVariable("id") Integer id, @ModelAttribute StudentDto studentDto) {
+    public String update(@PathVariable("id") Integer id, @Valid @ModelAttribute("student") StudentDto studentDto,
+                         BindingResult bindingResult, Model model) {
+        if (bindingResult.hasErrors()) {
+            fillFormLists(model);
+            return "student";
+        }
         studentService.update(id, studentDto);
         return "redirect:/students";
+    }
+
+    // варіанти для випадаючих меню «Стать» і «Статус»
+    private void fillFormLists(Model model) {
+        model.addAttribute("gender", Gender.values());
+        model.addAttribute("status", StudentStatus.values());
     }
 
     // архівування замість видалення (див. StudentService.archive)

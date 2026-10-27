@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Transactional
 @Service
@@ -76,9 +75,8 @@ public class TeacherService {
     }
 
     public TeacherDto create(TeacherDto teacherDto) {
-        return Optional.of(teacherDto).map(teacherMapper::mapDtoToEntityForCreate)
-                .map(teacherRepository::save).map(teacherMapper::mapEntityToDto)
-                .orElseThrow();
+        Teacher teacher = teacherRepository.save(teacherMapper.mapDtoToEntityForCreate(teacherDto));
+        return teacherMapper.mapEntityToDto(teacher);
     }
 
     public TeacherDto update(Integer id, TeacherDto teacherDto) {

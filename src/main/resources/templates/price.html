@@ -19,24 +19,28 @@
         <div class="card form-card">
             <div class="card-body p-4">
                 <!-- курс береться з самої ціни (PriceDto.subjectId / subjectName) -->
-                <form th:action="@{/prices/{id}/update( id=${price.id})}" method="post">
-                    <input type="hidden" name="subjectId" th:value="${price.subjectId}"/>
+                <form th:action="@{/prices/{id}/update( id=${price.id})}" th:object="${price}" method="post">
+                    <input type="hidden" th:field="*{subjectId}"/>
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label for="subjectName" class="form-label">Курс</label>
-                            <input class="form-control bg-light" id="subjectName" type="text" th:value="${price.subjectName}" disabled/>
+                            <!-- readonly, а не disabled: disabled-поле браузер не надсилає, і після помилки назва курсу зникла б -->
+                            <input class="form-control bg-light" type="text" th:field="*{subjectName}" readonly/>
                         </div>
                         <div class="col-md-6">
                             <label for="name" class="form-label">Вид ціни</label>
-                            <input class="form-control" id="name" type="text" name="name" th:value="${price.name}"/>
+                            <input class="form-control" type="text" maxlength="50" th:field="*{name}" th:errorclass="is-invalid"/>
+                            <div class="invalid-feedback" th:errors="*{name}"></div>
                         </div>
                         <div class="col-md-6">
                             <label for="value" class="form-label">Вартість уроку, грн</label>
-                            <input class="form-control" id="value" type="number" min="0" step="0.01" name="value" th:value="${price.value}" required/>
+                            <input class="form-control" type="number" min="0" step="0.01" required th:field="*{value}" th:errorclass="is-invalid"/>
+                            <div class="invalid-feedback" th:errors="*{value}"></div>
                         </div>
                         <div class="col-md-6">
                             <label for="date" class="form-label">Діє з</label>
-                            <input class="form-control" id="date" type="date" name="date" th:value="${price.date}"/>
+                            <input class="form-control" type="date" required th:field="*{date}" th:errorclass="is-invalid"/>
+                            <div class="invalid-feedback" th:errors="*{date}"></div>
                         </div>
 
                         <div class="col-12 form-actions">

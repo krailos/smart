@@ -6,9 +6,11 @@ import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.service.GangService;
 import com.krailo.smart.service.SubjectService;
 import com.krailo.smart.service.TeacherService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -48,20 +50,28 @@ public class TeacherController {
     
     @GetMapping("/new")
     public String createForm (Model model) {
-    model.addAttribute("teacher", new Teacher());
-    return "teacherNew";
+        model.addAttribute("teacher", TeacherDto.builder().build());
+        return "teacherNew";
     }
-    
-    
+
+
     @PostMapping("/create")
    // @ResponseStatus(HttpStatus.CREATED)
-    public String create ( @ModelAttribute TeacherDto teacherDto) {
+    // @Valid + BindingResult: неправильні поля — та сама форма з текстом біля поля (див. AudienceController)
+    public String create (@Valid @ModelAttribute("teacher") TeacherDto teacherDto, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return "teacherNew";
+        }
         teacherService.create(teacherDto);
         return "redirect:/teachers";
     }
-    
+
     @PostMapping("/{id}/update")
-    public String update (@PathVariable("id") Integer id, @ModelAttribute TeacherDto teacherDto) {
+    public String update (@PathVariable("id") Integer id, @Valid @ModelAttribute("teacher") TeacherDto teacherDto,
+                          BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return "teacher";
+        }
         teacherService.update(id, teacherDto);
         return "redirect:/teachers";
     }

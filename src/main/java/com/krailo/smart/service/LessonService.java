@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Transactional
 @Service
@@ -83,13 +82,12 @@ public class LessonService {
                     String.format("Урок за цим розкладом на %s уже проведено", lessonDto.getDate()));
         }
 
-        return Optional.of(lessonDto).map(lessonMapper::mapDtoToEntityForCreate).map(lessonRepository::saveAndFlush)
-                .map(lessonMapper::mapEntityToDto).orElseThrow();
+        Lesson lesson = lessonRepository.saveAndFlush(lessonMapper.mapDtoToEntityForCreate(lessonDto));
+        return lessonMapper.mapEntityToDto(lesson);
     }
 
     public Lesson createEntity(LessonDto lessonDto) {
-        return Optional.of(lessonDto).map(lessonMapper::mapDtoToEntityForCreate).map(lessonRepository::saveAndFlush)
-                .orElseThrow();
+        return lessonRepository.saveAndFlush(lessonMapper.mapDtoToEntityForCreate(lessonDto));
     }
 
     public LessonDto update(Integer id, LessonDto lessonDto) {
@@ -105,9 +103,8 @@ public class LessonService {
                     String.format("Урок за цим розкладом на %s уже проведено", lessonDto.getDate()));
         }
 
-        return Optional.of(lesson).map(entity -> lessonMapper.mapDtoToEntityForUpdate(lessonDto, entity))
-                .map(lessonRepository::saveAndFlush).map(lessonMapper::mapEntityToDto)
-                .orElseThrow(() -> new NotFoundException("Урок", id));
+        lessonMapper.mapDtoToEntityForUpdate(lessonDto, lesson);
+        return lessonMapper.mapEntityToDto(lessonRepository.saveAndFlush(lesson));
     }
 
     // Перевірка введених даних уроку. Конфлікти (зайнятий вчитель, кабінет, група) перевіряються

@@ -3,11 +3,12 @@ package com.krailo.smart.controller;
 import com.krailo.smart.dto.PriceDto;
 import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.service.PriceService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/prices")
@@ -31,27 +32,30 @@ public class PriceController {
         return "price";
     }
 
+    // @Valid + BindingResult: неправильні поля — та сама форма з текстом біля поля (див. AudienceController)
     @PostMapping("/create")
-    public String create ( @ModelAttribute PriceDto priceDto, RedirectAttributes redirectAttributes) {
+    public String create (@Valid @ModelAttribute("price") PriceDto priceDto, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return "priceNew";
+        }
         try {
             priceService.create(priceDto);
         } catch (BusinessException e) {
-            // ціна курсу на цю дату вже є — показуємо повідомлення на сторінці курсів
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            // ціна курсу на цю дату вже є — текст біля поля «Діє з»
+            bindingResult.rejectValue("date", "duplicate", e.getMessage());
+            return "priceNew";
         }
         return "redirect:/subjects";
     }
-    
-    
+
+
     @PostMapping("/{id}/update")
-    public String update (@PathVariable("id") Integer id, @ModelAttribute PriceDto price,
-                          RedirectAttributes redirectAttributes) {
-        try {
-            priceService.update(id, price);
-        } catch (BusinessException e) {
-            // неправильна вартість (порожня, від'ємна, зайві знаки) — показуємо повідомлення на сторінці цін
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+    public String update (@PathVariable("id") Integer id, @Valid @ModelAttribute("price") PriceDto price,
+                          BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return "price";
         }
+        priceService.update(id, price);
         return "redirect:/prices";
     }
     
