@@ -50,7 +50,7 @@
                             th:text="${teacher.lastName + ' ' + teacher.firstName + (teacher.secondName != null ? ' ' + teacher.secondName : '')}"></td>
                         <td th:text="${teacher.phone}"></td>
                         <td>
-                            <a th:href="@{/gangs/{id}/byTeacher (id=${teacher.id}) }"
+                            <a th:href="@{/teachers/{id}/gangs(id=${teacher.id})}"
                                class="badge rounded-pill text-bg-light border text-decoration-none fw-semibold"
                                title="Групи вчителя">
                                 <i class="bi bi-people"></i> <span th:text="${teacher.getGangs().size()}"></span>

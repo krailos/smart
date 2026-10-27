@@ -12,8 +12,8 @@
                 <div class="page-subtitle"><a th:href="@{/students}">Учні</a> / редагування</div>
             </div>
             <div class="page-actions">
-                <a th:href="@{/gangs/{id}/byStudent (id=${student.id})}" class="btn btn-light"><i class="bi bi-people"></i> Групи</a>
-                <a th:href="@{/studentsDiscounts/{id}/byStudent (id=${student.id})}" class="btn btn-light"><i class="bi bi-percent"></i> Знижки</a>
+                <a th:href="@{/students/{id}/gangs(id=${student.id})}" class="btn btn-light"><i class="bi bi-people"></i> Групи</a>
+                <a th:href="@{/students/{id}/discounts(id=${student.id})}" class="btn btn-light"><i class="bi bi-percent"></i> Знижки</a>
             </div>
         </div>
 

@@ -56,7 +56,7 @@
                         </td>
                         <td class="text-muted small" th:text="${subject.description}"></td>
                         <td class="col-actions">
-                            <a th:href="@{/prices/{subjectId}/bysubject(subjectId=${subject.id})}" class="btn btn-light btn-icon" title="Ціни курсу">
+                            <a th:href="@{/subjects/{id}/prices(id=${subject.id})}" class="btn btn-light btn-icon" title="Ціни курсу">
                                 <i class="bi bi-tags"></i>
                             </a>
                             <a th:href="@{/subjects/{id}(id=${subject.id})}" class="btn btn-light btn-icon" title="Редагувати">

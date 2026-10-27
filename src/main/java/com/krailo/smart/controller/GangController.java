@@ -4,8 +4,6 @@ import com.krailo.smart.dto.GangDto;
 import com.krailo.smart.dto.GangsStudentsDto;
 import com.krailo.smart.dto.StudentDto;
 import com.krailo.smart.entity.Gang;
-import com.krailo.smart.entity.Student;
-import com.krailo.smart.entity.Teacher;
 import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.exception.ScheduleConflictException;
 import com.krailo.smart.service.GangService;
@@ -94,24 +92,7 @@ public class GangController {
         return "redirect:/gangs/" + id + "/bystudents";
     }
 
-    @GetMapping("/{id}/byTeacher")
-    public String findAllByTeacher(@PathVariable("id") Integer teacherId, Model model){
-        Teacher teacher = teacherService.findByIdEntity(teacherId);
-        List<GangDto> gangs = gangService.findAllByTeacher(teacher);
-        model.addAttribute("gangs", gangs);
-        return "gangs";
-    }
-
-    @GetMapping("/{id}/byStudent")
-    public String findAllByStudent(@PathVariable("id") Integer studentId, Model model){
-        Student student = studentService.findByIdEntity(studentId);
-        // у шаблон — GangDto, як і в інших методах (gangs.html читає subjectNme, teacherLastName)
-        List<GangDto> gangs = student.getGangsStudents().stream()
-                        .map(gs -> gangService.findById(gs.getGang().getId()))
-                        .toList();
-        model.addAttribute("gangs", gangs);
-        return "gangs";
-    }
+    // групи вчителя / учня — у контролерах власника: /teachers/{id}/gangs, /students/{id}/gangs
 
 
     

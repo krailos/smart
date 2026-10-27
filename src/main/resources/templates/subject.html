@@ -12,7 +12,7 @@
                 <div class="page-subtitle"><a th:href="@{/subjects}">Курси</a> / редагування</div>
             </div>
             <div class="page-actions">
-                <a th:href="@{/prices/{id}/bysubject(id=${subject.id})}" class="btn btn-light"><i class="bi bi-tags"></i> Ціни курсу</a>
+                <a th:href="@{/subjects/{id}/prices(id=${subject.id})}" class="btn btn-light"><i class="bi bi-tags"></i> Ціни курсу</a>
             </div>
         </div>
 

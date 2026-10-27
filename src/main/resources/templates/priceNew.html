@@ -11,7 +11,7 @@
                 <h1 class="page-title">Нова ціна</h1>
                 <div class="page-subtitle">
                     <a th:href="@{/subjects}">Курси</a> /
-                    <a th:href="@{/prices/{id}/bysubject(id=${price.subjectId})}" th:text="${price.subjectName}">курс</a> / нова ціна
+                    <a th:href="@{/subjects/{id}/prices(id=${price.subjectId})}" th:text="${price.subjectName}">курс</a> / нова ціна
                 </div>
             </div>
         </div>
@@ -37,7 +37,7 @@
 
                         <div class="col-12 form-actions">
                             <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Зберегти</button>
-                            <a th:href="@{/prices/{id}/bysubject(id=${price.subjectId})}" class="btn btn-light">Скасувати</a>
+                            <a th:href="@{/subjects/{id}/prices(id=${price.subjectId})}" class="btn btn-light">Скасувати</a>
                         </div>
                     </div>
                 </form>

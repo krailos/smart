@@ -1,10 +1,12 @@
 package com.krailo.smart.controller;
 
+import com.krailo.smart.dto.GangDto;
 import com.krailo.smart.dto.StudentDto;
 import com.krailo.smart.entity.Student;
 import com.krailo.smart.enumeration.Gender;
 import com.krailo.smart.enumeration.StudentStatus;
 import com.krailo.smart.exception.BusinessException;
+import com.krailo.smart.service.GangService;
 import com.krailo.smart.service.StudentService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -13,6 +15,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.List;
 import java.util.Set;
 
 @Controller
@@ -21,6 +24,7 @@ import java.util.Set;
 public class StudentController {
 
     private StudentService studentService;
+    private GangService gangService;
 
     // за якими полями дозволено сортувати (ті, що є в заголовку таблиці)
     private static final Set<String> SORT_FIELDS = Set.of("id", "lastName", "balance");
@@ -65,6 +69,25 @@ public class StudentController {
         model.addAttribute("gender", Gender.values());
         model.addAttribute("status", StudentStatus.values());
         return "student";
+    }
+
+    // групи учня (була /gangs/{id}/byStudent — там id був учня, а не групи)
+    @GetMapping("/{id}/gangs")
+    public String gangs(@PathVariable("id") Integer id, Model model) {
+        Student student = studentService.findByIdEntity(id);
+        // у шаблон — GangDto, як і в інших списках груп (gangs.html читає назву курсу, прізвище вчителя)
+        List<GangDto> gangs = student.getGangsStudents().stream()
+                .map(gs -> gangService.findById(gs.getGang().getId()))
+                .toList();
+        model.addAttribute("gangs", gangs);
+        return "gangs";
+    }
+
+    // знижки учня (була /studentsDiscounts/{id}/byStudent)
+    @GetMapping("/{id}/discounts")
+    public String discounts(@PathVariable("id") Integer id, Model model) {
+        model.addAttribute("studentsDiscounts", studentService.findByIdEntity(id).getStudentsDiscounts());
+        return "studentsDiscounts";
     }
 
 

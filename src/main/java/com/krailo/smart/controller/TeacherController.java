@@ -3,6 +3,7 @@ package com.krailo.smart.controller;
 import com.krailo.smart.dto.TeacherDto;
 import com.krailo.smart.entity.Teacher;
 import com.krailo.smart.exception.BusinessException;
+import com.krailo.smart.service.GangService;
 import com.krailo.smart.service.SubjectService;
 import com.krailo.smart.service.TeacherService;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ public class TeacherController {
 
     private final SubjectService subjectService;
     private final TeacherService teacherService;
+    private final GangService gangService;
 
     // /teachers — активні, /teachers?archived=true — архів (той самий шаблон)
     @GetMapping
@@ -33,6 +35,14 @@ public class TeacherController {
     public String findById (@PathVariable("id") Integer id, Model model) {
           model.addAttribute("teacher", teacherService.findById(id));
         return "teacher";
+    }
+
+    // групи вчителя (була /gangs/{id}/byTeacher — там id був вчителя, а не групи)
+    @GetMapping("/{id}/gangs")
+    public String gangs(@PathVariable("id") Integer id, Model model) {
+        Teacher teacher = teacherService.findByIdEntity(id);
+        model.addAttribute("gangs", gangService.findAllByTeacher(teacher));
+        return "gangs";
     }
     
     

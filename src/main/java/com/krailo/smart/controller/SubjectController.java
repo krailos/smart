@@ -1,5 +1,6 @@
 package com.krailo.smart.controller;
 
+import com.krailo.smart.dto.PriceDto;
 import com.krailo.smart.dto.SubjectDto;
 import com.krailo.smart.entity.Subject;
 import com.krailo.smart.exception.BusinessException;
@@ -31,6 +32,26 @@ public class SubjectController {
     public String findById (@PathVariable("id") Integer id, Model model) {
           model.addAttribute("subject", subjectService.findById(id));
         return "subject";
+    }
+
+    // історія цін курсу (була /prices/{id}/bysubject): ціни належать курсу — адреса від власника
+    @GetMapping("/{id}/prices")
+    public String prices(@PathVariable("id") Integer id, Model model) {
+        SubjectDto subjectDto = subjectService.findById(id);
+        model.addAttribute("subject", subjectDto);
+        model.addAttribute("prices", subjectDto.getPricesDto());
+        return "prices";
+    }
+
+    // форма нової ціни для курсу (була /prices/price/new/{id})
+    @GetMapping("/{id}/prices/new")
+    public String newPriceForm(@PathVariable("id") Integer id, Model model) {
+        SubjectDto subjectDto = subjectService.findById(id);
+        model.addAttribute("price", PriceDto.builder()
+                .subjectId(subjectDto.getId())
+                .subjectName(subjectDto.getName())
+                .build());
+        return "priceNew";
     }
     
     

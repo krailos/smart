@@ -1,6 +1,5 @@
 package com.krailo.smart.controller;
 
-import com.krailo.smart.dto.AudienceDto;
 import com.krailo.smart.entity.Student;
 import com.krailo.smart.report.Bill;
 import com.krailo.smart.report.Report;
@@ -45,15 +44,6 @@ public class ReportController {
         // і активні, і архівні: учень в архіві теж може мати борг
         model.addAttribute("students", studentService.findAllIncludingArchived());
         return "reportAccountForm";
-    }
-    
-
-    
-    @PostMapping("/create")
-   // @ResponseStatus(HttpStatus.CREATED)
-    public String create ( @ModelAttribute AudienceDto audience) {
-      
-        return "redirect:/audiences";     
     }
 
 }

@@ -1,8 +1,6 @@
 package com.krailo.smart.controller;
 
 import com.krailo.smart.dto.StudentsDiscountsDto;
-import com.krailo.smart.entity.Student;
-import com.krailo.smart.entity.StudentsDiscounts;
 import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.service.DiscountService;
 import com.krailo.smart.service.StudentService;
@@ -14,7 +12,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.List;
 
 @Controller
 @RequestMapping("/studentsDiscounts")
@@ -34,13 +31,7 @@ public class StudentsDiscountsController {
 
 
 
-    @GetMapping("/{id}/byStudent")
-    public String findAllByStudent(@PathVariable("id") Integer studentId, Model model) {
-        Student student = studentService.findByIdEntity(studentId);
-        List<StudentsDiscounts> studentsDiscounts = student.getStudentsDiscounts();
-        model.addAttribute("studentsDiscounts", studentsDiscounts);
-        return "studentsDiscounts";
-    }
+    // знижки одного учня — у StudentController: /students/{id}/discounts
 
     @GetMapping("/{id}")
     public String findById (@PathVariable("id") Integer id, Model model) {
