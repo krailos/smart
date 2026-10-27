@@ -50,7 +50,9 @@ public class LessonController {
         return "lessons";
     }
 
-    @PostMapping("/schedules/{id}/lesson")
+    // форма проведення уроку з цього заняття розкладу: лише показує форму, нічого не змінює — тому GET
+    // (зберігає урок уже POST /lessons/create)
+    @GetMapping("/schedules/{id}/lesson/new")
     public String openLesson(@PathVariable("id") Integer scheduleId, Model model) {
         // отримую розклад
         ScheduleDto scheduleDto = scheduleService.findById(scheduleId);

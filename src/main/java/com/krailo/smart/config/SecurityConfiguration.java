@@ -26,8 +26,9 @@ public class SecurityConfiguration {
                         .requestMatchers("/css/**", "/favicon.ico", "/smartum.jpg").permitAll()
                         // вчитель (і адмін): головна, свій розклад-список, свої уроки, свої учні, свій пароль, проведення уроку
                         // ("своє" відбирають контролери — див. CurrentUser)
-                        .requestMatchers(HttpMethod.GET, "/", "/schedules", "/lessons", "/my/students").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/schedules/*/lesson", "/lessons/create").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/", "/schedules", "/lessons", "/my/students",
+                                "/schedules/*/lesson/new").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/lessons/create").authenticated()
                         .requestMatchers(LoginSuccessHandler.CHANGE_PASSWORD_URL).authenticated()
                         // усе інше — тільки адмін (вчителю -> 403 "Доступ заборонено")
                         .anyRequest().hasAuthority(Role.ADMIN.getAuthority()))

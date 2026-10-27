@@ -50,10 +50,9 @@
                         <td th:text="${schedule.teacherName}"></td>
                         <td th:text="${schedule.audienceName}"></td>
                         <td class="col-actions">
-                            <!-- відкриває форму проведення уроку з цього слоту (POST, бо форма заповнюється даними розкладу) -->
-                            <form th:action="@{/schedules/{id}/lesson(id=${schedule.id})}" method="post">
-                                <button class="btn btn-success btn-sm me-1"><i class="bi bi-play-fill"></i> Провести урок</button>
-                            </form>
+                            <!-- відкриває форму проведення уроку з цього слоту (просто посилання: форма лише показується) -->
+                            <a th:href="@{/schedules/{id}/lesson/new(id=${schedule.id})}" class="btn btn-success btn-sm me-1">
+                                <i class="bi bi-play-fill"></i> Провести урок</a>
                             <!-- змінювати розклад — тільки адмін -->
                             <th:block sec:authorize="hasAuthority('ADMIN')">
                             <a th:href="@{/schedules/{id}(id=${schedule.id})}" class="btn btn-light btn-icon" title="Редагувати">

@@ -52,7 +52,7 @@
                         <td th:text="${gang.subjectNme}"></td>
                         <td th:text="${gang.teacherLastName}"></td>
                         <td>
-                            <a th:href="@{/gangs/{id}/bystudents(id=${gang.id})}"
+                            <a th:href="@{/gangs/{id}/students(id=${gang.id})}"
                                class="badge rounded-pill text-bg-light border text-decoration-none fw-semibold" title="Учні групи">
                                 <i class="bi bi-person-video2"></i> <span th:text="${gang.gangsStudentsDto.size()}"></span>
                             </a>

@@ -48,7 +48,7 @@ public class GangController {
     }
     
     
-    @GetMapping("/{id}/bystudents")
+    @GetMapping("/{id}/students")
     public String findByStudents (@PathVariable("id") Integer id, Model model) {
         GangDto gangDto =  gangService.findById(id);
         List<StudentDto> students = new ArrayList<StudentDto>();
@@ -77,7 +77,7 @@ public class GangController {
             // в архіві, уже в групі, зайнятий в цей час в іншій групі
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
-        return "redirect:/gangs/" + id + "/bystudents";
+        return "redirect:/gangs/" + id + "/students";
     }
 
     @PostMapping("/{id}/students/{studentId}/remove")
@@ -89,7 +89,7 @@ public class GangController {
         } catch (BusinessException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
-        return "redirect:/gangs/" + id + "/bystudents";
+        return "redirect:/gangs/" + id + "/students";
     }
 
     // групи вчителя / учня — у контролерах власника: /teachers/{id}/gangs, /students/{id}/gangs

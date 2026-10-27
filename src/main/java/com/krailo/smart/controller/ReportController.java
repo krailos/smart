@@ -29,7 +29,7 @@ public class ReportController {
         return "reports";
     }
 
-    @GetMapping("/account")
+    @GetMapping("/statement")
     public String showAccount(@RequestParam("dateStart") LocalDate dateStart,
                               @RequestParam("dateEnd") LocalDate dateEnd,  @RequestParam("studentId") String studentId, Model model) {
         Student student = studentService.findByIdEntity(Integer.valueOf(studentId));
@@ -39,7 +39,7 @@ public class ReportController {
 
     }
 
-    @GetMapping("/account/form")
+    @GetMapping("/statement/form")
     public String showAccountForm (Model model) {
         // і активні, і архівні: учень в архіві теж може мати борг
         model.addAttribute("students", studentService.findAllIncludingArchived());
