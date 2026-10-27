@@ -14,7 +14,7 @@ public class LessonsStudentsController {
     private LessonsStudentsService lessonsStudentsService;
     private LessonsStudentsRepository lessonsStudentsRepository;
 
-    @GetMapping("/lessonsStudents")
+    @GetMapping("/lesson-students")
     String findAll(Model model) {
         model.addAttribute("lessonsStudents", lessonsStudentsService.findAll());
         return "lessonsStudents";

@@ -14,7 +14,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 
 @Controller
-@RequestMapping("/studentsDiscounts")
+@RequestMapping("/student-discounts")
 @AllArgsConstructor
 public class StudentsDiscountsController {
 
@@ -61,7 +61,7 @@ public class StudentsDiscountsController {
             // така сама знижка учня вже є — показуємо повідомлення на сторінці списку
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
-        return "redirect:/studentsDiscounts";
+        return "redirect:/student-discounts";
     }
     
     @PostMapping("/{id}/update")
@@ -70,13 +70,13 @@ public class StudentsDiscountsController {
         System.out.println(studentsDiscountsDto.getDiscountId());
         System.out.println(studentsDiscountsDto.getSubjectId());
            studentsDiscountsService.update(id, studentsDiscountsDto); 
-        return "redirect:/studentsDiscounts";        
+        return "redirect:/student-discounts";        
     }
     
     @PostMapping("/{id}/delete")
     public String delete (@PathVariable("id") Integer id) {
          studentsDiscountsService.delete(id); 
-        return "redirect:/studentsDiscounts";        
+        return "redirect:/student-discounts";        
     }
 
 }

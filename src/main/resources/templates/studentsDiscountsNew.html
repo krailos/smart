@@ -10,14 +10,14 @@
             <div>
                 <h1 class="page-title">Призначити знижку учню</h1>
                 <div class="page-subtitle">
-                    <a th:href="@{/discounts}">Знижки</a> / <a th:href="@{/studentsDiscounts}">знижки учнів</a> / нова
+                    <a th:href="@{/discounts}">Знижки</a> / <a th:href="@{/student-discounts}">знижки учнів</a> / нова
                 </div>
             </div>
         </div>
 
         <div class="card form-card">
             <div class="card-body p-4">
-                <form th:action="@{/studentsDiscounts/create}" method="post">
+                <form th:action="@{/student-discounts/create}" method="post">
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label for="studentId" class="form-label">Учень</label>
@@ -55,7 +55,7 @@
 
                         <div class="col-12 form-actions">
                             <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Зберегти</button>
-                            <a th:href="@{/studentsDiscounts}" class="btn btn-light">Скасувати</a>
+                            <a th:href="@{/student-discounts}" class="btn btn-light">Скасувати</a>
                         </div>
                     </div>
                 </form>

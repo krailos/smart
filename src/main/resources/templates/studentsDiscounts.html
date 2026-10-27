@@ -12,7 +12,7 @@
                 <div class="page-subtitle"><a th:href="@{/discounts}">Знижки</a> / призначені учням</div>
             </div>
             <div class="page-actions">
-                <a th:href="@{/studentsDiscounts/new}" class="btn btn-primary">
+                <a th:href="@{/student-discounts/new}" class="btn btn-primary">
                     <i class="bi bi-plus-lg"></i> Призначити знижку
                 </a>
             </div>
@@ -46,11 +46,11 @@
                         </td>
                         <td th:text="${studentDiscount.date != null} ? ${#temporals.format(studentDiscount.date, 'dd.MM.yyyy')}"></td>
                         <td class="col-actions">
-                            <a th:href="@{/studentsDiscounts/{id} ( id=${studentDiscount.id})}" class="btn btn-light btn-icon" title="Редагувати">
+                            <a th:href="@{/student-discounts/{id} ( id=${studentDiscount.id})}" class="btn btn-light btn-icon" title="Редагувати">
                                 <i class="bi bi-pencil"></i>
                             </a>
                             <!-- м'яке видалення (@SoftDelete) -->
-                            <form th:action="@{/studentsDiscounts/{id}/delete( id=${studentDiscount.id})}" method="post"
+                            <form th:action="@{/student-discounts/{id}/delete( id=${studentDiscount.id})}" method="post"
                                   onsubmit="return confirm('Видалити знижку учня?');">
                                 <button class="btn btn-light btn-icon text-danger" title="Видалити"><i class="bi bi-trash"></i></button>
                             </form>

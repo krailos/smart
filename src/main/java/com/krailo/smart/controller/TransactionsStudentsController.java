@@ -12,7 +12,7 @@ public class TransactionsStudentsController {
 
     private TransactionStudentService transactionStudentService;
 
-    @GetMapping("/transactionsStudents")
+    @GetMapping("/student-transactions")
     String findAll(Model model) {
         model.addAttribute("transactionsStudents", transactionStudentService.findAll());
         return "transactionsStudents";
