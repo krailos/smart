@@ -26,10 +26,11 @@ spring:
         # запиту на кожен рядок списку, а пачками — WHERE id IN (?, ?, … до 50 значень)
         default_batch_fetch_size: 50
   flyway:
+    # база вже з таблицями, але без журналу Flyway (локальна база після К3) —
+    # Flyway позначає її версією 1 і V1 не виконує; порожня база (сервер) — виконує V1
     baseline-on-migrate: true
-    # db/migration — спільні міграції; db/vendor/{vendor} — лише для конкретної бази
-    # (Spring підставляє postgresql або h2), напр. V25 з індексом lower(name), якого H2 не знає
-    locations: classpath:db/migration, classpath:db/vendor/{vendor}
+    # V1 — уся початкова схема (+ перший admin); наступні зміни схеми — V2, V3… поруч
+    locations: classpath:db/migration
 logging:
   level:
     root: INFO                        # Загальний рівень для всього проєкту
