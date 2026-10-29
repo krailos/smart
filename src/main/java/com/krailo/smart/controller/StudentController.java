@@ -1,10 +1,12 @@
 package com.krailo.smart.controller;
 
+import com.krailo.smart.dto.OpeningBalanceDto;
 import com.krailo.smart.dto.StudentDto;
 import com.krailo.smart.enumeration.Gender;
 import com.krailo.smart.enumeration.StudentStatus;
 import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.service.GangService;
+import com.krailo.smart.service.PaymentReceivingService;
 import com.krailo.smart.service.StudentService;
 import com.krailo.smart.service.StudentsDiscountsService;
 import jakarta.validation.Valid;
@@ -16,6 +18,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDate;
 import java.util.Set;
 
 @Controller
@@ -26,6 +29,7 @@ public class StudentController {
     private StudentService studentService;
     private GangService gangService;
     private StudentsDiscountsService studentsDiscountsService;
+    private PaymentReceivingService paymentReceivingService;
 
     // за якими полями дозволено сортувати (ті, що є в заголовку таблиці)
     private static final Set<String> SORT_FIELDS = Set.of("id", "lastName", "balance");
@@ -86,6 +90,36 @@ public class StudentController {
         studentService.findByIdEntity(id); // немає такого учня — 404
         model.addAttribute("studentsDiscounts", studentsDiscountsService.findAllByStudentId(id));
         return "studentsDiscounts";
+    }
+
+
+    // Початковий баланс учня (облік вівся й до програми): + передоплата, - борг. Один раз на учня,
+    // помилку виправляють сторнуванням у списку платежів (див. PaymentService.createOpeningBalance)
+    @GetMapping("/{id}/opening-balance")
+    public String openingBalanceForm(@PathVariable("id") Integer id, Model model) {
+        model.addAttribute("student", studentService.findById(id)); // немає такого учня — 404
+        model.addAttribute("openingBalance", new OpeningBalanceDto(null, LocalDate.now(), "Початковий баланс"));
+        return "studentOpeningBalance";
+    }
+
+    @PostMapping("/{id}/opening-balance")
+    public String createOpeningBalance(@PathVariable("id") Integer id,
+                                       @Valid @ModelAttribute("openingBalance") OpeningBalanceDto openingBalanceDto,
+                                       BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("student", studentService.findById(id));
+            return "studentOpeningBalance";
+        }
+        try {
+            // оплата з позначкою + журнал транзакцій + баланс — одна транзакція
+            paymentReceivingService.receiveOpeningBalance(id, openingBalanceDto);
+        } catch (BusinessException e) {
+            model.addAttribute("student", studentService.findById(id));
+            model.addAttribute("errorMessage", e.getMessage());
+            return "studentOpeningBalance";
+        }
+        redirectAttributes.addFlashAttribute("successMessage", "Початковий баланс внесено");
+        return "redirect:/students/" + id;
     }
 
 

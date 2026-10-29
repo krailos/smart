@@ -42,7 +42,8 @@ public class PaymentMapper implements Mapper<Payment, PaymentDto> {
                 e.getDate(),
                 e.getDescription(),
                 e.getStornoOf() == null ? null : e.getStornoOf().getId(),
-                storned);
+                storned,
+                e.isOpeningBalance());
     }
 
     // оплати не редагуються — помилку виправляють сторнуванням (PaymentReceivingService.stornoPayment)

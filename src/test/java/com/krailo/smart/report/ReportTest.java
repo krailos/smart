@@ -2,6 +2,7 @@ package com.krailo.smart.report;
 
 import com.krailo.smart.dto.LessonDto;
 import com.krailo.smart.dto.LessonsStudentsDto;
+import com.krailo.smart.dto.OpeningBalanceDto;
 import com.krailo.smart.dto.PaymentDto;
 import com.krailo.smart.entity.*;
 import com.krailo.smart.enumeration.Gender;
@@ -73,7 +74,7 @@ class ReportTest {
 
         // оплата 500 від 01.10, урок 26.10 (списано 100) -> баланс учня 400
         paymentReceivingService.receivePayment(new PaymentDto(null, null, student.getId(), new BigDecimal("500"),
-                PAYMENT_DATE, "тест", null, null));
+                PAYMENT_DATE, "тест", null, null, null));
         lessonClosingService.closeLesson(lessonDto());
     }
 
@@ -159,6 +160,29 @@ class ReportTest {
         assertThat(bill.getTotalCharged()).isEqualByComparingTo("200");
         assertThat(bill.getClosingBalance()).isEqualByComparingTo("300")
                 .isEqualByComparingTo(studentRepository.findById(student.getId()).orElseThrow().getBalance());
+    }
+
+    @Test
+    void shouldTakeOpeningBalanceIntoOpeningBalance_NotIntoPaid() {
+        // Given: учень прийшов з боргом 200 на 30.09 (до оплати 01.10 і уроку 26.10)
+        paymentReceivingService.receiveOpeningBalance(student.getId(),
+                new OpeningBalanceDto(new BigDecimal("-200"), LocalDate.of(2026, 9, 30), null));
+
+        // When: і період, що починається після дати залишку, і період, що її містить
+        for (LocalDate start : List.of(LocalDate.of(2026, 10, 1), LocalDate.of(2026, 9, 15))) {
+            Bill bill = report.createBill(student, start, LocalDate.of(2026, 10, 31));
+
+            // Then: залишок — у "Початковому балансі", а не в "Сплачено"; рядки — лише оплата й урок
+            assertThat(bill.getOpeningBalance()).isEqualByComparingTo("-200");
+            assertThat(bill.getTotalPaid()).isEqualByComparingTo("500");
+            assertThat(bill.getTotalCharged()).isEqualByComparingTo("100");
+            assertThat(bill.getItems()).extracting(ItemBill::getBalance)
+                    .usingElementComparator(BigDecimal::compareTo)
+                    .containsExactly(new BigDecimal("300"), new BigDecimal("200"));
+            // -200 + 500 - 100 = 200 = баланс учня в базі
+            assertThat(bill.getClosingBalance()).isEqualByComparingTo("200")
+                    .isEqualByComparingTo(studentRepository.findById(student.getId()).orElseThrow().getBalance());
+        }
     }
 
     // урок з розкладу: учень присутній, урок платний

@@ -46,6 +46,8 @@
                         <td>
                             <span th:if="${payment.storned}" class="badge text-bg-secondary">Сторновано</span>
                             <span th:if="${payment.stornoOfId != null}" class="badge text-bg-danger">Сторно</span>
+                            <!-- залишок учня з часу до програми, а не гроші, отримані в цей день -->
+                            <span th:if="${payment.openingBalance}" class="badge text-bg-info">Початковий баланс</span>
                         </td>
                         <td class="col-actions">
                             <a th:href="@{/payments/{id} ( id=${payment.id})}" class="btn btn-light btn-icon" title="Переглянути">

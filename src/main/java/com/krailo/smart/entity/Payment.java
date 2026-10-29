@@ -32,6 +32,9 @@ public class Payment {
     @ManyToOne
     @JoinColumn(name = "storno_of_id")
     private Payment stornoOf;
+    // початковий баланс учня (залишок з часу до програми), а не гроші, отримані в цей день; може бути від'ємним (борг)
+    @Column(name = "is_opening_balance")
+    private boolean openingBalance;
 
 
 }

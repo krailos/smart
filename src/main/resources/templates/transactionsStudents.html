@@ -36,7 +36,8 @@
                         <!-- транзакція або від уроку, або від оплати -->
                         <td>
                             <span th:if="${ts.lessonId != null}"><i class="bi bi-journal-check text-muted"></i> урок · <span th:text="${ts.subjectName}"></span></span>
-                            <span th:if="${ts.paymentId != null}"><i class="bi bi-cash-coin text-muted"></i> оплата №<span th:text="${ts.paymentId}"></span></span>
+                            <span th:if="${ts.paymentId != null and !ts.openingBalance}"><i class="bi bi-cash-coin text-muted"></i> оплата №<span th:text="${ts.paymentId}"></span></span>
+                            <span th:if="${ts.openingBalance}"><i class="bi bi-box-arrow-in-right text-muted"></i> початковий баланс (№<span th:text="${ts.paymentId}"></span>)</span>
                         </td>
                         <td class="text-nowrap"
                             th:text="${ts.lessonDate != null} ? ${#temporals.format(ts.lessonDate, 'dd.MM.yyyy')}

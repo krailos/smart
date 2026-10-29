@@ -9,13 +9,20 @@
         <div class="page-header">
             <div>
                 <h1 class="page-title" th:text="${#strings.isEmpty(student.lastName)} ? 'Учень' : ${student.lastName + ' ' + student.firstName}">Учень</h1>
-                <div class="page-subtitle"><a th:href="@{/students}">Учні</a> / редагування</div>
+                <!-- баланс — лише коли відомий: після помилки у формі DTO приходить з форми, а там цього поля немає -->
+                <div class="page-subtitle"><a th:href="@{/students}">Учні</a> / редагування<th:block th:if="${student.balance != null}"> ·
+                    баланс <span class="fw-semibold" th:classappend="${student.balance < 0} ? 'text-danger'"
+                                 th:text="${#numbers.formatDecimal(student.balance, 1, 'WHITESPACE', 2, 'POINT')} + ' грн'"></span></th:block></div>
             </div>
             <div class="page-actions">
                 <a th:href="@{/students/{id}/gangs(id=${student.id})}" class="btn btn-light"><i class="bi bi-people"></i> Групи</a>
                 <a th:href="@{/students/{id}/discounts(id=${student.id})}" class="btn btn-light"><i class="bi bi-percent"></i> Знижки</a>
+                <a th:href="@{/students/{id}/opening-balance(id=${student.id})}" class="btn btn-light"><i class="bi bi-box-arrow-in-right"></i> Початковий баланс</a>
             </div>
         </div>
+
+        <!-- після внесення початкового балансу: "Початковий баланс внесено" -->
+        <th:block th:replace="~{fragments/layout :: alerts}"></th:block>
 
         <div class="card form-card">
             <div class="card-body p-4">

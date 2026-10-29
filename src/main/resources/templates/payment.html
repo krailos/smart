@@ -12,6 +12,7 @@
                     Платіж
                     <span th:if="${payment.storned}" class="badge text-bg-secondary align-middle fs-6">Сторновано</span>
                     <span th:if="${payment.stornoOfId != null}" class="badge text-bg-danger align-middle fs-6">Сторно іншої оплати</span>
+                    <span th:if="${payment.openingBalance}" class="badge text-bg-info align-middle fs-6">Початковий баланс</span>
                 </h1>
                 <div class="page-subtitle"><a th:href="@{/payments}">Платежі</a> / перегляд</div>
             </div>

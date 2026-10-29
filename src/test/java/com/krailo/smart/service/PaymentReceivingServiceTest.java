@@ -1,5 +1,6 @@
 package com.krailo.smart.service;
 
+import com.krailo.smart.dto.OpeningBalanceDto;
 import com.krailo.smart.dto.PaymentDto;
 import com.krailo.smart.entity.Student;
 import com.krailo.smart.enumeration.Gender;
@@ -109,7 +110,7 @@ class PaymentReceivingServiceTest {
     void shouldNotSavePayment_WhenMoreThanTwoDecimals() {
         // 100.555 база мовчки округлила б до 100.56 — сервіс відмовляє явно
         PaymentDto tooPrecise = new PaymentDto(null, null, student.getId(), new BigDecimal("100.555"),
-                LocalDate.of(2026, 10, 24), "тест", null, null);
+                LocalDate.of(2026, 10, 24), "тест", null, null, null);
         assertThatThrownBy(() -> paymentReceivingService.receivePayment(tooPrecise))
                 .isInstanceOf(PaymentException.class)
                 .hasMessageContaining("двох знаків");
@@ -153,7 +154,69 @@ class PaymentReceivingServiceTest {
         assertThat(studentRepository.findById(student.getId()).orElseThrow().getBalance()).isZero();
     }
 
+    // ---------- початковий баланс ----------
+
+    @Test
+    void shouldSaveOpeningBalance_PrepaymentOrDebt() {
+        // When: учень прийшов з боргом 1200 (облік вівся до програми)
+        PaymentDto opening = paymentReceivingService.receiveOpeningBalance(student.getId(), openingDto("-1200", 2026, 9, 1));
+
+        // Then: особлива "оплата" з позначкою, запис у журналі, баланс -1200; примітка за замовчуванням
+        assertThat(opening.getOpeningBalance()).isTrue();
+        assertThat(opening.getDescription()).isEqualTo("Початковий баланс");
+        assertThat(transactionStudentRepository.findAll()).singleElement()
+                .satisfies(t -> assertThat(t.getBalance()).isEqualByComparingTo("-1200"));
+        assertThat(studentRepository.findById(student.getId()).orElseThrow().getBalance()).isEqualByComparingTo("-1200");
+    }
+
+    @Test
+    void shouldNotSaveOpeningBalance_WhenZero() {
+        assertThatThrownBy(() -> paymentReceivingService.receiveOpeningBalance(student.getId(), openingDto("0", 2026, 9, 1)))
+                .isInstanceOf(PaymentException.class)
+                .hasMessageContaining("нульовим");
+        assertThat(paymentRepository.count()).isZero();
+    }
+
+    @Test
+    void shouldAllowOpeningBalanceOnce_AndAgainAfterStorno() {
+        // Given: внесли 500, але насправді було 700
+        PaymentDto wrong = paymentReceivingService.receiveOpeningBalance(student.getId(), openingDto("500", 2026, 9, 1));
+
+        // When & Then: другий раз — не можна
+        assertThatThrownBy(() -> paymentReceivingService.receiveOpeningBalance(student.getId(), openingDto("700", 2026, 9, 1)))
+                .isInstanceOf(PaymentException.class)
+                .hasMessageContaining("вже є початковий баланс");
+
+        // When: сторнуємо помилковий — сторно тією самою датою і теж з позначкою
+        PaymentDto storno = paymentReceivingService.stornoPayment(wrong.getId());
+        assertThat(storno.getDate()).isEqualTo(LocalDate.of(2026, 9, 1));
+        assertThat(storno.getOpeningBalance()).isTrue();
+
+        // Then: тепер можна внести правильний
+        paymentReceivingService.receiveOpeningBalance(student.getId(), openingDto("700", 2026, 9, 1));
+        assertThat(studentRepository.findById(student.getId()).orElseThrow().getBalance()).isEqualByComparingTo("700");
+    }
+
+    @Test
+    void shouldNotSaveOpeningBalance_AfterFirstOperation() {
+        // Given: у програмі вже є оплата учня від 24.10
+        paymentReceivingService.receivePayment(paymentDto(500));
+
+        // When & Then: залишок на 25.10 — пізніше за першу операцію, не можна
+        assertThatThrownBy(() -> paymentReceivingService.receiveOpeningBalance(student.getId(), openingDto("300", 2026, 10, 25)))
+                .isInstanceOf(PaymentException.class)
+                .hasMessageContaining("24.10.2026");
+
+        // а на 24.10 (той самий день) — можна
+        paymentReceivingService.receiveOpeningBalance(student.getId(), openingDto("300", 2026, 10, 24));
+        assertThat(studentRepository.findById(student.getId()).orElseThrow().getBalance()).isEqualByComparingTo("800");
+    }
+
+    private OpeningBalanceDto openingDto(String value, int year, int month, int day) {
+        return new OpeningBalanceDto(new BigDecimal(value), LocalDate.of(year, month, day), null);
+    }
+
     private PaymentDto paymentDto(int value) {
-        return new PaymentDto(null, null, student.getId(), BigDecimal.valueOf(value), LocalDate.of(2026, 10, 24), "тест", null, null);
+        return new PaymentDto(null, null, student.getId(), BigDecimal.valueOf(value), LocalDate.of(2026, 10, 24), "тест", null, null, null);
     }
 }

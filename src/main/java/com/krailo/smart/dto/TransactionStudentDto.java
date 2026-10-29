@@ -20,6 +20,7 @@ public class TransactionStudentDto {
     private String subjectName;
     private Integer paymentId;
     private LocalDate paymentDate;
+    private boolean openingBalance; // оплата — це початковий баланс учня (або його сторно)
     private Integer studentId;
     private String studentLastName;
     private String studentFirstName;

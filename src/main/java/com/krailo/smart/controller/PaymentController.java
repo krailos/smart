@@ -43,7 +43,7 @@ public class PaymentController {
     @GetMapping("/new")
     public String createForm (Model model) {
         // порожня оплата для th:object форми; дата за замовчуванням — сьогодні
-        model.addAttribute("payment", new PaymentDto(null, null, null, null, LocalDate.now(), null, null, null));
+        model.addAttribute("payment", new PaymentDto(null, null, null, null, LocalDate.now(), null, null, null, null));
         model.addAttribute("students", studentService.findAll());
         return "paymentNew";
     }

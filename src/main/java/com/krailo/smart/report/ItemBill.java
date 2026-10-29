@@ -20,6 +20,11 @@ public class ItemBill {
         return transaction.getPayment() != null;
     }
 
+    // початковий баланс учня (або його сторно) — не гроші, отримані в періоді
+    public boolean isOpeningBalance() {
+        return isPayment() && transaction.getPayment().isOpeningBalance();
+    }
+
     // дата операції: для оплати — дата оплати, для уроку — дата уроку
     public LocalDate getDate() {
         return isPayment() ? transaction.getPayment().getDate() : transaction.getLesson().getDate();

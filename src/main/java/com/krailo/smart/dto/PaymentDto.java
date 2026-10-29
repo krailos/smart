@@ -33,5 +33,6 @@ public class PaymentDto {
     // Integer/Boolean (а не int/boolean): з форми нової оплати цих полів немає — приходить null
     private Integer stornoOfId; // це сторно оплати з цим id (сума від'ємна)
     private Boolean storned;    // цю оплату вже сторновано
+    private Boolean openingBalance; // це початковий баланс учня (або його сторно), а не отримані гроші
 
 }

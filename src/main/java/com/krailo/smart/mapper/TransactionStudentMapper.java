@@ -48,6 +48,7 @@ public class TransactionStudentMapper implements Mapper<TransactionStudent, Tran
                 .paymentDate(Optional.ofNullable(entity.getPayment())
                         .map(Payment::getDate)
                         .orElse(null))
+                .openingBalance(entity.getPayment() != null && entity.getPayment().isOpeningBalance())
                 .studentId(entity.getStudent().getId())
                 .studentLastName(entity.getStudent().getLastName())
                 .studentFirstName(entity.getStudent().getFirstName())

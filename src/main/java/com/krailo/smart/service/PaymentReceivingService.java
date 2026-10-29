@@ -1,5 +1,6 @@
 package com.krailo.smart.service;
 
+import com.krailo.smart.dto.OpeningBalanceDto;
 import com.krailo.smart.dto.PaymentDto;
 import com.krailo.smart.entity.Payment;
 import com.krailo.smart.exception.PaymentException;
@@ -35,6 +36,14 @@ public class PaymentReceivingService {
         // 2. запис у журналі транзакцій і новий баланс учня
         transactionStudentService.createByPayment(paymentDtoWithId);
         return paymentDtoWithId;
+    }
+
+    // Початковий баланс учня: особлива оплата (перевірки — у PaymentService.createOpeningBalance)
+    // + запис у журналі + новий баланс — одна транзакція, як і звичайна оплата
+    public PaymentDto receiveOpeningBalance(Integer studentId, OpeningBalanceDto openingBalanceDto) {
+        PaymentDto opening = paymentService.createOpeningBalance(studentId, openingBalanceDto);
+        transactionStudentService.createByPayment(opening);
+        return opening;
     }
 
     // Сторнування: нова оплата з мінусовою сумою + запис у журналі + зменшення балансу — одна транзакція.

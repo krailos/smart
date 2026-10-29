@@ -32,9 +32,12 @@ public class Report {
                         .thenComparing(item -> item.getTransaction().getId()))
                 .toList();
 
-        // 1. початковий баланс — усе, що сталося ДО startDate
+        // 1. початковий баланс — усе, що сталося ДО startDate,
+        // плюс внесений учню початковий баланс (залишок з часу до програми), навіть якщо його дата в періоді:
+        // це не "сплачено" в періоді, а саме залишок на початок. Він завжди не пізніше першої операції учня
+        // (PaymentService.createOpeningBalance), тож порядок балансів у рядках не порушується
         BigDecimal openingBalance = journal.stream()
-                .filter(item -> item.getDate().isBefore(startDate))
+                .filter(item -> item.getDate().isBefore(startDate) || isOpeningBalanceUpTo(item, endDate))
                 .map(ItemBill::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         bill.setOpeningBalance(openingBalance);
@@ -42,7 +45,7 @@ public class Report {
         // 2. операції періоду (межі включно) з балансом після кожної
         BigDecimal balance = openingBalance;
         for (ItemBill item : journal) {
-            if (item.getDate().isBefore(startDate) || item.getDate().isAfter(endDate)) {
+            if (item.getDate().isBefore(startDate) || item.getDate().isAfter(endDate) || item.isOpeningBalance()) {
                 continue;
             }
             balance = balance.add(item.getAmount());
@@ -58,5 +61,9 @@ public class Report {
         // 3. кінцевий баланс = початковий + сплачено - нараховано
         bill.setClosingBalance(balance);
         return bill;
+    }
+
+    private boolean isOpeningBalanceUpTo(ItemBill item, LocalDate endDate) {
+        return item.isOpeningBalance() && !item.getDate().isAfter(endDate);
     }
 }
