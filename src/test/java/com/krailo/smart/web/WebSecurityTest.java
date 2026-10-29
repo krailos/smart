@@ -96,6 +96,17 @@ class WebSecurityTest {
         }
     }
 
+    @Test
+    void anonymous_SeesHealth_OnlyUpOrDown_OtherActuatorClosed() throws Exception {
+        // Docker і моніторинг питають без логіну; база доступна -> UP, без подробиць
+        mvc.perform(get("/actuator/health")).andExpect(status().isOk())
+                .andExpect(content().string(containsString("\"status\":\"UP\"")))
+                .andExpect(content().string(not(containsString("components"))));
+        // решта службових адрес — не для анонімів
+        mvc.perform(get("/actuator/env")).andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/login"));
+    }
+
     // ---------- ролі: адмін ----------
 
     @Test

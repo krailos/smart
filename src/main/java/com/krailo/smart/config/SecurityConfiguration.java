@@ -24,6 +24,8 @@ public class SecurityConfiguration {
                         .dispatcherTypeMatchers(DispatcherType.ERROR, DispatcherType.FORWARD).permitAll()
                         // статичні файли (стилі, іконка, фон головної) — без логіну, щоб сторінка входу мала оформлення
                         .requestMatchers("/css/**", "/favicon.ico", "/smartum-3.jpg").permitAll()
+                        // перевірка "застосунок живий?" (Docker, моніторинг) — без логіну; відповідає лише UP/DOWN
+                        .requestMatchers(HttpMethod.GET, "/actuator/health").permitAll()
                         // вчитель (і адмін): головна, свій розклад-список, свої уроки, свої учні, свій пароль, проведення уроку
                         // ("своє" відбирають контролери — див. CurrentUser)
                         .requestMatchers(HttpMethod.GET, "/", "/schedules", "/lessons", "/my/students",

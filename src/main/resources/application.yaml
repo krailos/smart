@@ -31,6 +31,17 @@ spring:
     baseline-on-migrate: true
     # V1 — уся початкова схема (+ перший admin); наступні зміни схеми — V2, V3… поруч
     locations: classpath:db/migration
+# Actuator — службові адреси для обслуговування. Через веб відкрита ЛИШЕ health
+# (інші — /env з налаштуваннями, /heapdump зі знімком пам'яті тощо — назовні не потрібні й небезпечні)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      # назовні лише {"status":"UP"} або DOWN, без подробиць (версія бази, місце на диску…)
+      show-details: never
 logging:
   level:
     root: INFO                        # Загальний рівень для всього проєкту
