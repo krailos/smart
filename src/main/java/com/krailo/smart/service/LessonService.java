@@ -10,6 +10,10 @@ import com.krailo.smart.mapper.LessonMapper;
 import com.krailo.smart.repository.LessonRepository;
 import com.krailo.smart.exception.NotFoundException;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,11 +39,31 @@ public class LessonService {
         return teacherId == null ? List.of() : toDtos(lessonRepository.findAllOfTeacher(teacherId));
     }
 
+    // посторінково для /lessons: найновіші вгорі (дата, потім час початку)
+    public Page<LessonDto> findPage(int page, int size) {
+        return lessonRepository.findAll(newestFirst(page, size)).map(this::toDto);
+    }
+
+    // уроки вчителя посторінково (teacherId null — вчителя не обрано, порожня сторінка)
+    public Page<LessonDto> findPageOfTeacher(Integer teacherId, int page, int size) {
+        return teacherId == null
+                ? Page.empty(newestFirst(page, size))
+                : lessonRepository.findAllOfTeacher(teacherId, newestFirst(page, size)).map(this::toDto);
+    }
+
+    private Pageable newestFirst(int page, int size) {
+        return PageRequest.of(page, size, Sort.by("date").descending().and(Sort.by("startTime").descending()));
+    }
+
     private List<LessonDto> toDtos(List<Lesson> lessons) {
-        return lessons.stream()
-                .peek(l -> l.getLessonsStudents()
-                        .sort((o1, o2) -> o1.getStudent().getLastName().compareTo(o2.getStudent().getLastName())))
-                .map(lessonMapper::mapEntityToDto).toList();
+        return lessons.stream().map(this::toDto).toList();
+    }
+
+    // учні в уроці — за прізвищем
+    private LessonDto toDto(Lesson lesson) {
+        lesson.getLessonsStudents()
+                .sort((o1, o2) -> o1.getStudent().getLastName().compareTo(o2.getStudent().getLastName()));
+        return lessonMapper.mapEntityToDto(lesson);
     }
 
    public  List<Lesson> findAllByStudentAndBetweenDatesEntity (Student student, LocalDate start, LocalDate end){

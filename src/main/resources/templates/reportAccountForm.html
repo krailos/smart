@@ -20,20 +20,21 @@
                         <div class="col-md-6">
                             <label for="studentId" class="form-label">Учень</label>
                             <!-- value="" + required: без учня й дат браузер форму не відправить (інакше — помилка 500) -->
-                            <select id="studentId" name="studentId" class="form-select" required>
+                            <!-- після «Інший період» учень і дати вже підставлені (studentId, dateStart, dateEnd з адреси) -->
+                            <select id="studentId" name="studentId" class="form-select" required data-search>
                                 <option value="">-- Оберіть учня --</option>
                                 <option th:each="student : ${students}"
                                         th:text="|${student.lastName} ${student.firstName} (${student.contactName} - ${student.phone})|"
-                                        th:value="${student.id}">name</option>
+                                        th:value="${student.id}" th:selected="${student.id == studentId}">name</option>
                             </select>
                         </div>
                         <div class="col-md-3">
                             <label for="dateStart" class="form-label">З</label>
-                            <input class="form-control" id="dateStart" type="date" name="dateStart" required/>
+                            <input class="form-control" id="dateStart" type="date" name="dateStart" th:value="${dateStart}" required/>
                         </div>
                         <div class="col-md-3">
                             <label for="dateEnd" class="form-label">По</label>
-                            <input class="form-control" id="dateEnd" type="date" name="dateEnd" required/>
+                            <input class="form-control" id="dateEnd" type="date" name="dateEnd" th:value="${dateEnd}" required/>
                         </div>
 
                         <div class="col-12 form-actions">

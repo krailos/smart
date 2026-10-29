@@ -9,10 +9,7 @@
         <div class="page-header">
             <div>
                 <h1 class="page-title" th:text="${#strings.isEmpty(student.lastName)} ? 'Учень' : ${student.lastName + ' ' + student.firstName}">Учень</h1>
-                <!-- баланс — лише коли відомий: після помилки у формі DTO приходить з форми, а там цього поля немає -->
-                <div class="page-subtitle"><a th:href="@{/students}">Учні</a> / редагування<th:block th:if="${student.balance != null}"> ·
-                    баланс <span class="fw-semibold" th:classappend="${student.balance < 0} ? 'text-danger'"
-                                 th:text="${#numbers.formatDecimal(student.balance, 1, 'WHITESPACE', 2, 'POINT')} + ' грн'"></span></th:block></div>
+                <div class="page-subtitle"><a th:href="@{/students}">Учні</a> / редагування</div>
             </div>
             <div class="page-actions">
                 <a th:href="@{/students/{id}/gangs(id=${student.id})}" class="btn btn-light"><i class="bi bi-people"></i> Групи</a>
@@ -82,10 +79,18 @@
                             <div class="invalid-feedback" th:errors="*{email}"></div>
                         </div>
 
-                        <div class="col-12">
+                        <div class="col-md-8">
                             <label for="address" class="form-label">Адреса</label>
                             <input class="form-control" type="text" maxlength="150" th:field="*{address}" th:errorclass="is-invalid"/>
                             <div class="invalid-feedback" th:errors="*{address}"></div>
+                        </div>
+                        <!-- баланс лише показуємо: без name він не йде у форму — змінюють його тільки оплати й уроки.
+                             Окремий атрибут balance (не student.balance): після помилки у формі student приходить з форми, без балансу -->
+                        <div class="col-md-4">
+                            <label for="balance" class="form-label">Баланс</label>
+                            <input class="form-control fw-semibold" id="balance" type="text" readonly
+                                   th:classappend="${balance != null and balance < 0} ? 'text-danger'"
+                                   th:value="${balance != null} ? ${#numbers.formatDecimal(balance, 1, 'WHITESPACE', 2, 'POINT')} + ' грн' : '—'"/>
                         </div>
                         <div class="col-12">
                             <label for="description" class="form-label">Опис</label>

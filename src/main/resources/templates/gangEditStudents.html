@@ -31,7 +31,7 @@
                     <div class="col-md-6">
                         <label for="studentId" class="form-label">Додати учня</label>
                         <!-- required + порожній перший пункт: без вибору учня браузер форму не відправить -->
-                        <select id="studentId" name="studentId" class="form-select" required>
+                        <select id="studentId" name="studentId" class="form-select" required data-search>
                             <option value="" selected disabled>— оберіть учня —</option>
                             <option th:each="s : ${candidates}" th:value="${s.id}"
                                     th:text="|${s.lastName} ${s.firstName}|"></option>

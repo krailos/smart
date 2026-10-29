@@ -9,7 +9,8 @@
         <div class="page-header">
             <div>
                 <h1 class="page-title">Уроки</h1>
-                <div class="page-subtitle">Проведені уроки. Новий урок проводиться з розкладу</div>
+                <div class="page-subtitle"
+                     th:text="'Усього: ' + ${lessonPage.totalElements} + '. Новий урок проводиться з розкладу'">Проведені уроки</div>
             </div>
             <div class="page-actions">
                 <a th:href="@{/schedules}" class="btn btn-primary"><i class="bi bi-play-fill"></i> Провести урок з розкладу</a>
@@ -35,8 +36,8 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <!-- сторнований урок — сірим, з позначкою -->
-                    <tr th:each="lesson : ${lessons}" th:classappend="${lesson.storned} ? 'row-storned'">
+                    <!-- сторнований урок — сірим, з позначкою; найновіші вгорі (LessonService.findPage) -->
+                    <tr th:each="lesson : ${lessonPage.content}"th:classappend="${lesson.storned} ? 'row-storned'">
                         <td class="fw-medium text-nowrap" th:text="${lesson.date != null} ? ${#temporals.format(lesson.date, 'dd.MM.yyyy')}"></td>
                         <td class="text-nowrap"
                             th:text="${#temporals.format(lesson.startTime, 'HH:mm') + '–' + #temporals.format(lesson.endTime, 'HH:mm')}"></td>
@@ -65,7 +66,7 @@
                             </th:block>
                         </td>
                     </tr>
-                    <tr th:if="${#lists.isEmpty(lessons)}">
+                    <tr th:if="${lessonPage.empty}">
                         <td colspan="8" class="empty-state">
                             <i class="bi bi-journal-check"></i>
                             Ще не проведено жодного уроку
@@ -73,6 +74,29 @@
                     </tr>
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Пагінація по 20 уроків (як у students.html) -->
+            <div class="card-footer bg-transparent py-3" th:if="${lessonPage.totalPages > 1}">
+                <nav aria-label="Сторінки">
+                    <ul class="pagination justify-content-center mb-0">
+                        <!-- Кнопка НАЗАД (відключається, якщо сторінка перша) -->
+                        <li class="page-item" th:classappend="${lessonPage.first} ? 'disabled'">
+                            <a class="page-link" th:href="@{/lessons(page=${currentPage - 1})}">
+                                <i class="bi bi-chevron-left"></i></a>
+                        </li>
+                        <li class="page-item"
+                            th:each="i : ${#numbers.sequence(0, lessonPage.totalPages - 1)}"
+                            th:classappend="${i == currentPage} ? 'active'">
+                            <a class="page-link" th:href="@{/lessons(page=${i})}" th:text="${i + 1}">1</a>
+                        </li>
+                        <!-- Кнопка ВПЕРЕД (відключається, якщо сторінка остання) -->
+                        <li class="page-item" th:classappend="${lessonPage.last} ? 'disabled'">
+                            <a class="page-link" th:href="@{/lessons(page=${currentPage + 1})}">
+                                <i class="bi bi-chevron-right"></i></a>
+                        </li>
+                    </ul>
+                </nav>
             </div>
         </div>
     </main>

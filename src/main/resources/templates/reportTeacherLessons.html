@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Звіт: уроки вчителів')}"></head>
+<body>
+<div class="app">
+    <th:block th:replace="~{fragments/layout :: sidebar('reports')}"></th:block>
+
+    <main class="app-main">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Уроки вчителів</h1>
+                <div class="page-subtitle"><a th:href="@{/reports}">Звіти</a> / проведені уроки за період (без сторнованих)</div>
+            </div>
+            <div class="page-actions" th:if="${result != null}">
+                <button type="button" class="btn btn-light" onclick="window.print()"><i class="bi bi-printer"></i> Друк</button>
+            </div>
+        </div>
+
+        <!-- параметри: період і вчитель (порожньо — усі). Форма й результат на одній сторінці -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <form th:action="@{/reports/teacher-lessons}" method="get" class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label for="dateStart" class="form-label">З</label>
+                        <input class="form-control" id="dateStart" type="date" name="dateStart" th:value="${dateStart}" required/>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="dateEnd" class="form-label">По</label>
+                        <input class="form-control" id="dateEnd" type="date" name="dateEnd" th:value="${dateEnd}" required/>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="teacherId" class="form-label">Вчитель</label>
+                        <select id="teacherId" name="teacherId" class="form-select">
+                            <option value="">Усі вчителі</option>
+                            <option th:each="t : ${teachers}" th:value="${t.id}" th:selected="${t.id == teacherId}"
+                                    th:text="|${t.lastName} ${t.firstName}|">вчитель</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-bar-chart"></i> Сформувати</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <th:block th:if="${result != null}">
+            <!-- підсумок по вчителях; «деталі» розгортають список уроків (Bootstrap collapse) -->
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table table-app">
+                        <thead>
+                        <tr>
+                            <th scope="col">Вчитель</th>
+                            <th scope="col" class="text-end">Уроків</th>
+                            <th scope="col" class="text-end">Годин</th>
+                            <th scope="col" class="col-actions"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <th:block th:each="t, iter : ${result}">
+                            <tr>
+                                <td class="fw-medium" th:text="${t.teacherName}"></td>
+                                <td class="text-end fw-semibold" th:text="${t.count}"></td>
+                                <td class="text-end" th:text="${t.minutes / 60} + ':' + ${#numbers.formatInteger(t.minutes % 60, 2)}"></td>
+                                <td class="col-actions">
+                                    <button class="btn btn-light btn-sm" type="button" data-bs-toggle="collapse"
+                                            th:data-bs-target="'#teacher-' + ${iter.index}">
+                                        <i class="bi bi-chevron-down"></i> деталі
+                                    </button>
+                                </td>
+                            </tr>
+                            <!-- уроки вчителя: за датою й часом -->
+                            <tr class="collapse" th:id="'teacher-' + ${iter.index}">
+                                <td colspan="4" class="bg-light">
+                                    <table class="table table-sm table-compact mb-0">
+                                        <thead>
+                                        <tr>
+                                            <th>Дата</th>
+                                            <th>Час</th>
+                                            <th>Курс</th>
+                                            <th>Група</th>
+                                            <th class="text-end" title="присутніх / у списку уроку">Учнів</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr th:each="l : ${t.lessons}">
+                                            <td class="text-nowrap" th:text="${#temporals.format(l.date, 'dd.MM.yyyy')}"></td>
+                                            <td class="text-nowrap"
+                                                th:text="${#temporals.format(l.startTime, 'HH:mm') + '–' + #temporals.format(l.endTime, 'HH:mm')}"></td>
+                                            <td th:text="${l.subjectName}"></td>
+                                            <td th:text="${l.gangName}"></td>
+                                            <td class="text-end text-nowrap" th:classappend="${l.presentCount == 0} ? 'text-danger'"
+                                                th:text="|${l.presentCount} / ${l.studentsCount}|"></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                        </th:block>
+                        <tr th:if="${#lists.isEmpty(result)}">
+                            <td colspan="4" class="empty-state">
+                                <i class="bi bi-journal-x"></i>
+                                За цей період проведених уроків немає
+                            </td>
+                        </tr>
+                        </tbody>
+                        <tfoot th:unless="${#lists.isEmpty(result)}">
+                        <tr class="fw-bold">
+                            <td>Разом</td>
+                            <td class="text-end" th:text="${totalCount}"></td>
+                            <td class="text-end" th:text="${totalMinutes / 60} + ':' + ${#numbers.formatInteger(totalMinutes % 60, 2)}"></td>
+                            <td></td>
+                        </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </th:block>
+    </main>
+</div>
+</body>
+</html>

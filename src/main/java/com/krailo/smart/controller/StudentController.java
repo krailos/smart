@@ -70,7 +70,9 @@ public class StudentController {
 
     @GetMapping("/{id}")
     public String findById(@PathVariable("id") Integer id, Model model) {
-        model.addAttribute("student", studentService.findById(id));
+        StudentDto student = studentService.findById(id);
+        model.addAttribute("student", student);
+        model.addAttribute("balance", student.getBalance());
         fillFormLists(model);
         return "student";
     }
@@ -147,6 +149,8 @@ public class StudentController {
     public String update(@PathVariable("id") Integer id, @Valid @ModelAttribute("student") StudentDto studentDto,
                          BindingResult bindingResult, Model model) {
         if (bindingResult.hasErrors()) {
+            // баланс у формі не надсилається — беремо з бази, щоб поле «Баланс» не було порожнім
+            model.addAttribute("balance", studentService.findById(id).getBalance());
             fillFormLists(model);
             return "student";
         }

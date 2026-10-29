@@ -20,6 +20,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 @Controller
@@ -36,12 +39,23 @@ ScheduleController {
     private ScheduleCalendar scheduleCalendar;
     private CurrentUser currentUser;
 
+        // ?day=СЕРЕДА — лише заняття цього дня; без day (або з невідомим значенням з адреси) — усі дні
         @GetMapping
-        public String findAll(Model model) {
+        public String findAll(@RequestParam(required = false) String day, Model model) {
+            WeekDay weekDay = Arrays.stream(WeekDay.values()).filter(d -> d.name().equals(day)).findFirst().orElse(null);
             // адмін — увесь розклад, вчитель — тільки свої заняття
-            model.addAttribute("schedules", currentUser.isAdmin()
+            List<ScheduleDto> schedules = currentUser.isAdmin()
                     ? scheduleService.findAll()
-                    : scheduleService.findAllByTeacher(currentUser.teacherId()));
+                    : scheduleService.findAllByTeacher(currentUser.teacherId());
+            // день тижня (Пн→Нд, порядок enum), потім час початку
+            model.addAttribute("schedules", schedules.stream()
+                    .filter(s -> weekDay == null || s.getWeekDay() == weekDay)
+                    .sorted(Comparator.comparing(ScheduleDto::getWeekDay).thenComparing(ScheduleDto::getStartTime))
+                    .toList());
+            model.addAttribute("weekDays", WeekDay.values());
+            model.addAttribute("day", weekDay);
+            // MONDAY..SUNDAY і ПОНЕДІЛОК..НЕДІЛЯ йдуть в одному порядку
+            model.addAttribute("today", WeekDay.values()[LocalDate.now().getDayOfWeek().ordinal()]);
             return "schedules";
     }
 

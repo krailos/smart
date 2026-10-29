@@ -16,7 +16,7 @@
                 </div>
             </div>
             <div class="page-actions">
-                <a th:href="@{/reports/statement/form}" class="btn btn-light"><i class="bi bi-arrow-repeat"></i> Інший період</a>
+                <a th:href="@{/reports/statement/form(studentId=${bill.student.id}, dateStart=${bill.startDate}, dateEnd=${bill.endDate})}" class="btn btn-light"><i class="bi bi-arrow-repeat"></i> Інший період</a>
                 <button type="button" class="btn btn-light" onclick="window.print()"><i class="bi bi-printer"></i> Друк</button>
             </div>
         </div>

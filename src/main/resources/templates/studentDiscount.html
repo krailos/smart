@@ -21,7 +21,7 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label for="studentId" class="form-label">Учень</label>
-                            <select class="form-select" th:field="*{studentId}" th:errorclass="is-invalid" required>
+                            <select class="form-select" th:field="*{studentId}" th:errorclass="is-invalid" required data-search>
                                 <option value="">-- Оберіть учня --</option>
                                 <option th:each="student : ${students}"
                                         th:text="|${student.lastName} ${student.firstName} (${student.contactName} - ${student.phone})|"

@@ -11,12 +11,14 @@ import com.krailo.smart.dto.StudentDto;
 import com.krailo.smart.exception.BusinessException;
 import com.krailo.smart.service.*;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.ArrayList;
@@ -37,14 +39,19 @@ public class LessonController {
     private SubjectService subjectService;
     private CurrentUser currentUser;
 
+    private static final int LESSONS_PAGE_SIZE = 20;
 
 
     @GetMapping("/lessons")
-    public String findAll(Model model) {
+    public String findAll(@RequestParam(defaultValue = "0") int page, Model model) {
+        // з адреси може прийти page=-1 (кнопка «‹» на першій сторінці) — не падаємо, а показуємо першу
+        page = Math.max(page, 0);
         // адмін — усі уроки, вчитель — свої (провів сам або з його заняття)
-        model.addAttribute("lessons", currentUser.isAdmin()
-                ? lessonService.findAll()
-                : lessonService.findAllOfTeacher(currentUser.teacherId()));
+        Page<LessonDto> lessonPage = currentUser.isAdmin()
+                ? lessonService.findPage(page, LESSONS_PAGE_SIZE)
+                : lessonService.findPageOfTeacher(currentUser.teacherId(), page, LESSONS_PAGE_SIZE);
+        model.addAttribute("lessonPage", lessonPage);
+        model.addAttribute("currentPage", page);
         return "lessons";
     }
 

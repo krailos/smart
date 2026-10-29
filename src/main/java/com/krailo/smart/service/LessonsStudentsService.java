@@ -9,8 +9,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 @Transactional
 @Service
 @AllArgsConstructor
@@ -23,12 +21,6 @@ public class LessonsStudentsService {
         LessonsStudents lessonsStudents = lessonsStudentsRepository.saveAndFlush(
                 lessonsStudentsMapper.mapDtoToEntityForCreate(lessonsStudentsDto));
         return lessonsStudentsMapper.mapEntityToDto(lessonsStudents);
-    }
-
-
-    public List<LessonsStudentsDto> findAll (){
-        return lessonsStudentsRepository.findAll().stream()
-                .map(lessonsStudentsMapper::mapEntityToDto).toList();
     }
 
 

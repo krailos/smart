@@ -40,6 +40,7 @@
                         <th scope="col">#</th>
                         <th scope="col">Курс</th>
                         <th scope="col">Вартість уроку</th>
+                        <th scope="col">Ціни</th>
                         <th scope="col">Опис</th>
                         <th scope="col" class="col-actions">Дії</th>
                     </tr>
@@ -54,11 +55,14 @@
                                   th:text="${#numbers.formatDecimal(subject.pricesDto[0].value, 1, 'WHITESPACE', 2, 'POINT')} + ' грн'"></span>
                             <span th:unless="${subject.pricesDto.size() > 0}" class="text-muted">—</span>
                         </td>
+                        <!-- історія цін курсу; у дужках — скільки цін задано -->
+                        <td>
+                            <a th:href="@{/subjects/{id}/prices(id=${subject.id})}" class="link-secondary text-nowrap">
+                                <i class="bi bi-tags"></i> Ціни (<span th:text="${subject.pricesDto.size()}">0</span>)
+                            </a>
+                        </td>
                         <td class="text-muted small" th:text="${subject.description}"></td>
                         <td class="col-actions">
-                            <a th:href="@{/subjects/{id}/prices(id=${subject.id})}" class="btn btn-light btn-icon" title="Ціни курсу">
-                                <i class="bi bi-tags"></i>
-                            </a>
                             <a th:href="@{/subjects/{id}(id=${subject.id})}" class="btn btn-light btn-icon" title="Редагувати">
                                 <i class="bi bi-pencil"></i>
                             </a>
@@ -73,7 +77,7 @@
                         </td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(subjects)}">
-                        <td colspan="5" class="empty-state">
+                        <td colspan="6" class="empty-state">
                             <i class="bi bi-book"></i>
                             <span th:text="${archived} ? 'В архіві немає курсів' : 'Ще немає жодного курсу'"></span>
                         </td>

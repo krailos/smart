@@ -27,6 +27,18 @@
         <th:block th:replace="~{fragments/layout :: alerts}"></th:block>
 
         <div class="card">
+            <!-- фільтр за днем тижня: Усі / Понеділок ... Неділя (сьогоднішній день — жирним, з крапкою) -->
+            <div class="card-header bg-transparent py-3">
+                <div class="d-flex flex-wrap gap-1" role="group" aria-label="День тижня">
+                    <a th:href="@{/schedules}" class="btn btn-sm"
+                       th:classappend="${day == null} ? 'btn-secondary' : 'btn-outline-secondary'">Усі</a>
+                    <a th:each="d : ${weekDays}" th:href="@{/schedules(day=${d})}" class="btn btn-sm"
+                       th:classappend="(${day == d} ? 'btn-secondary' : 'btn-outline-secondary') + (${d == today} ? ' fw-bold' : '')"
+                       th:title="${d == today} ? 'Сьогодні'">
+                        <span th:text="${#strings.capitalize(#strings.toLowerCase(d.name()))}">Понеділок</span><span th:if="${d == today}"> •</span>
+                    </a>
+                </div>
+            </div>
             <div class="table-responsive">
                 <table class="table table-hover table-app">
                     <thead>
@@ -69,7 +81,7 @@
                     <tr th:if="${#lists.isEmpty(schedules)}">
                         <td colspan="7" class="empty-state">
                             <i class="bi bi-calendar-week"></i>
-                            Розклад порожній
+                            <span th:text="${day == null} ? 'Розклад порожній' : 'Цього дня занять немає'">Розклад порожній</span>
                         </td>
                     </tr>
                     </tbody>

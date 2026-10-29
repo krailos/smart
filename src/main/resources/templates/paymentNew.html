@@ -30,7 +30,7 @@
                             <label for="studentId" class="form-label">Учень</label>
                             <!-- value="" + required: без вибраного учня браузер форму не відправить
                                  (а якщо надіслали в обхід браузера — спрацює @NotNull у PaymentDto) -->
-                            <select th:field="*{studentId}" class="form-select" th:errorclass="is-invalid" required>
+                            <select th:field="*{studentId}" class="form-select" th:errorclass="is-invalid" required data-search>
                                 <option value="">-- Оберіть учня --</option>
                                 <option th:each="student : ${students}"
                                         th:text="|${student.lastName} ${student.firstName} (${student.contactName} - ${student.phone})|"
