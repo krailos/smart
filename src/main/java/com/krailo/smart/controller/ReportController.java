@@ -81,8 +81,10 @@ public class ReportController {
         // і активні, і архівні: учень в архіві теж може мати борг
         model.addAttribute("students", studentService.findAllIncludingArchived());
         model.addAttribute("studentId", studentId);
-        model.addAttribute("dateStart", dateStart);
-        model.addAttribute("dateEnd", dateEnd);
+        // без дат (перший вхід з меню «Звіти») — поточний місяць
+        LocalDate today = LocalDate.now();
+        model.addAttribute("dateStart", dateStart != null ? dateStart : today.withDayOfMonth(1));
+        model.addAttribute("dateEnd", dateEnd != null ? dateEnd : today.withDayOfMonth(today.lengthOfMonth()));
         return "reportAccountForm";
     }
 
