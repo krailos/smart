@@ -112,7 +112,7 @@ class WebSecurityTest {
     @Test
     void admin_OpensAdminPages() throws Exception {
         for (String url : List.of("/students", "/payments", "/users", "/schedules", "/schedules/week",
-                "/reports", "/teachers", "/gangs", "/schedules/new", "/student-discounts")) {
+                "/reports", "/teachers", "/gangs", "/schedules/new", "/student-discounts", "/help")) {
             mvc.perform(get(url).with(admin())).andExpect(status().isOk());
         }
         // будь-яке заняття розкладу
@@ -131,7 +131,7 @@ class WebSecurityTest {
     @Test
     void teacher_GetsForbidden_OnAdminPagesAndActions() throws Exception {
         for (String url : List.of("/students", "/payments", "/payments/new", "/users", "/schedules/week",
-                "/schedules/new", "/reports", "/teachers", "/gangs", "/student-discounts",
+                "/schedules/new", "/reports", "/teachers", "/gangs", "/student-discounts", "/help",
                 "/teachers/1/gangs", "/lessons/1")) {
             // (сторінку «Дію не виконано» для цієї 403 показує сам Tomcat через /error — MockMvc цього кроку
             //  не імітує, тож тут перевіряємо код; сторінку перевіряє тест чужого заняття нижче)

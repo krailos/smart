@@ -108,6 +108,8 @@
                     <div class="nav-section">Адміністрування</div>
                     <a th:href="@{/users}" class="nav-item-link" th:classappend="${active == 'users'} ? 'active'">
                         <i class="bi bi-person-gear"></i> Користувачі</a>
+                    <a th:href="@{/help}" class="nav-item-link" th:classappend="${active == 'help'} ? 'active'">
+                        <i class="bi bi-question-circle"></i> Довідка</a>
                     </th:block>
 
                     <!-- хто увійшов + свій пароль -->
