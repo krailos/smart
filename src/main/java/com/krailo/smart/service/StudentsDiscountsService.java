@@ -20,6 +20,11 @@ public class StudentsDiscountsService {
     private StudentsDiscountsRepository studentsDiscountsRepository;
     private StudentsDiscountsMapper studentsDiscountsMapper;
 
+    // на уроці діє одна знижка курсу — найновіша за датою (нова замінює стару, не додається).
+    // Дві з однаковою датою — незрозуміло, яка діє, тому заборонено
+    private static final String SAME_DATE_MESSAGE =
+            "На цю дату в учня вже є знижка на цей курс. Нова знижка замінює попередню — оберіть іншу дату";
+
     public List<StudentsDiscountsDto> findAll() {
         return studentsDiscountsRepository.findAll().stream().map(studentsDiscountsMapper::mapEntityToDto).toList();
     }
@@ -40,12 +45,25 @@ public class StudentsDiscountsService {
                 studentsDiscountsDto.getStudentId(), studentsDiscountsDto.getDiscountId(), studentsDiscountsDto.getSubjectId())) {
             throw new BusinessException("Учень уже має цю знижку на цей курс");
         }
+        if (studentsDiscountsRepository.existsByStudentIdAndSubjectIdAndDate(
+                studentsDiscountsDto.getStudentId(), studentsDiscountsDto.getSubjectId(), studentsDiscountsDto.getDate())) {
+            throw new BusinessException(SAME_DATE_MESSAGE);
+        }
         StudentsDiscounts studentsDiscounts = studentsDiscountsRepository.save(
                 studentsDiscountsMapper.mapDtoToEntityForCreate(studentsDiscountsDto));
         return studentsDiscountsMapper.mapEntityToDto(studentsDiscounts);
     }
 
     public StudentsDiscountsDto update(Integer id, StudentsDiscountsDto studentsDiscountsDto) {
+        // ті самі правила, що й при створенні, але без самого запису, який редагуємо
+        if (studentsDiscountsRepository.existsByStudentIdAndDiscountIdAndSubjectIdAndIdNot(
+                studentsDiscountsDto.getStudentId(), studentsDiscountsDto.getDiscountId(), studentsDiscountsDto.getSubjectId(), id)) {
+            throw new BusinessException("Учень уже має цю знижку на цей курс");
+        }
+        if (studentsDiscountsRepository.existsByStudentIdAndSubjectIdAndDateAndIdNot(
+                studentsDiscountsDto.getStudentId(), studentsDiscountsDto.getSubjectId(), studentsDiscountsDto.getDate(), id)) {
+            throw new BusinessException(SAME_DATE_MESSAGE);
+        }
         return studentsDiscountsRepository.findById(id)
                 .map(entity -> studentsDiscountsMapper.mapDtoToEntityForUpdate(studentsDiscountsDto, entity))
                 .map(studentsDiscountsRepository::saveAndFlush).map(studentsDiscountsMapper::mapEntityToDto)

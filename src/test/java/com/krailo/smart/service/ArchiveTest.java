@@ -259,6 +259,41 @@ class ArchiveTest {
         assertThat(studentsDiscountsRepository.findAll()).hasSize(1);
     }
 
+    @Test
+    void shouldRejectTwoDiscountsOnSameCourseAndDate_OnCreateAndUpdate() {
+        // Given: учню на курс призначено «Сімейна 10 %» з 01.09
+        Student student = studentRepository.save(Student.builder()
+                .firstName("Оля").lastName("Петренко").contactName("мама").phone("067")
+                .gender(Gender.ДІВЧИНА).studentStatus(StudentStatus.УЧЕНЬ).build());
+        Discount family = discountRepository.save(Discount.builder().name("Сімейна").value(10).date(LocalDate.of(2026, 9, 1)).build());
+        Discount honors = discountRepository.save(Discount.builder().name("Відмінник").value(5).date(LocalDate.of(2026, 9, 1)).build());
+        studentsDiscountsService.create(studentDiscount(student, family));
+
+        // When & Then: інша знижка на той самий курс з тієї ж дати — заборонено (незрозуміло, яка діяла б)
+        assertThatThrownBy(() -> studentsDiscountsService.create(studentDiscount(student, honors)))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("На цю дату в учня вже є знижка");
+
+        // з іншої дати — можна: з 01.10 нова знижка замінює попередню
+        StudentsDiscountsDto later = studentsDiscountsService.create(
+                studentDiscount(student, honors, LocalDate.of(2026, 10, 1)));
+        assertThat(studentsDiscountsRepository.findAll()).hasSize(2);
+
+        // редагування: перенести другу знижку на 01.09 — теж заборонено
+        assertThatThrownBy(() -> studentsDiscountsService.update(later.getId(), studentDiscount(student, honors)))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("На цю дату в учня вже є знижка");
+        // а зберегти запис без зміни дати — можна (сам із собою не конфліктує);
+        // id — як з форми редагування (приходить прихованим полем)
+        studentsDiscountsService.update(later.getId(), new StudentsDiscountsDto(later.getId(), honors.getId(), null, null,
+                student.getId(), null, subject.getId(), null, LocalDate.of(2026, 10, 1)));
+        assertThat(studentsDiscountsRepository.findAll()).hasSize(2);
+    }
+
+    private StudentsDiscountsDto studentDiscount(Student student, Discount discount, LocalDate date) {
+        return new StudentsDiscountsDto(null, discount.getId(), null, null, student.getId(), null, subject.getId(), null, date);
+    }
+
     private StudentsDiscountsDto studentDiscount(Student student, Discount discount) {
         // DTO без builder — конструктор з усіма полями: id, discountId, discountName, discountValue,
         // studentId, studentName, subjectId, subjectName, date (з форми приходять лише id і дата)

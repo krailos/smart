@@ -64,7 +64,7 @@ public class StudentsDiscountsController {
         try {
             studentsDiscountsService.create(studentsDiscountsDto);
         } catch (BusinessException e) {
-            // така сама знижка учня вже є — текст біля поля «Знижка»
+            // така сама знижка учня або знижка на цю дату вже є — текст біля поля «Знижка»
             bindingResult.rejectValue("discountId", "duplicate", e.getMessage());
             fillFormLists(model);
             return "studentsDiscountsNew";
@@ -80,7 +80,14 @@ public class StudentsDiscountsController {
             fillFormLists(model);
             return "studentDiscount";
         }
-        studentsDiscountsService.update(id, studentsDiscountsDto);
+        try {
+            studentsDiscountsService.update(id, studentsDiscountsDto);
+        } catch (BusinessException e) {
+            // така сама знижка або знижка на цю дату вже є — текст біля поля «Знижка», як при створенні
+            bindingResult.rejectValue("discountId", "duplicate", e.getMessage());
+            fillFormLists(model);
+            return "studentDiscount";
+        }
         return "redirect:/student-discounts";
     }
 

@@ -251,11 +251,91 @@ class LessonClosingServiceTest {
         assertThat(balance()).isZero();
     }
 
-    private void discount(Subject forSubject, int percent, LocalDate from) {
+    @Test
+    void shouldNotApplyDeletedStudentDiscount() {
+        // Given: ціна 100; знижку 20 % учню призначили, а потім видалили (м'яке видалення)
+        priceRepository.save(Price.builder().subject(subject).value(new BigDecimal("100")).date(LocalDate.of(2026, 9, 1)).build());
+        StudentsDiscounts deleted = discount(student, subject, 20, LocalDate.of(2026, 9, 1));
+        studentsDiscountsRepository.delete(deleted);
+
+        // When
+        lessonClosingService.closeLesson(lessonDto());
+
+        // Then: видалена знижка не діє — списано повну ціну
+        assertThat(transactionStudentRepository.findAll()).singleElement()
+                .satisfies(t -> {
+                    assertThat(t.getDiscountPercentage()).isZero();
+                    assertThat(t.getCredit()).isEqualByComparingTo("100");
+                });
+    }
+
+    @Test
+    void shouldApplyDiscountFromLessonDate_ButNotFromNextDay() {
+        // Given: ціна 100; знижка 20 % — рівно з дати уроку, 30 % — з наступного дня
+        priceRepository.save(Price.builder().subject(subject).value(new BigDecimal("100")).date(LocalDate.of(2026, 9, 1)).build());
+        discount(subject, 20, LESSON_DATE);
+        discount(subject, 30, LESSON_DATE.plusDays(1));
+
+        // When
+        lessonClosingService.closeLesson(lessonDto());
+
+        // Then: межа включно — 20 % вже діє, 30 % ще ні
+        assertThat(transactionStudentRepository.findAll()).singleElement()
+                .satisfies(t -> assertThat(t.getCredit()).isEqualByComparingTo("80"));
+    }
+
+    @Test
+    void shouldChargeEachStudentWithOwnDiscount() {
+        // Given: ціна 100; Оля зі знижкою 10 %, Іван без знижки — обидва на одному уроці
+        priceRepository.save(Price.builder().subject(subject).value(new BigDecimal("100")).date(LocalDate.of(2026, 9, 1)).build());
+        discount(subject, 10, LocalDate.of(2026, 9, 1));
+        Student ivan = studentRepository.save(Student.builder()
+                .firstName("Іван").lastName("Коваль")
+                .contactName("тато Іван").phone("0500000000")
+                .gender(Gender.ХЛОПЕЦЬ).studentStatus(StudentStatus.УЧЕНЬ)
+                .balance(BigDecimal.ZERO)
+                .build());
+        LessonDto lesson = lessonDto();
+        lesson.setLessonsStudentsDto(List.of(
+                LessonsStudentsDto.builder().studentId(student.getId()).present(true).payed(true).build(),
+                LessonsStudentsDto.builder().studentId(ivan.getId()).present(true).payed(true).build()));
+
+        // When
+        lessonClosingService.closeLesson(lesson);
+
+        // Then: знижка Олі не зачепила Івана
+        assertThat(balance()).isEqualByComparingTo("-90");
+        assertThat(studentRepository.findById(ivan.getId()).orElseThrow().getBalance()).isEqualByComparingTo("-100");
+    }
+
+    @Test
+    void shouldReturnDiscountedSum_WhenDiscountedLessonStorned() {
+        // Given: ціна 100, знижка 20 % — за урок списано 80
+        priceRepository.save(Price.builder().subject(subject).value(new BigDecimal("100")).date(LocalDate.of(2026, 9, 1)).build());
+        discount(subject, 20, LocalDate.of(2026, 9, 1));
+        LessonDto held = lessonClosingService.closeLesson(lessonDto());
+        assertThat(balance()).isEqualByComparingTo("-80");
+
+        // When
+        lessonClosingService.stornoLesson(held.getId());
+
+        // Then: повернуто саме 80 (а не 100) — баланс знову 0; у сторно сума і знижка з мінусом
+        assertThat(balance()).isZero();
+        assertThat(transactionStudentRepository.findAll())
+                .extracting(TransactionStudent::getCredit)
+                .usingElementComparator(BigDecimal::compareTo)
+                .containsExactlyInAnyOrder(new BigDecimal("80"), new BigDecimal("-80"));
+    }
+
+    private StudentsDiscounts discount(Subject forSubject, int percent, LocalDate from) {
+        return discount(student, forSubject, percent, from);
+    }
+
+    private StudentsDiscounts discount(Student forStudent, Subject forSubject, int percent, LocalDate from) {
         Discount discount = discountRepository.save(Discount.builder()
-                .name("Знижка " + percent + "%").value(percent).date(from).build());
-        studentsDiscountsRepository.save(StudentsDiscounts.builder()
-                .student(student).subject(forSubject).discount(discount).date(from).build());
+                .name("Знижка " + percent + "% з " + from).value(percent).date(from).build());
+        return studentsDiscountsRepository.save(StudentsDiscounts.builder()
+                .student(forStudent).subject(forSubject).discount(discount).date(from).build());
     }
 
     private BigDecimal balance() {
