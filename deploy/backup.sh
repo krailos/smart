@@ -5,6 +5,7 @@
 #   3) копія поза сервером: rclone -> Google Drive, зашифровано (remote REMOTE)
 # Відновлення: pg_restore (інструкція — у довіднику "Docker для Smartum").
 set -euo pipefail   # будь-яка помилка зупиняє скрипт, а не йде далі мовчки
+umask 077           # нові файли бекапу — лише для власника (персональні дані)
 
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"   # папка з compose.yaml (на сервері ~/smart)
 BACKUP_DIR="$HOME/backups"
