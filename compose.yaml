@@ -1,9 +1,88 @@
+# Уся система Smartum на сервері: база (db), застосунок (app), Caddy з HTTPS (caddy).
+# Запуск: docker compose up -d --build   (у цій папці; поруч мають лежати Caddyfile і .env)
+# Паролі — у файлі .env (зразок — .env.example), не в git.
+# Назовні відкриті лише порти 80/443 у Caddy; app і db видно тільки у внутрішній мережі Docker.
+
+# спільне правило логів: без нього Docker зберігає логи контейнера без обмежень і з часом заповнює диск.
+# Тут — не більше 5 файлів по 10 МБ на сервіс. &logging — "якір" (оголосили), *logging — використали
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
 services:
-  postgres:
-    image: 'postgres:latest'
+  db:
+    # саме 17, не latest: нова велика версія PostgreSQL не відкриває файли даних старої — оновлюємо свідомо.
+    # Та сама версія, що й локально, — бекапи переносяться в обидва боки
+    image: postgres:17
+    restart: unless-stopped
     environment:
-      - 'POSTGRES_DB=mydatabase'
-      - 'POSTGRES_PASSWORD=secret'
-      - 'POSTGRES_USER=myuser'
+      POSTGRES_DB: school
+      POSTGRES_USER: smart
+      # :? — немає змінної в .env -> compose не запуститься і покаже цей текст
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?заповніть DB_PASSWORD у файлі .env}
+      TZ: Europe/Kyiv
+    volumes:
+      # том: дані бази живуть поза контейнером — контейнер можна оновити чи видалити, дані лишаються
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smart -d school"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging: *logging
+
+  app:
+    # зібрати образ з Dockerfile у цій папці
+    build: .
+    image: smartum-app
+    restart: unless-stopped
+    depends_on:
+      # стартувати, коли база вже відповідає (інакше Flyway впав би на старті)
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      # db — ім'я сервісу вище: у внутрішній мережі Docker це і є адреса бази
+      DB_URL: jdbc:postgresql://db:5432/school
+      DB_USERNAME: smart
+      DB_PASSWORD: ${DB_PASSWORD:?заповніть DB_PASSWORD у файлі .env}
+      # Java бере під об'єкти до 75% від mem_limit (~576 МБ), решта — самій JVM
+      JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=75
+    # стеля пам'яті контейнера (VPS 2 ГБ: Ubuntu ~300 МБ, PostgreSQL ~150, Caddy ~30 + запас на збірку образу)
+    mem_limit: 768m
+    healthcheck:
+      # /actuator/health: UP — 200, DOWN (напр. немає бази) — 503 -> контейнер unhealthy
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      # перші 90 с — час на старт Spring і Flyway, невдачі не рахуються
+      start_period: 90s
+    # ports немає: з інтернету до app не дістатися, лише через caddy
+    logging: *logging
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      - app
     ports:
-      - '5432'
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"   # HTTP/3
+    environment:
+      # домен для Caddyfile: на сервері smartapp.com.ua, для перевірки вдома — localhost
+      DOMAIN: ${DOMAIN:?заповніть DOMAIN у файлі .env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # тут сертифікати: якщо загубити, Caddy проситиме нові при кожному перезапуску (Let's Encrypt має ліміти)
+      - caddy-data:/data
+      - caddy-config:/config
+    logging: *logging
+
+volumes:
+  db-data:
+  caddy-data:
+  caddy-config:

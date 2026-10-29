@@ -1,0 +1,15 @@
+# Caddy — "вахтер" перед застосунком. DOMAIN приходить з .env (через compose.yaml).
+# Для справжнього домену Caddy сам отримує сертифікат Let's Encrypt, поновлює його
+# і перекидає http:// на https://. Для localhost — видає власний локальний сертифікат (браузер попередить).
+
+{$DOMAIN} {
+	# стиснення сторінок — швидше на телефоні
+	encode zstd gzip
+	# усе — застосунку; заголовки X-Forwarded-Proto/For Caddy додає сам (див. application-prod.yaml)
+	reverse_proxy app:8080
+}
+
+# www.smartapp.com.ua -> smartapp.com.ua (одна адреса сайту; у DNS потрібен запис і для www)
+www.{$DOMAIN} {
+	redir https://{$DOMAIN}{uri} permanent
+}

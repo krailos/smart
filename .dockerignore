@@ -8,3 +8,5 @@ target/
 .idea/
 *.iml
 smart.log*
+# секрети сервера (пароль бази)
+.env
