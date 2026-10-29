@@ -1,0 +1,26 @@
+# Налаштування для СЕРВЕРА (профіль prod). Діють лише з SPRING_PROFILES_ACTIVE=prod (задається в compose.yaml);
+# доповнюють application.yaml: однакове налаштування тут перемагає.
+# Схема на сервері: браузер --HTTPS--> Caddy (сертифікат) --HTTP--> застосунок (Docker) --> PostgreSQL
+spring:
+  flyway:
+    # baseline потрібен був лише локальній базі (К3). Тут база або порожня (виконається V1), або вже з журналом Flyway.
+    # Непорожня база без журналу = щось не так (не та база) -> краще впасти з помилкою, ніж працювати на чужій схемі
+    baseline-on-migrate: false
+server:
+  # застосунок отримує від Caddy звичайний HTTP; Caddy додає заголовки X-Forwarded-Proto: https, X-Forwarded-For: <IP клієнта>.
+  # native — Tomcat їм вірить (лише від внутрішніх адрес: Docker-мережа, 127.0.0.1), тож переходи після входу
+  # ведуть на https://..., а не на http://...
+  forward-headers-strategy: native
+  servlet:
+    session:
+      cookie:
+        # cookie сесії (JSESSIONID — "пропуск" після входу) браузер надсилає лише через HTTPS
+        secure: true
+        # не прикріплювати пропуск до запитів, які відправляє чужий сайт (додатково до CSRF-токенів)
+        same-site: lax
+logging:
+  # логи — лише в консоль: Docker сам їх збирає (docker compose logs app);
+  # файл усередині контейнера зникав би при кожному оновленні застосунку
+  file:
+    name: ""
+    path: ""
