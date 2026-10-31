@@ -74,7 +74,8 @@ public class ScheduleService {
         }).orElse(false);
     }
 
-    // Кидає ScheduleConflictException, якщо в цей час уже зайнятий кабінет, вчитель, група або хтось з учнів групи.
+    // Кидає ScheduleConflictException, якщо курс не збігається з курсом групи
+    // або в цей час уже зайнятий кабінет, вчитель, група чи хтось з учнів групи.
     // Якщо вчителя не вибрано — записує в d.teacherId основного вчителя групи.
     // excludeId — id розкладу, який редагуємо (для нового розкладу = 0)
     private void checkConflicts(ScheduleDto d, int excludeId) {
@@ -97,6 +98,15 @@ public class ScheduleService {
 
         Gang gang = gangRepository.findById(d.getGangId())
                 .orElseThrow(() -> new NotFoundException("Група", d.getGangId()));
+
+        // курс заняття має бути курсом групи (форма підставляє його сама, але поле можна змінити)
+        if (gang.getSubject() == null) {
+            throw new ScheduleConflictException("У групи «" + gang.getName() + "» не вказано курс");
+        }
+        if (!Objects.equals(gang.getSubject().getId(), d.getSubjectId())) {
+            throw new ScheduleConflictException("Група «" + gang.getName() + "» належить до курсу «"
+                    + gang.getSubject().getName() + "». Оберіть цей курс або іншу групу");
+        }
 
         // вчителя не вибрали у формі — беремо основного вчителя групи
         if (d.getTeacherId() == null && gang.getTeacher() != null) {

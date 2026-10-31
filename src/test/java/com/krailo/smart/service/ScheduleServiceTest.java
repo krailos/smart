@@ -310,6 +310,50 @@ public class ScheduleServiceTest {
         verify(scheduleRepository, never()).save(any());
     }
 
+    @Test
+    void shouldThrowException_WhenCreatingWithSubjectOfAnotherGang() {
+        // Given: група 1 належить до курсу testSubject, а у формі вибрано інший курс
+        ScheduleDto dto = newDto();
+        dto.setSubjectId(2);
+        when(gangRepository.findById(1)).thenReturn(Optional.of(testGang));
+
+        // When & Then
+        assertThatThrownBy(() -> scheduleService.create(dto))
+                .isInstanceOf(ScheduleConflictException.class)
+                .hasMessage("Група «testGang» належить до курсу «testSubject». Оберіть цей курс або іншу групу");
+
+        verify(scheduleRepository, never()).save(any());
+    }
+
+    @Test
+    void shouldThrowException_WhenUpdatingWithSubjectOfAnotherGang() {
+        // Given: редагуємо заняття і вибираємо курс, якого немає в групи
+        ScheduleDto dto = newDto();
+        dto.setSubjectId(2);
+        when(gangRepository.findById(1)).thenReturn(Optional.of(testGang));
+
+        // When & Then
+        assertThatThrownBy(() -> scheduleService.update(5, dto))
+                .isInstanceOf(ScheduleConflictException.class)
+                .hasMessageContaining("належить до курсу");
+
+        verify(scheduleRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void shouldThrowException_WhenGangHasNoSubject() {
+        // Given: у групи не вказано курс
+        testGang.setSubject(null);
+        when(gangRepository.findById(1)).thenReturn(Optional.of(testGang));
+
+        // When & Then
+        assertThatThrownBy(() -> scheduleService.create(newDto()))
+                .isInstanceOf(ScheduleConflictException.class)
+                .hasMessage("У групи «testGang» не вказано курс");
+
+        verify(scheduleRepository, never()).save(any());
+    }
+
 
     // успішне збереження: група 1 знайдена, мапер і save повертають заглушки
     private void stubSuccessfulSave() {
@@ -346,7 +390,7 @@ public class ScheduleServiceTest {
     }
 
     private Gang gang(int id, String name, Teacher teacher, Student... students) {
-        Gang gang = Gang.builder().id(id).name(name).teacher(teacher).build();
+        Gang gang = Gang.builder().id(id).name(name).teacher(teacher).subject(testSubject).build();
         gang.setGangStudents(Arrays.stream(students)
                 .map(s -> GangsStudents.builder().gang(gang).student(s).build())
                 .toList());
