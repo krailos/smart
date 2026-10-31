@@ -87,6 +87,7 @@
                                th:style="|--start: ${ev.startMinute}; --len: ${ev.durationMinutes}; --lane: ${ev.lane}; --lanes: ${ev.lanes}|"
                                th:title="|${ev.schedule.gangName} · ${ev.schedule.subjectName} · ${#temporals.format(ev.schedule.startTime, 'HH:mm')}–${#temporals.format(ev.schedule.endTime, 'HH:mm')} · ${ev.schedule.audienceName} · ${ev.schedule.teacherName}|">
                                 <div class="fw-semibold" th:text="${ev.schedule.gangName}"></div>
+                                <div th:text="${ev.schedule.subjectName}"></div>
                                 <div th:text="|${#temporals.format(ev.schedule.startTime, 'HH:mm')}–${#temporals.format(ev.schedule.endTime, 'HH:mm')}|"></div>
                                 <div class="text-muted" th:text="${ev.schedule.audienceName}"></div>
                                 <div class="text-muted" th:text="${ev.schedule.teacherName}"></div>
