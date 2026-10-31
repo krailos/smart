@@ -101,18 +101,17 @@
 </div>
 
 <!-- одне вікно на два режими: "Додати в розклад" (клік на порожню клітинку) і "Редагувати заняття" (клік на заняття).
-     Режим перемикає JavaScript; після конфлікту сервер одразу малює потрібний режим (draft.id != 0 — редагування).
+     Режим перемикає JavaScript. Після конфлікту вікно саме не відкривається, щоб не перекривати повідомлення.
      data-default-* — значення з фільтра для нового заняття. Перевірки конфліктів — у ScheduleService -->
 <div class="modal fade" id="slotModal" tabindex="-1" aria-labelledby="slotModalLabel" aria-hidden="true"
-     th:data-open="${openForm}" th:data-default-audience="${filterAudience}"
+     th:data-default-audience="${filterAudience}"
      th:data-default-teacher="${filterTeacher}" th:data-default-gang="${filterGang}">
     <div class="modal-dialog modal-lg">
         <form class="modal-content" id="slotForm" th:object="${draft}" method="post"
-              th:action="${draft.id != 0} ? @{/schedules/week/{id}/update(id=${draft.id})} : @{/schedules/week/create}"
+              th:action="@{/schedules/week/create}"
               th:data-create-url="@{/schedules/week/create}" th:data-update-url="@{/schedules/week/}">
             <div class="modal-header">
-                <h2 class="modal-title fs-5" id="slotModalLabel"
-                    th:text="${draft.id != 0} ? 'Редагувати заняття' : 'Додати в розклад'">Додати в розклад</h2>
+                <h2 class="modal-title fs-5" id="slotModalLabel">Додати в розклад</h2>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрити"></button>
             </div>
             <div class="modal-body">
@@ -172,7 +171,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-light" data-bs-dismiss="modal">Скасувати</button>
                 <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i>
-                    <span id="slotSubmit" th:text="${draft.id != 0} ? 'Зберегти зміни' : 'Зберегти в розклад'">Зберегти в розклад</span>
+                    <span id="slotSubmit">Зберегти в розклад</span>
                 </button>
             </div>
         </form>
@@ -232,9 +231,6 @@
             const subjectId = subjectOfGang(field('mGang').value);
             if (subjectId) field('mSubject').value = subjectId;
         });
-
-        // сервер повернув конфлікт — відкриваємо вікно знову з уже введеним (режим сервер уже поставив)
-        if (modalEl.dataset.open === 'true') modal.show();
     });
 
     // "13:30" -> "14:30" (не пізніше 23:59)

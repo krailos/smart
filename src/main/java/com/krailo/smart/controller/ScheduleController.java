@@ -69,15 +69,14 @@ ScheduleController {
         model.addAttribute("filterAudience", audience);
         model.addAttribute("filterTeacher", teacher);
         model.addAttribute("filterGang", gang);
-        // форма у вікні: після конфлікту — те, що вводили (flash "draft"), інакше — порожня з підставленим фільтром
-        if (!model.containsAttribute("draft")) {
-            model.addAttribute("draft", ScheduleDto.builder().audienceId(audience).teacherId(teacher).gangId(gang).build());
-        }
+        // форма у вікні: порожня, з підставленим фільтром
+        model.addAttribute("draft", ScheduleDto.builder().audienceId(audience).teacherId(teacher).gangId(gang).build());
         fillFormLists(model);
         return "scheduleWeek";
     }
 
-    // додавання з календаря: ті самі перевірки конфліктів, але повертаємось на календар (з тим самим фільтром)
+    // додавання з календаря: ті самі перевірки конфліктів, але повертаємось на календар (з тим самим фільтром);
+    // після конфлікту вікно не відкривається — адмін читає повідомлення і відкриває порожню форму сам
     @PostMapping("/week/create")
     public String createFromWeek(@ModelAttribute ScheduleDto scheduleDto,
                                  @RequestParam(required = false) Integer filterAudience,
@@ -89,14 +88,12 @@ ScheduleController {
             redirectAttributes.addFlashAttribute("successMessage", "Заняття додано в розклад");
         } catch (BusinessException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-            redirectAttributes.addFlashAttribute("draft", scheduleDto);
-            redirectAttributes.addFlashAttribute("openForm", true);
         }
         return backToWeek(redirectAttributes, filterAudience, filterTeacher, filterGang);
     }
 
     // редагування з календаря (клік на заняття): ті самі перевірки, повертаємось на календар;
-    // після конфлікту вікно відкривається знову в режимі редагування (draft.id != 0)
+    // після конфлікту вікно не відкривається — адмін читає повідомлення і знову клікає на заняття
     @PostMapping("/week/{id}/update")
     public String updateFromWeek(@PathVariable("id") Integer id, @ModelAttribute ScheduleDto scheduleDto,
                                  @RequestParam(required = false) Integer filterAudience,
@@ -107,10 +104,7 @@ ScheduleController {
             scheduleService.update(id, scheduleDto);
             redirectAttributes.addFlashAttribute("successMessage", "Заняття змінено");
         } catch (BusinessException e) {
-            scheduleDto.setId(id);
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-            redirectAttributes.addFlashAttribute("draft", scheduleDto);
-            redirectAttributes.addFlashAttribute("openForm", true);
         }
         return backToWeek(redirectAttributes, filterAudience, filterTeacher, filterGang);
     }
